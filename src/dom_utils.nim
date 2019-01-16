@@ -98,7 +98,7 @@ proc simpleTest*() =
   let y = &"prefix x = {x}"
   let z = "nim string"
 
-  kout(x)
-  kout(y)
-  kout($type(y))
-  kout(z)
+  echo(x)
+  echo(y)
+  echo($type(y))
+  echo(z)

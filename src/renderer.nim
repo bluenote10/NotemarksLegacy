@@ -5,71 +5,121 @@ import karax/jstrutils
 import karax/jdict
 import karax/karax # for kout -- TODO move to own utils
 import strformat
+import sequtils
 #import jsffi
 import sugar
 
 import dom_utils
 import ui_elements
 
-type
-  MyText* = ref object of UiElement
-    text: cstring
-    class: seq[cstring]
-    node: Node
 
-proc mytext*(text: cstring, tag: cstring = "div", class: openarray[cstring] = []): MyText =
-  let node = document.createTextNode(text)
-  MyText(
-    text: text,
-    class: @class,
-    node: node,
+type
+  Model = object
+    searchText: cstring
+    items: seq[cstring]
+    itemsFiltered: seq[cstring]
+
+proc update(m: var Model) =
+  discard
+
+proc getSearchText(m: Model): cstring =
+  m.searchText
+
+#[
+type
+  Controller = object
+    model: Model
+
+proc newController(): Controller =
+  Controller(
+    model: Model(
+      searchText: "",
+      items: @[
+        "Item 1".cstring,
+        "Item 2",
+        "Hello",
+        "World",
+      ],
+      itemsFiltered: @[
+        "Item 1".cstring,
+        "Item 2",
+        "Hello",
+        "World",
+      ],
+    )
   )
 
-method elements*(self: MyText): seq[Node] =
-  return @[self.node]
 
-proc getText*(self: MyText): cstring = self.text
+proc onInput(c: var Controller, newText: cstring) =
+  c.model.searchText = newText
+  echo newText
 
-proc setText*(self: MyText, text: cstring) =
-  self.node.nodeValue = text
+  c.model.itemsFiltered.setLen(0)
+  for item in c.model.items:
+    if item.contains(newText):
+      c.model.itemsFiltered.add(item)
+
+  echo c.model.itemsFiltered
 
 
-var c1 = 0
-var c2 = 0
 
-proc renderText(): cstring =
-  "Counter 1: " & $c1 & " Counter 2: " & $c2
+var controller = newController()
 
-let t = text(renderText())
-
-discard setInterval(1000) do:
-  c2 += 1
-  t.setText(renderText())
-
-proc button1Click() =
-  c1 += 1
-  t.setText(renderText())
-
-proc button2Click() =
-  c2 += 1
-  t.setText(renderText())
-
-proc inputCb(newText: cstring) =
-  kout(newText)
-
-let input1 = input(placeholder="placeholder", cb = inputCb)
-
-let button1 = button("button 1", cb = button1Click)
-let button2 = button("button 2", cb = button2Click)
-
-let container = container([
-  button1.UiElement,
-  t,
-  container([mytext("mytext").UiElement]),
-  button2,
-  input1,
+var container = container([
+  text("Input"),
+  input(placeholder="placeholder", cb = (s: cstring) => controller.onInput(s)),
+  container(controller.model.items.map((s: cstring) => container([text(s).UiElement]).UiElement)),
 ])
 
 let root = document.getElementById("ROOT")
 root.appendChildren(container.elements())
 
+]#
+
+proc runController() =
+
+  var model = Model(
+    searchText: "",
+    items: @[
+      "Item 1".cstring,
+      "Item 2",
+      "Hello",
+      "World",
+    ],
+    itemsFiltered: @[
+      "Item 1".cstring,
+      "Item 2",
+      "Hello",
+      "World",
+    ],
+  )
+
+  let c = container(model.items.map((s: cstring) => container([text(s).UiElement]).UiElement))
+
+  proc onInput(newText: cstring) =
+    model.searchText = newText
+    echo newText
+
+    model.itemsFiltered.setLen(0)
+    for item in model.items:
+      if item.contains(newText):
+        model.itemsFiltered.add(item)
+
+    echo model.itemsFiltered
+    c.clear()
+    for item in model.itemsFiltered:
+      #model.itemsFiltered.add(item)
+      c.append(container([text(item).UiElement]))
+
+
+  var container = container([
+    text("Input"),
+    input(placeholder="placeholder", cb = onInput),
+    c,
+  ])
+
+  let root = document.getElementById("ROOT")
+  root.appendChildren(container.elements())
+
+
+runController()
