@@ -6,6 +6,7 @@ import karax/karax # for kout -- TODO move to own utils
 import strformat
 #import jsffi
 import sugar
+import options
 
 import dom_utils
 
@@ -52,20 +53,29 @@ type
   Button* = ref object of UiElement
     text: cstring
     class: seq[cstring]
-    cb: ButtonCallback
+    onClick: Option[ButtonCallback]
     el: Element
 
-proc button*(text: cstring, class: openarray[cstring] = [], cb: ButtonCallback): Button =
-  let el = h("button",
-    events = [onclick((e: Event) => cb())],
-    text = text,
-  )
-  Button(
+proc button*(text: cstring, class: openarray[cstring] = []): Button =
+  let self = Button(
     text: text,
     class: @class,
-    cb: cb,
-    el: el,
+    onClick: none(ButtonCallback),
+    el: h("button",
+      #events = [onclick(onClick)],
+      text = text,
+    ),
   )
+
+  proc onClick(e: Event) =
+    if self.onClick.isSome: (self.onClick.get)()
+
+  self.el.addEventListener("click", onClick)
+  return self
+
+proc setOnClick*(self: Button, cb: ButtonCallback): Button {.discardable.} =
+  self.onClick = some(cb)
+  self
 
 method elements*(self: Button): seq[Node] =
   return @[Node(self.el)]
@@ -79,22 +89,31 @@ type
 
   Input* = ref object of UiElement
     class: seq[cstring]
-    cb: InputCallback
+    onChange: Option[InputCallback]
     el: Element
 
-proc input*(text: cstring = "", placeholder: cstring = "", class: openarray[cstring] = [], cb: InputCallback): Input =
-  let el = h("input",
-    events = [oninput((e: Event) => cb(e.target.value))],
-    attrs = {
-      "value".cstring: text,
-      "placeholder".cstring: placeholder,
-    },
-  )
-  Input(
+proc input*(text: cstring = "", placeholder: cstring = "", class: openarray[cstring] = []): Input =
+  let self = Input(
     class: @class,
-    cb: cb,
-    el: el,
+    onChange: none(InputCallback),
+    el: h("input",
+      #events = [oninput((e: Event) => if self.onClick.isSome: self.onClick.get(e.target.value)) else: ()],
+      attrs = {
+        "value".cstring: text,
+        "placeholder".cstring: placeholder,
+      },
+    ),
   )
+
+  proc onChange(e: Event) =
+    if self.onChange.isSome: (self.onChange.get)(e.target.value)
+
+  self.el.addEventListener("input", onChange)
+  return self
+
+proc setOnChange*(self: Input, cb: InputCallback): Input {.discardable.} =
+  self.onChange = some(cb)
+  self
 
 method elements*(self: Input): seq[Node] =
   return @[Node(self.el)]
