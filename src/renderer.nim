@@ -10,7 +10,7 @@ import sequtils
 import sugar
 
 import dom_utils
-import ui_elements
+import ui_units
 import dsl
 
 
@@ -69,7 +69,7 @@ var controller = newController()
 var container = container([
   text("Input"),
   input(placeholder="placeholder", cb = (s: cstring) => controller.onInput(s)),
-  container(controller.model.items.map((s: cstring) => container([text(s).UiElement]).UiElement)),
+  container(controller.model.items.map((s: cstring) => container([text(s).UiUnit]).UiUnit)),
 ])
 
 let root = document.getElementById("ROOT")
@@ -96,7 +96,7 @@ when false:
       ],
     )
 
-    let c = container(model.items.map((s: cstring) => container([text(s).UiElement]).UiElement))
+    let c = container(model.items.map((s: cstring) => container([text(s).UiUnit]).UiUnit))
 
     proc onInput(newText: cstring) =
       model.searchText = newText
@@ -111,7 +111,7 @@ when false:
       c.clear()
       for item in model.itemsFiltered:
         #model.itemsFiltered.add(item)
-        c.append(container([text(item).UiElement]))
+        c.append(container([text(item).UiUnit]))
 
 
     var container = container([
@@ -124,18 +124,20 @@ when false:
       container([
         text("Input") as t,
         input(placeholder="placeholder", cb = onInput),
-        container(model.items.map((s: cstring) => container([text(s).UiElement]).UiElement)) as cc,
+        container(model.items.map((s: cstring) => container([text(s).UiUnit]).UiUnit)) as cc,
       ])
 
     type T = object
     let el = T()
-    proc `[]`(el: T, args: varargs[UiElement, UiElement]): seq[UiElement] = @args
+    proc `[]`(el: T, args: varargs[UiUnit, UiUnit]): seq[UiUnit] = @args
 
     let els = el[t, t, t]
 
     let root = document.getElementById("ROOT")
     root.appendChildren(container.elements())
 
+
+let ui = UiContext()
 
 proc runController() =
 
@@ -157,16 +159,18 @@ proc runController() =
 
 
   uiDefs:
-    var container = container([
-      text("Input"),
-      input(placeholder="placeholder") as input,
-      container(model.items.map((s: cstring) => container([text(s).UiElement]).UiElement)) as c,
+    var container = ui.container([
+      ui.h1("Header"),
+      ui.textNode("raw"),
+      ui.textNode("text"),
+      ui.tdiv("Input", class=classes("myclass")),
+      ui.input(placeholder="placeholder") as input,
+      ui.container(model.items.map((s: cstring) => ui.container([ui.tdiv(s).UiUnit]).UiUnit)) as c,
     ])
 
-  proc onInput(newText: cstring) =
-    model.searchText = newText
+  input.setOnChange() do (newText: cstring):
     echo newText
-
+    model.searchText = newText
     model.itemsFiltered.setLen(0)
     for item in model.items:
       if item.contains(newText):
@@ -176,13 +180,11 @@ proc runController() =
     c.clear()
     for item in model.itemsFiltered:
       #model.itemsFiltered.add(item)
-      c.append(container([text(item).UiElement]))
-
-  input.setOnChange(onInput)
+      c.append(ui.container([ui.tdiv(item).UiUnit]))
 
   #type T = object
   #let el = T()
-  #proc `[]`(el: T, args: varargs[UiElement, UiElement]): seq[UiElement] = @args
+  #proc `[]`(el: T, args: varargs[UiUnit, UiUnit]): seq[UiUnit] = @args
   #let els = el[t, t, t]
 
   let root = document.getElementById("ROOT")

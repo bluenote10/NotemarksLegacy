@@ -12,7 +12,7 @@ import dom_utils
 import ui_elements
 
 type
-  MyText* = ref object of UiElement
+  MyText* = ref object of UiUnit
     text: cstring
     class: seq[cstring]
     node: Node
@@ -68,14 +68,14 @@ proc button2Click() =
 proc inputCb(newText: cstring) =
   echo(newText)
 
-proc `{}`(t: type[UiElement], args: varargs[UiElement, UiElement]): seq[UiElement] = @args
+proc `{}`(t: type[UiUnit], args: varargs[UiUnit, UiUnit]): seq[UiUnit] = @args
 
-let els = UiElement{text(""), text("")}
+let els = UiUnit{text(""), text("")}
 
 var container = container([
-  button("button 1", cb = button1Click).UiElement,
+  button("button 1", cb = button1Click).UiUnit,
   t,
-  container([mytext("mytext").UiElement]),
+  container([mytext("mytext").UiUnit]),
   button("button 2", cb = button2Click),
   input(placeholder="placeholder", cb = inputCb),
 ])

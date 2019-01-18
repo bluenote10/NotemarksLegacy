@@ -12,36 +12,90 @@ import dom_utils
 
 
 type
-  UiElement* = ref object of RootObj
+  UiContext* = ref object
+    classes: JDict[cstring, cstring]
 
-method elements*(ui: UiElement): seq[Node] {.base.} =
+
+type
+  UiUnit* = ref object of RootObj
+
+method elements*(ui: UiUnit): seq[Node] {.base.} =
   doAssert false, "Abstract base method called"
+
+# -----------------------------------------------------------------------------
+# TextNode
+# -----------------------------------------------------------------------------
+
+type
+  TextNode* = ref object of UiUnit
+    node: Node
+
+proc textNode*(ui: UiContext, text: cstring): TextNode =
+  ## Creates a raw text node (not wrapped in an element)
+  let node = document.createTextNode(text)
+  TextNode(
+    node: node,
+  )
+
+method elements*(self: TextNode): seq[Node] =
+  return @[self.node]
+
+proc setText*(self: TextNode, text: cstring) =
+  self.node.nodeValue = text
 
 # -----------------------------------------------------------------------------
 # Text
 # -----------------------------------------------------------------------------
 
 type
-  Text* = ref object of UiElement
-    text: cstring
-    class: seq[cstring]
+  Text* = ref object of UiUnit
     node: Node
+    el: Element
 
-proc text*(text: cstring, tag: cstring = "div", class: openarray[cstring] = []): Text =
+proc text*(ui: UiContext, tag: cstring, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ## Creates text wrapped in an element
+  let el = document.createElement(tag)
   let node = document.createTextNode(text)
+  el.appendChild(node)
+  el.addClasses(class)
   Text(
-    text: text,
-    class: @class,
     node: node,
+    el: el,
   )
 
 method elements*(self: Text): seq[Node] =
-  return @[self.node]
-
-proc getText*(self: Text): cstring = self.text
+  return @[self.el.Node]
 
 proc setText*(self: Text, text: cstring) =
   self.node.nodeValue = text
+
+# Alternative constructors
+proc tdiv*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("div", text, id, class)
+
+proc span*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("span", text, id, class)
+
+proc h1*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("h1", text, id, class)
+
+proc h2*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("h2", text, id, class)
+
+proc h3*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("h3", text, id, class)
+
+proc h4*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("h4", text, id, class)
+
+proc h5*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("h5", text, id, class)
+
+proc h6*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("h6", text, id, class)
+
+proc li*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
+  ui.text("li", text, id, class)
 
 # -----------------------------------------------------------------------------
 # Button
@@ -50,13 +104,13 @@ proc setText*(self: Text, text: cstring) =
 type
   ButtonCallback = proc ()
 
-  Button* = ref object of UiElement
+  Button* = ref object of UiUnit
     text: cstring
     class: seq[cstring]
     onClick: Option[ButtonCallback]
     el: Element
 
-proc button*(text: cstring, class: openarray[cstring] = []): Button =
+proc button*(ui: UiContext, text: cstring, class: openarray[cstring] = []): Button =
   let self = Button(
     text: text,
     class: @class,
@@ -87,12 +141,12 @@ method elements*(self: Button): seq[Node] =
 type
   InputCallback = proc (text: cstring)
 
-  Input* = ref object of UiElement
+  Input* = ref object of UiUnit
     class: seq[cstring]
     onChange: Option[InputCallback]
     el: Element
 
-proc input*(text: cstring = "", placeholder: cstring = "", class: openarray[cstring] = []): Input =
+proc input*(ui: UiContext, text: cstring = "", placeholder: cstring = "", class: openarray[cstring] = []): Input =
   let self = Input(
     class: @class,
     onChange: none(InputCallback),
@@ -127,15 +181,15 @@ type
   Index = object
     i1, i2: int
 
-  Container* = ref object of UiElement
-    children: seq[UiElement]
+  Container* = ref object of UiUnit
+    children: seq[UiUnit]
     tag: cstring
     el: Element
     indices: seq[Index]
 
 proc len(i: Index): int = i.i2 - i.i1
 
-proc container*(children: openarray[UiElement], tag: cstring = "div"): Container =
+proc container*(ui: UiContext, children: openarray[UiUnit], tag: cstring = "div"): Container =
   echo "here"
   var childrenNodes = newSeq[Node]()
   var indices = newSeq[Index]()
@@ -166,7 +220,7 @@ method elements*(self: Container): seq[Node] =
   return @[Node(self.el)]
 
 
-proc insert*(self: Container, index: int, newEl: UiElement) =
+proc insert*(self: Container, index: int, newEl: UiUnit) =
   #let (i1, i2) = self.indices[index]
   let i1 = self.indices[index].i1
   let i2 = self.indices[index].i2
@@ -182,7 +236,7 @@ proc insert*(self: Container, index: int, newEl: UiElement) =
 
   #kout(i1, i2, elementBefore, newDomElements.len)
 
-proc append*(self: Container, newEl: UiElement) =
+proc append*(self: Container, newEl: UiUnit) =
   echo "indices @ append:", self.indices
   #[
   let curMaxIndex =
@@ -244,7 +298,7 @@ when defined(testVanilla):
   # -----------------------------------------------------------------------------
 
   type
-    MultiNode* = ref object of UiElement
+    MultiNode* = ref object of UiUnit
       nodes: seq[Node]
 
   proc multiNode*(numNodes: int): MultiNode =
@@ -268,7 +322,7 @@ when defined(testVanilla):
       var element = document.createElement("div")
       check true
       #let c = container([])
-        #multiNode(1).UiElement,   # 0 1
+        #multiNode(1).UiUnit,   # 0 1
         #multiNode(3),   # 1 4
         #multiNode(2),   # 4 6
         #multiNode(4),   # 6 10

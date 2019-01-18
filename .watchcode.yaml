@@ -44,4 +44,4 @@ targets:
 #default_target: frontend
 default_target: run
 #default_target: test
-log_all_events: false
+log: false

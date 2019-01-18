@@ -23,11 +23,17 @@ proc appendChildren*(el: Element, children: seq[Node]) =
   for child in children:
     el.appendChild(child)
 
+proc addClasses*(el: Element, class: openarray[cstring]) =
+  for c in class:
+    el.classList.add(c)
+
+
 
 type
   EventListener* = proc(ev: Event)
 
 template c*(args: varargs[cstring, cstring]): seq[cstring] = @args
+template classes*(args: varargs[cstring, cstring]): seq[cstring] = @args
 
 proc t*(text: cstring): Node =
   document.createTextNode(text)
