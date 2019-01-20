@@ -137,9 +137,14 @@ when false:
     root.appendChildren(container.elements())
 
 
-let ui = UiContext()
+type
+  SearchWidget = ref object of UiUnit
+    container: UiUnit
 
-proc runController() =
+method getNodes*(self: SearchWidget): seq[Node] =
+  self.container.getNodes()
+
+proc searchWidget(ui: UiContext): SearchWidget =
 
   var model = Model(
     searchText: "",
@@ -156,7 +161,6 @@ proc runController() =
       "World",
     ],
   )
-
 
   uiDefs:
     var container = ui.container([
@@ -186,9 +190,14 @@ proc runController() =
   #let el = T()
   #proc `[]`(el: T, args: varargs[UiUnit, UiUnit]): seq[UiUnit] = @args
   #let els = el[t, t, t]
+  #container
+  SearchWidget(container: container)
 
+
+proc run(unit: UiUnit) =
+  let nodes = unit.getNodes()
   let root = document.getElementById("ROOT")
-  root.appendChildren(container.elements())
+  root.appendChildren(nodes)
 
-
-runController()
+let ui = UiContext()
+run(searchWidget(ui))

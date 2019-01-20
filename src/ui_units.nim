@@ -19,8 +19,8 @@ type
 type
   UiUnit* = ref object of RootObj
 
-method elements*(ui: UiUnit): seq[Node] {.base.} =
-  doAssert false, "Abstract base method called"
+method getNodes*(self: UiUnit): seq[Node] {.base.} =
+  assert false
 
 # -----------------------------------------------------------------------------
 # TextNode
@@ -30,15 +30,15 @@ type
   TextNode* = ref object of UiUnit
     node: Node
 
+method getNodes*(self: TextNode): seq[Node] =
+  @[self.node]
+
 proc textNode*(ui: UiContext, text: cstring): TextNode =
   ## Creates a raw text node (not wrapped in an element)
   let node = document.createTextNode(text)
   TextNode(
     node: node,
   )
-
-method elements*(self: TextNode): seq[Node] =
-  return @[self.node]
 
 proc setText*(self: TextNode, text: cstring) =
   self.node.nodeValue = text
@@ -52,6 +52,9 @@ type
     node: Node
     el: Element
 
+method getNodes*(self: Text): seq[Node] =
+  @[self.el.Node]
+
 proc text*(ui: UiContext, tag: cstring, text: cstring, id = "", class: openarray[cstring] = []): Text =
   ## Creates text wrapped in an element
   let el = document.createElement(tag)
@@ -62,9 +65,6 @@ proc text*(ui: UiContext, tag: cstring, text: cstring, id = "", class: openarray
     node: node,
     el: el,
   )
-
-method elements*(self: Text): seq[Node] =
-  return @[self.el.Node]
 
 proc setText*(self: Text, text: cstring) =
   self.node.nodeValue = text
@@ -110,15 +110,19 @@ type
     onClick: Option[ButtonCallback]
     el: Element
 
+method getNodes*(self: Button): seq[Node] =
+  @[self.el.Node]
+
 proc button*(ui: UiContext, text: cstring, class: openarray[cstring] = []): Button =
+  let el = h("button",
+    #events = [onclick(onClick)],
+    text = text,
+  )
   let self = Button(
     text: text,
     class: @class,
     onClick: none(ButtonCallback),
-    el: h("button",
-      #events = [onclick(onClick)],
-      text = text,
-    ),
+    el: el,
   )
 
   proc onClick(e: Event) =
@@ -130,9 +134,6 @@ proc button*(ui: UiContext, text: cstring, class: openarray[cstring] = []): Butt
 proc setOnClick*(self: Button, cb: ButtonCallback): Button {.discardable.} =
   self.onClick = some(cb)
   self
-
-method elements*(self: Button): seq[Node] =
-  return @[Node(self.el)]
 
 # -----------------------------------------------------------------------------
 # Input
@@ -146,17 +147,21 @@ type
     onChange: Option[InputCallback]
     el: Element
 
+method getNodes*(self: Input): seq[Node] =
+  @[self.el.Node]
+
 proc input*(ui: UiContext, text: cstring = "", placeholder: cstring = "", class: openarray[cstring] = []): Input =
+  let el = h("input",
+    #events = [oninput((e: Event) => if self.onClick.isSome: self.onClick.get(e.target.value)) else: ()],
+    attrs = {
+      "value".cstring: text,
+      "placeholder".cstring: placeholder,
+    },
+  )
   let self = Input(
     class: @class,
     onChange: none(InputCallback),
-    el: h("input",
-      #events = [oninput((e: Event) => if self.onClick.isSome: self.onClick.get(e.target.value)) else: ()],
-      attrs = {
-        "value".cstring: text,
-        "placeholder".cstring: placeholder,
-      },
-    ),
+    el: el,
   )
 
   proc onChange(e: Event) =
@@ -168,10 +173,6 @@ proc input*(ui: UiContext, text: cstring = "", placeholder: cstring = "", class:
 proc setOnChange*(self: Input, cb: InputCallback): Input {.discardable.} =
   self.onChange = some(cb)
   self
-
-method elements*(self: Input): seq[Node] =
-  return @[Node(self.el)]
-
 
 # -----------------------------------------------------------------------------
 # Container
@@ -187,16 +188,18 @@ type
     el: Element
     indices: seq[Index]
 
+method getNodes*(self: Container): seq[Node] =
+  @[self.el.Node]
+
 proc len(i: Index): int = i.i2 - i.i1
 
 proc container*(ui: UiContext, children: openarray[UiUnit], tag: cstring = "div"): Container =
-  echo "here"
   var childrenNodes = newSeq[Node]()
   var indices = newSeq[Index]()
 
   var index = 0
   for i, child in children:
-    let childElements = child.elements()
+    let childElements = child.getNodes()
     let i1 = index
     for el in childElements:
       childrenNodes.add(el)
@@ -216,10 +219,6 @@ proc container*(ui: UiContext, children: openarray[UiUnit], tag: cstring = "div"
     indices: indices,
   )
 
-method elements*(self: Container): seq[Node] =
-  return @[Node(self.el)]
-
-
 proc insert*(self: Container, index: int, newEl: UiUnit) =
   #let (i1, i2) = self.indices[index]
   let i1 = self.indices[index].i1
@@ -228,7 +227,7 @@ proc insert*(self: Container, index: int, newEl: UiUnit) =
   # TODO: handle case where there is no elementAfter
   let elementAfter = self.el.childNodes[i1]
 
-  let newDomElements = newEl.elements()
+  let newDomElements = newEl.getNodes()
   for newDomElement in newDomElements:
     self.el.insertBefore(newDomElement, elementAfter)
 
@@ -250,7 +249,7 @@ proc append*(self: Container, newEl: UiUnit) =
     echo self.indices[^1]
     curMaxIndex = self.indices[^1].i2
 
-  let newDomElements = newEl.elements()
+  let newDomElements = newEl.getNodes()
   #echo newDomElements
   for newDomElement in newDomElements:
     self.el.insertBefore(newDomElement, nil)
@@ -309,10 +308,6 @@ when defined(testVanilla):
     MultiNode(
       nodes: nodes,
     )
-
-  method elements*(self: MultiNode): seq[Node] =
-    return self.nodes
-
 
   var element = document.createElement("div")
 

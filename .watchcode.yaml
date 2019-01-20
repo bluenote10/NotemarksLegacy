@@ -10,38 +10,27 @@ filesets:
 
 tasks:
   frontend:
+    fileset: default
     commands:
       - "npm run build_renderer"
     clear_screen: true
     queue_events: false
 
   run:
+    fileset: default
     commands:
       - "npm start"
     clear_screen: true
     queue_events: false
 
   test:
+    fileset: default
     commands:
       - "nim -r js -d:nodejs -d:testVanilla tests/tests.nim"
     clear_screen: true
     queue_events: false
 
-
-targets:
-  frontend:
-    fileset: default
-    task: frontend
-
-  run:
-    fileset: default
-    task: run
-
-  test:
-    fileset: default
-    task: test
-
-#default_target: frontend
-default_target: run
-#default_target: test
+default_task: frontend
+#default_task: run
+#default_task: test
 log: false
