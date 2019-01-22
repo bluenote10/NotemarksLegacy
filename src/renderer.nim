@@ -13,6 +13,19 @@ import dom_utils
 import ui_units
 import dsl
 
+import markdown
+
+let markdownHtml = convertMarkdown("""
+# hello, markdown!
+
+- first
+- second
+
+## another test
+
+with [link](www.github.com)
+""")
+
 
 type
   Model = object
@@ -165,12 +178,15 @@ proc searchWidget(ui: UiContext): SearchWidget =
   uiDefs:
     var container = ui.container([
       ui.h1("Header"),
+      ui.tdiv("hold markdown") as md,
       ui.textNode("raw"),
       ui.textNode("text"),
       ui.tdiv("Input", class=classes("myclass")),
       ui.input(placeholder="placeholder") as input,
       ui.container(model.items.map((s: cstring) => ui.container([ui.tdiv(s).UiUnit]).UiUnit)) as c,
     ])
+
+  md.setInnerHtml(markdownHtml)
 
   input.setOnChange() do (newText: cstring):
     echo newText

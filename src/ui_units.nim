@@ -69,6 +69,9 @@ proc text*(ui: UiContext, tag: cstring, text: cstring, id = "", class: openarray
 proc setText*(self: Text, text: cstring) =
   self.node.nodeValue = text
 
+proc setInnerHtml*(self: Text, text: cstring) =
+  self.el.innerHTML = text
+
 # Alternative constructors
 proc tdiv*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
   ui.text("div", text, id, class)
