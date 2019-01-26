@@ -153,8 +153,8 @@ type
 method getNodes*(self: Input): seq[Node] =
   @[self.el.Node]
 
-proc input*(ui: UiContext, text: cstring = "", placeholder: cstring = "", class: openarray[cstring] = []): Input =
-  let el = h("input",
+proc input*(ui: UiContext, text: cstring = "", tag: cstring = "input", placeholder: cstring = "", class: openarray[cstring] = []): Input =
+  let el = h(tag,
     #events = [oninput((e: Event) => if self.onClick.isSome: self.onClick.get(e.target.value)) else: ()],
     attrs = {
       "value".cstring: text,

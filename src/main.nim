@@ -1,6 +1,8 @@
 import jsffi
 import sugar
 import karax/karax # kout
+#import karax/kdom
+import karax/jstrutils except `&`
 
 {.emit: """
 const electron = require('electron')
@@ -26,10 +28,26 @@ let browserWindow = electron.BrowserWindow
 var mainWindow: JsObject
 
 
+proc replace*(s, a, b: cstring): cstring {.importcpp: "#.replace(#, #)", nodecl.}
+
+proc makeHttpAddress(url: cstring): cstring =
+  let prefix = "file://".cstring & dirname & "/"
+  if url.startsWith(prefix):
+    return url.replace(prefix, "http://")
+  else:
+    return url
+
+
 proc createWindow() =
-  mainWindow = jsnew electron.BrowserWindow(JsObject{width: 1000, height: 800, webPreferences: JsObject{
-    devTools: true
-    }})
+  mainWindow = jsnew electron.BrowserWindow(
+    JsObject{
+      width: 1000,
+      height: 800,
+      webPreferences: JsObject{
+        devTools: true
+      }
+    }
+  )
 
   #[
   mainWindow.loadURL(url.format(JsObject{
@@ -57,6 +75,20 @@ proc createWindow() =
       devToolsOpened = true
   )
 
+  # Redirect hrefs to external browser:
+  # - https://stackoverflow.com/a/32415579/1804173
+  # - https://github.com/electron/electron/issues/1344#issuecomment-208839713
+  let webContents = mainWindow.webContents
+  webContents.on("new-window", proc (event: JsObject, url: cstring) =
+    echo "new-window: ", url, " ", makeHttpAddress(url)
+    event.preventDefault()
+    electron.shell.openExternal(url);
+  )
+  webContents.on("will-navigate", proc (event: JsObject, url: cstring) =
+    echo "will-navigate: ", url, " ", makeHttpAddress(url)
+    event.preventDefault()
+    electron.shell.openExternal(makeHttpAddress(url));
+  )
 
 app.on("ready", createWindow)
 

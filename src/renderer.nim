@@ -15,17 +15,6 @@ import dsl
 
 import markdown
 
-let markdownHtml = convertMarkdown("""
-# hello, markdown!
-
-- first
-- second
-
-## another test
-
-with [link](www.github.com)
-""")
-
 
 type
   Model = object
@@ -178,15 +167,12 @@ proc searchWidget(ui: UiContext): SearchWidget =
   uiDefs:
     var container = ui.container([
       ui.h1("Header"),
-      ui.tdiv("hold markdown") as md,
       ui.textNode("raw"),
       ui.textNode("text"),
       ui.tdiv("Input", class=classes("myclass")),
       ui.input(placeholder="placeholder") as input,
       ui.container(model.items.map((s: cstring) => ui.container([ui.tdiv(s).UiUnit]).UiUnit)) as c,
     ])
-
-  md.setInnerHtml(markdownHtml)
 
   input.setOnChange() do (newText: cstring):
     echo newText
@@ -210,10 +196,34 @@ proc searchWidget(ui: UiContext): SearchWidget =
   SearchWidget(container: container)
 
 
+type
+  MarkdownEditor = ref object of UiUnit
+    container: UiUnit
+
+method getNodes*(self: MarkdownEditor): seq[Node] =
+  self.container.getNodes()
+
+proc markdownEditor(ui: UiContext): MarkdownEditor =
+
+  uiDefs:
+    var container = ui.container([
+      ui.input(tag="textarea", placeholder="placeholder") as input,
+      ui.tdiv("") as md,
+    ])
+
+  input.setOnChange() do (newText: cstring):
+    echo newText
+    let markdownHtml = convertMarkdown(newText)
+    md.setInnerHtml(markdownHtml)
+
+  MarkdownEditor(container: container)
+
+
 proc run(unit: UiUnit) =
   let nodes = unit.getNodes()
   let root = document.getElementById("ROOT")
   root.appendChildren(nodes)
 
 let ui = UiContext()
-run(searchWidget(ui))
+#run(searchWidget(ui))
+run(markdownEditor(ui))
