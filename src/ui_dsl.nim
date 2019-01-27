@@ -1,15 +1,24 @@
 import macros
 
-proc extractDefinitions(code: NimNode, definitions: var seq[NimNode]): NimNode =
-  #[
-  if code.kind == nnkDotExpr and code.len == 2 and code[1] == ident("ass"):
-    let def = newVarStmt(code[1], code[0])
-    definitions.add(def)
+import ui_units
 
-    echo code.treerepr
-    echo "returning 1: ", code[1].repr
-    return code[1]
+#[
+# Alternative for array type inference?
+
+  type T = object
+  let el = T()
+  proc `[]`(el: T, args: varargs[UiUnit, UiUnit]): seq[UiUnit] = @args
+  let els = el[t, t, t]
+
 ]#
+
+template classes*(args: varargs[cstring, cstring]): seq[cstring] = @args
+
+template units*(args: varargs[UiUnit, UiUnit]): seq[cstring] = @args
+
+
+proc extractDefinitions(code: NimNode, definitions: var seq[NimNode]): NimNode =
+
   if code.kind == nnkInfix and code.len == 3 and code[0] == ident("as"):
     let value = code[1]
     let ident = code[2]
@@ -29,20 +38,16 @@ proc extractDefinitions(code: NimNode, definitions: var seq[NimNode]): NimNode =
 
 
 macro uiDefs*(code: untyped): untyped =
-
   #echo code.repr
   echo " * Input code:", code.repr
 
   var defs = newSeq[NimNode]()
-
   let codeNew = extractDefinitions(code.copy(), defs)
 
-
-  #result = codeNew
+  # Prepend definitions to new code block
   result = newStmtList()
   for def in defs:
     result.add(def)
   result.add(codeNew)
 
-  #echo defs.repr
   echo " * Final code:", result.repr

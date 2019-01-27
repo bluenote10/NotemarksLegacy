@@ -2,7 +2,7 @@ import jsffi
 import sugar
 import karax/karax # kout
 #import karax/kdom
-import karax/jstrutils except `&`
+import jstr_utils
 
 {.emit: """
 const electron = require('electron')
@@ -28,8 +28,6 @@ let browserWindow = electron.BrowserWindow
 var mainWindow: JsObject
 
 
-proc replace*(s, a, b: cstring): cstring {.importcpp: "#.replace(#, #)", nodecl.}
-
 proc makeHttpAddress(url: cstring): cstring =
   let prefix = "file://".cstring & dirname & "/"
   if url.startsWith(prefix):
@@ -48,6 +46,7 @@ proc createWindow() =
       }
     }
   )
+  mainWindow.maximize()
 
   #[
   mainWindow.loadURL(url.format(JsObject{

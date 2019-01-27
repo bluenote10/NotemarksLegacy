@@ -5,7 +5,6 @@ import karax/jstrutils
 import karax/jdict
 import karax/karax # for kout -- TODO move to own utils
 import strformat
-#import jsffi
 import sugar
 
 import dom_utils

@@ -32,10 +32,8 @@ proc addClasses*(el: Element, class: openarray[cstring]) =
 type
   EventListener* = proc(ev: Event)
 
-template c*(args: varargs[cstring, cstring]): seq[cstring] = @args
-template classes*(args: varargs[cstring, cstring]): seq[cstring] = @args
 
-proc t*(text: cstring): Node =
+proc textNode*(text: cstring): Node =
   document.createTextNode(text)
 
 
@@ -63,8 +61,6 @@ proc h*(
   for attr in attrs:
     element.setAttribute(attr[0], attr[1])
 
-  #for k in events.keys():
-  #  element.addEventListener(k, events[k])
   for kv in events:
     let (k, v) = kv
     element.addEventListener(k, v)
@@ -79,32 +75,3 @@ proc onclick*(handler: proc (e: Event)): (cstring, EventListener) =
 proc oninput*(handler: proc (e: Event)): (cstring, EventListener) =
   # Making this a template results in illformed AST, why?
   ("input".cstring, EventListener(handler))
-
-
-proc simpleTest*() =
-  let a = h("div", class=["test".cstring, "class"], text="Hello World")
-  let b = h("div", class=c("test", "class"), text="Hello World")
-  let cc = h("div", children = @[
-    #h("span", text="span1"),
-    t("text"),
-    #h("span", text="span2"),
-  ])
-
-  #let button = h("button", events = {"click".cstring: EventListener((e: Event) => kout("clicked"))}, text="click me")
-  let button = h("button", events = [onclick((e: Event) => kout("clicked".cstring))], text="click me")
-
-  let root = document.getElementById("ROOT")
-
-  root.appendChild(a)
-  root.appendChild(b)
-  root.appendChild(cc)
-  root.appendChild(button)
-
-  let x = "test".cstring
-  let y = &"prefix x = {x}"
-  let z = "nim string"
-
-  echo(x)
-  echo(y)
-  echo($type(y))
-  echo(z)

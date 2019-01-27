@@ -2,9 +2,7 @@
 import karax/kdom
 import karax/jstrutils
 import karax/jdict
-import karax/karax # for kout -- TODO move to own utils
 import strformat
-#import jsffi
 import sugar
 import options
 
@@ -20,7 +18,7 @@ type
   UiUnit* = ref object of RootObj
 
 method getNodes*(self: UiUnit): seq[Node] {.base.} =
-  assert false
+  doAssert false
 
 # -----------------------------------------------------------------------------
 # TextNode
