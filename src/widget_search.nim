@@ -38,13 +38,21 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
   )
 
   uiDefs:
-    var container = ui.container([
-      ui.h1("Header"),
-      ui.textNode("raw"),
-      ui.textNode("text"),
-      ui.tdiv("Input", class=classes("myclass")),
-      ui.input(placeholder="placeholder") as input,
-      ui.container(model.items.map((s: cstring) => ui.container([ui.tdiv(s).UiUnit]).UiUnit)) as c,
+    var container = ui.container(class=["container"], children=[
+      ui.h1("Header", class=["title"]),
+      ui.tdiv("Search:", class=["myclass"]),
+      ui.container(class=["field", "has-addons"], children=[
+        ui.container(class=["control"], children=[
+          ui.input(placeholder="placeholder", class=["input"]) as input,
+        ]),
+        ui.container(class=["control"], children=[
+          ui.text(text="Search", tag="a", class=["button", "is-info"]),
+        ]),
+      ]),
+      ui.container(children=
+        model.items.map((s: cstring) => ui.container(children=[ui.tdiv(s)]).UiUnit)
+      ) as c,
+      ui.tdiv("Follup text..."),
     ])
 
   input.setOnChange() do (newText: cstring):
@@ -59,6 +67,6 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
     c.clear()
     for item in model.itemsFiltered:
       #model.itemsFiltered.add(item)
-      c.append(ui.container([ui.tdiv(item).UiUnit]))
+      c.append(ui.container(children=[ui.tdiv(item).UiUnit]))
 
   WidgetSearch(container: container)

@@ -14,7 +14,32 @@ import ui_units
 
 template classes*(args: varargs[cstring, cstring]): seq[cstring] = @args
 
-template units*(args: varargs[UiUnit, UiUnit]): seq[cstring] = @args
+template units*(args: varargs[UiUnit, UiUnit]): seq[UiUnit] = @args
+
+
+template fixBaseType(x: typed): untyped =
+  when compiles(x.UiUnit):
+    x.UiUnit
+  #elif compiles(x.cstring) and x is not cstring:
+  #  x.cstring
+  else:
+    static:
+      echo "cannot convert: ", x.type
+    x
+
+proc fixAst(n: NimNode): NimNode =
+  if n.kind == nnkStrLit:
+    result = newCall(ident"cstring", n)
+  elif n.kind == nnkBracket:
+    result = n.copyNimTree
+    echo "here"
+    echo n.repr
+    for i in 0 ..< n.len:
+      result[i] = newCall(bindSym"fixBaseType", fixAst(result[i]))
+  else:
+    result = n.copyNimTree
+    for i in 0 ..< n.len:
+      result[i] = fixAst(result[i])
 
 
 proc extractDefinitions(code: NimNode, definitions: var seq[NimNode]): NimNode =
@@ -39,15 +64,16 @@ proc extractDefinitions(code: NimNode, definitions: var seq[NimNode]): NimNode =
 
 macro uiDefs*(code: untyped): untyped =
   #echo code.repr
-  echo " * Input code:", code.repr
+  echo " * Input code:\n", code.repr
 
   var defs = newSeq[NimNode]()
   let codeNew = extractDefinitions(code.copy(), defs)
+  let codeNewFixed = fixAst(codeNew)
 
   # Prepend definitions to new code block
   result = newStmtList()
   for def in defs:
-    result.add(def)
-  result.add(codeNew)
+    result.add(fixAst(def))
+  result.add(codeNewFixed)
 
-  echo " * Final code:", result.repr
+  echo " * Final code:\n", result.repr

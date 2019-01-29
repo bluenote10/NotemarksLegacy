@@ -30,7 +30,9 @@ tasks:
     clear_screen: true
     queue_events: false
 
-#default_task: frontend
-default_task: run
+default_task: frontend
+#default_task: run
 #default_task: test
 log: false
+sound: true
+notifications: true

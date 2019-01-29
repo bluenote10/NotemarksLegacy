@@ -107,7 +107,6 @@ type
 
   Button* = ref object of UiUnit
     text: cstring
-    class: seq[cstring]
     onClick: Option[ButtonCallback]
     el: Element
 
@@ -118,10 +117,10 @@ proc button*(ui: UiContext, text: cstring, class: openarray[cstring] = []): Butt
   let el = h("button",
     #events = [onclick(onClick)],
     text = text,
+    class = class,
   )
   let self = Button(
     text: text,
-    class: @class,
     onClick: none(ButtonCallback),
     el: el,
   )
@@ -144,7 +143,6 @@ type
   InputCallback = proc (text: cstring)
 
   Input* = ref object of UiUnit
-    class: seq[cstring]
     onChange: Option[InputCallback]
     el: Element
 
@@ -158,9 +156,9 @@ proc input*(ui: UiContext, text: cstring = "", tag: cstring = "input", placehold
       "value".cstring: text,
       "placeholder".cstring: placeholder,
     },
+    class = class,
   )
   let self = Input(
-    class: @class,
     onChange: none(InputCallback),
     el: el,
   )
@@ -194,7 +192,7 @@ method getNodes*(self: Container): seq[Node] =
 
 proc len(i: Index): int = i.i2 - i.i1
 
-proc container*(ui: UiContext, children: openarray[UiUnit], tag: cstring = "div"): Container =
+proc container*(ui: UiContext, tag: cstring = "div", class: openarray[cstring] = [], children: openarray[UiUnit]): Container =
   var childrenNodes = newSeq[Node]()
   var indices = newSeq[Index]()
 
@@ -211,6 +209,7 @@ proc container*(ui: UiContext, children: openarray[UiUnit], tag: cstring = "div"
 
   let el = h(tag,
     children = childrenNodes,
+    class = class,
   )
 
   Container(
