@@ -23,8 +23,6 @@ template fixBaseType(x: typed): untyped =
   #elif compiles(x.cstring) and x is not cstring:
   #  x.cstring
   else:
-    static:
-      echo "cannot convert: ", x.type
     x
 
 proc fixAst(n: NimNode): NimNode =
@@ -32,8 +30,6 @@ proc fixAst(n: NimNode): NimNode =
     result = newCall(ident"cstring", n)
   elif n.kind == nnkBracket:
     result = n.copyNimTree
-    echo "here"
-    echo n.repr
     for i in 0 ..< n.len:
       result[i] = newCall(bindSym"fixBaseType", fixAst(result[i]))
   else:

@@ -16,7 +16,7 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
   uiDefs:
     var container = ui.container(children=[
       ui.input(tag="textarea", placeholder="placeholder") as input,
-      ui.tdiv("", class=classes("content")) as md,
+      ui(classes=["content"]).tdiv("") as md,
     ])
 
   input.setOnChange() do (newText: cstring):

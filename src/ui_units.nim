@@ -9,10 +9,37 @@ import options
 import dom_utils
 
 
+# -----------------------------------------------------------------------------
+# Context definition
+# -----------------------------------------------------------------------------
+
 type
   UiContext* = ref object
-    classes: JDict[cstring, cstring]
+    #classes: JDict[cstring, cstring]
+    tag: cstring
+    classes: seq[cstring]
+    props: seq[(cstring, cstring)]
 
+{.experimental: "callOperator".}
+
+proc `()`*(
+    ui: UiContext,
+    tag: cstring = "",
+    classes: openarray[cstring] = [],
+    props: openarray[(cstring, cstring)] = [],
+  ): UiContext =
+  UiContext(
+    tag: if tag == "": ui.tag else: tag,
+    classes: if classes == []: ui.classes else: @classes,
+    props: if props == []: ui.props else: @props,
+  )
+
+proc tagOrDefault*(ui: UiContext, default: cstring): cstring =
+  if ui.tag == "": default else: ui.tag
+
+# -----------------------------------------------------------------------------
+# TextNode
+# -----------------------------------------------------------------------------
 
 type
   UiUnit* = ref object of RootObj
@@ -53,12 +80,12 @@ type
 method getNodes*(self: Text): seq[Node] =
   @[self.el.Node]
 
-proc text*(ui: UiContext, tag: cstring, text: cstring, id = "", class: openarray[cstring] = []): Text =
+proc text*(ui: UiContext, text: cstring): Text =
   ## Creates text wrapped in an element
-  let el = document.createElement(tag)
+  let el = document.createElement(ui.tagOrDefault("span"))
   let node = document.createTextNode(text)
   el.appendChild(node)
-  el.addClasses(class)
+  el.addClasses(ui.classes)
   Text(
     node: node,
     el: el,
@@ -71,32 +98,32 @@ proc setInnerHtml*(self: Text, text: cstring) =
   self.el.innerHTML = text
 
 # Alternative constructors
-proc tdiv*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("div", text, id, class)
+proc tdiv*(ui: UiContext, text: cstring): Text =
+  ui(tag="div").text(text)
 
-proc span*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("span", text, id, class)
+proc span*(ui: UiContext, text: cstring): Text =
+  ui(tag="span").text(text)
 
-proc h1*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("h1", text, id, class)
+proc h1*(ui: UiContext, text: cstring): Text =
+  ui(tag="h1").text(text)
 
-proc h2*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("h2", text, id, class)
+proc h2*(ui: UiContext, text: cstring): Text =
+  ui(tag="h2").text(text)
 
-proc h3*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("h3", text, id, class)
+proc h3*(ui: UiContext, text: cstring): Text =
+  ui(tag="h3").text(text)
 
-proc h4*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("h4", text, id, class)
+proc h4*(ui: UiContext, text: cstring): Text =
+  ui(tag="h4").text(text)
 
-proc h5*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("h5", text, id, class)
+proc h5*(ui: UiContext, text: cstring): Text =
+  ui(tag="h5").text(text)
 
-proc h6*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("h6", text, id, class)
+proc h6*(ui: UiContext, text: cstring): Text =
+  ui(tag="h6").text(text)
 
-proc li*(ui: UiContext, text: cstring, id = "", class: openarray[cstring] = []): Text =
-  ui.text("li", text, id, class)
+proc li*(ui: UiContext, text: cstring): Text =
+  ui(tag="li").text(text)
 
 # -----------------------------------------------------------------------------
 # Button
@@ -113,8 +140,8 @@ type
 method getNodes*(self: Button): seq[Node] =
   @[self.el.Node]
 
-proc button*(ui: UiContext, text: cstring, class: openarray[cstring] = []): Button =
-  let el = h("button",
+proc button*(ui: UiContext, tag: cstring = "button", class: openarray[cstring] = [], text: cstring): Button =
+  let el = h(tag,
     #events = [onclick(onClick)],
     text = text,
     class = class,
@@ -149,7 +176,7 @@ type
 method getNodes*(self: Input): seq[Node] =
   @[self.el.Node]
 
-proc input*(ui: UiContext, text: cstring = "", tag: cstring = "input", placeholder: cstring = "", class: openarray[cstring] = []): Input =
+proc input*(ui: UiContext, tag: cstring = "input", class: openarray[cstring] = [], placeholder: cstring = "", text: cstring = ""): Input =
   let el = h(tag,
     #events = [oninput((e: Event) => if self.onClick.isSome: self.onClick.get(e.target.value)) else: ()],
     attrs = {

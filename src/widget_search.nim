@@ -39,14 +39,14 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
 
   uiDefs:
     var container = ui.container(class=["container"], children=[
-      ui.h1("Header", class=["title"]),
-      ui.tdiv("Search:", class=["myclass"]),
+      ui(classes=["title"]).h1("Header"),
+      ui.tdiv("Search:"),
       ui.container(class=["field", "has-addons"], children=[
         ui.container(class=["control"], children=[
           ui.input(placeholder="placeholder", class=["input"]) as input,
         ]),
         ui.container(class=["control"], children=[
-          ui.text(text="Search", tag="a", class=["button", "is-info"]),
+          ui(tag="a", classes=["button", "is-info"]).text("Search"),
         ]),
       ]),
       ui.container(children=
