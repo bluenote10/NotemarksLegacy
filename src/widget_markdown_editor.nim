@@ -14,13 +14,12 @@ method getNodes*(self: WidgetMarkdownEditor): seq[Node] =
 proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
 
   uiDefs:
-    var container = ui.container(children=[
-      ui.input(tag="textarea", placeholder="placeholder") as input,
-      ui.with(classes=["content"]).tdiv("") as md,
+    var container = ui.container([
+      ui.tag("textarea").input(placeholder="placeholder") as input,
+      ui.classes("content").tdiv("") as md,
     ])
 
   input.setOnChange() do (newText: cstring):
-    echo newText
     let markdownHtml = convertMarkdown(newText)
     md.setInnerHtml(markdownHtml)
 

@@ -18,39 +18,39 @@ type
     #classes: JDict[cstring, cstring]
     tag: cstring
     classes: seq[cstring]
-    props: seq[(cstring, cstring)]
+    attrs: seq[(cstring, cstring)]
 
 proc with*(
     ui: UiContext,
     tag: cstring = "",
     classes: openarray[cstring] = [],
-    props: openarray[(cstring, cstring)] = [],
+    attrs: openarray[(cstring, cstring)] = [],
   ): UiContext =
   UiContext(
     tag: if tag == "": ui.tag else: tag,
     classes: if classes == []: ui.classes else: @classes,
-    props: if props == []: ui.props else: @props,
+    attrs: if attrs == []: ui.attrs else: @attrs,
   )
 
 proc tag*(ui: UiContext, tag: cstring): UiContext =
   UiContext(
     tag: tag,
     classes: ui.classes,
-    props: ui.props,
+    attrs: ui.attrs,
   )
 
 proc classes*(ui: UiContext, classes: varargs[cstring]): UiContext =
   UiContext(
     tag: ui.tag,
     classes: @classes,
-    props: ui.props,
+    attrs: ui.attrs,
   )
 
-proc props*(ui: UiContext, props: varargs[(cstring, cstring)]): UiContext =
+proc attrs*(ui: UiContext, attrs: varargs[(cstring, cstring)]): UiContext =
   UiContext(
     tag: ui.tag,
     classes: ui.classes,
-    props: @props,
+    attrs: @attrs,
   )
 
 proc getTagOrDefault*(ui: UiContext, default: cstring): cstring =
@@ -152,23 +152,21 @@ type
   ButtonCallback = proc ()
 
   Button* = ref object of UiUnit
-    text: cstring
-    onClick: Option[ButtonCallback]
     el: Element
+    onClick: Option[ButtonCallback]
 
 method getNodes*(self: Button): seq[Node] =
   @[self.el.Node]
 
-proc button*(ui: UiContext, tag: cstring = "button", class: openarray[cstring] = [], text: cstring): Button =
-  let el = h(tag,
-    #events = [onclick(onClick)],
+proc button*(ui: UiContext, text: cstring): Button =
+  let el = h(ui.getTagOrDefault("button"),
     text = text,
-    class = class,
+    class = ui.classes,
+    attrs = ui.attrs,
   )
   let self = Button(
-    text: text,
-    onClick: none(ButtonCallback),
     el: el,
+    onClick: none(ButtonCallback),
   )
 
   proc onClick(e: Event) =
@@ -189,24 +187,23 @@ type
   InputCallback = proc (text: cstring)
 
   Input* = ref object of UiUnit
-    onChange: Option[InputCallback]
     el: Element
+    onChange: Option[InputCallback]
 
 method getNodes*(self: Input): seq[Node] =
   @[self.el.Node]
 
-proc input*(ui: UiContext, tag: cstring = "input", class: openarray[cstring] = [], placeholder: cstring = "", text: cstring = ""): Input =
-  let el = h(tag,
-    #events = [oninput((e: Event) => if self.onClick.isSome: self.onClick.get(e.target.value)) else: ()],
+proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input =
+  let el = h(ui.getTagOrDefault("input"),
+    class = ui.classes,
     attrs = {
       "value".cstring: text,
       "placeholder".cstring: placeholder,
-    },
-    class = class,
+    },  # TODO merge with ui.attrs
   )
   let self = Input(
-    onChange: none(InputCallback),
     el: el,
+    onChange: none(InputCallback),
   )
 
   proc onChange(e: Event) =
@@ -228,9 +225,8 @@ type
     i1, i2: int
 
   Container* = ref object of UiUnit
-    children: seq[UiUnit]
-    tag: cstring
     el: Element
+    children: seq[UiUnit]
     indices: seq[Index]
 
 method getNodes*(self: Container): seq[Node] =
@@ -238,7 +234,7 @@ method getNodes*(self: Container): seq[Node] =
 
 proc len(i: Index): int = i.i2 - i.i1
 
-proc container*(ui: UiContext, tag: cstring = "div", class: openarray[cstring] = [], children: openarray[UiUnit]): Container =
+proc container*(ui: UiContext, children: openarray[UiUnit]): Container =
   var childrenNodes = newSeq[Node]()
   var indices = newSeq[Index]()
 
@@ -253,15 +249,15 @@ proc container*(ui: UiContext, tag: cstring = "div", class: openarray[cstring] =
     indices.add(Index(i1: i1, i2: i2))
     echo("children", i, " goes form ", i1, " to ", i2)
 
-  let el = h(tag,
+  let el = h(ui.getTagOrDefault("div"),
     children = childrenNodes,
-    class = class,
+    class = ui.classes,
+    attrs = ui.attrs,
   )
 
   Container(
-    children: @children,
-    tag: tag,
     el: el,
+    children: @children,
     indices: indices,
   )
 

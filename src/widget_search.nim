@@ -38,18 +38,18 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
   )
 
   uiDefs:
-    var container = ui.container(class=["container"], children=[
+    var container = ui.classes("container").container([
       ui.classes("title").h1("Header"),
       ui.tdiv("Search:"),
-      ui.container(class=["field", "has-addons"], children=[
-        ui.container(class=["control"], children=[
-          ui.input(placeholder="placeholder", class=["input"]) as input,
+      ui.classes("field", "has-addons").container([
+        ui.classes("control").container([
+          ui.classes("input").input(placeholder="placeholder") as input,
         ]),
-        ui.container(class=["control"], children=[
+        ui.classes("control").container([
           ui.tag("a").classes("button", "is-info").text("Search"),
         ]),
       ]),
-      ui.container(children=
+      ui.container(
         model.items.map((s: cstring) => ui.container(children=[ui.tdiv(s)]).UiUnit)
       ) as c,
       ui.tdiv("Follup text..."),
