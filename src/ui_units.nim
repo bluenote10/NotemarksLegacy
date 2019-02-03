@@ -146,6 +146,9 @@ proc li*(ui: UiContext, text: cstring): Text =
 proc a*(ui: UiContext, text: cstring): Text =
   ui.with(tag="a").text(text)
 
+proc i*(ui: UiContext, text: cstring): Text =
+  ui.with(tag="i").text(text)
+
 # -----------------------------------------------------------------------------
 # Button
 # -----------------------------------------------------------------------------

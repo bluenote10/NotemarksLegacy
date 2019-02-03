@@ -37,36 +37,52 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
     ],
   )
 
+  proc makeSearchUnit(ui: UiContext, s: cstring): UiUnit =
+    uiDefs:
+      #ui.classes("panel-block").container(children=[ui.tdiv(s).UiUnit])
+      ui.classes("is-size-6", "panel-block").tdiv(s)
+
   uiDefs:
     var container = ui.classes("container").container([
-      ui.classes("title").h1("Header"),
-      ui.tdiv("Search:"),
-      ui.classes("field", "has-addons").container([
-        ui.classes("control").container([
-          ui.classes("input").input(placeholder="placeholder") as input,
+      ui.container([
+        ui.classes("field", "has-addons", "has-margin-top").container([
+          ui.classes("control", "has-icons-left").container([
+            ui.classes("input").input(placeholder="Search...") as input,
+            ui.tag("span").classes("icon", "is-left").container([
+              ui.classes("fas", "fa-search").i(""),
+            ]),
+          ]),
+          ui.classes("control").container([
+            ui.tag("a").classes("button", "is-info").text("Search"),
+          ]),
         ]),
-        ui.classes("control").container([
-          ui.tag("a").classes("button", "is-info").text("Search"),
+        ui.classes("float-wrapper").container([
+          ui.classes("card", "float-box").container([]) as c,
         ]),
       ]),
-      ui.container(
-        model.items.map((s: cstring) => ui.container(children=[ui.tdiv(s)]).UiUnit)
-      ) as c,
-      ui.tdiv("Follup text..."),
+      #ui.tdiv("Follup text..."),
     ])
 
-  input.setOnChange() do (newText: cstring):
-    echo newText
-    model.searchText = newText
-    model.itemsFiltered.setLen(0)
-    for item in model.items:
-      if item.contains(newText):
-        model.itemsFiltered.add(item)
+  proc onChange(newText: cstring) =
+    if newText.isNil or newText == "":
+      c.clear()
 
-    echo model.itemsFiltered
-    c.clear()
-    for item in model.itemsFiltered:
-      #model.itemsFiltered.add(item)
-      c.append(ui.container(children=[ui.tdiv(item).UiUnit]))
+    else:
+      echo newText
+      model.searchText = newText
+      model.itemsFiltered.setLen(0)
+      for item in model.items:
+        if item.contains(newText):
+          model.itemsFiltered.add(item)
+
+      echo model.itemsFiltered
+      c.clear()
+      for item in model.itemsFiltered:
+        #model.itemsFiltered.add(item)
+        c.append(ui.makeSearchUnit(item))
+
+  input.setOnChange(onChange)
+  onChange("")
+
 
   WidgetSearch(container: container)

@@ -6,7 +6,7 @@ import markdown
 
 # Bulma helpers
 proc field*(ui: UiContext, units: openarray[UiUnit]): Container =
-  ui.classes("field".cstring).container(units)
+  ui.classes("field".cstring, "has-margin-top".cstring).container(units)
 
 proc control*(ui: UiContext, units: openarray[UiUnit]): Container =
   ui.classes("field".cstring).container(units)

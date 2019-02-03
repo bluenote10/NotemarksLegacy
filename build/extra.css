@@ -16,3 +16,26 @@
   -moz-box-sizing: border-box;    /* For Firefox                          */
   -webkit-box-sizing: border-box; /* For Safari                           */
 }
+
+.float-wrapper {
+  position: relative;
+  overflow-x: visible;
+  overflow-y: visible;
+}
+
+.float-box {
+  width: 100%;
+  position: absolute;
+  top: calc(100% - 10px);
+  left: 0;
+  z-index: 999;
+  /* card has only light box-shadow => make more pronounced */
+  box-shadow: 0 10px 30px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
+  /* display: inline-block; */
+  /* position: absolute; */
+  /* float: left; */
+}
+
+.has-margin-top {
+  margin-top: 0.75rem;
+}

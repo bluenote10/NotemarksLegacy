@@ -3,6 +3,8 @@ filesets:
     include:
       - ".watchcode.yaml"
       - "*.nim"
+      - "*.css"
+      - "*.html"
       - "nim.cfg"
     exclude:
     match_mode: "fnmatch"
