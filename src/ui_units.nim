@@ -20,9 +20,7 @@ type
     classes: seq[cstring]
     props: seq[(cstring, cstring)]
 
-{.experimental: "callOperator".}
-
-proc `()`*(
+proc with*(
     ui: UiContext,
     tag: cstring = "",
     classes: openarray[cstring] = [],
@@ -34,7 +32,28 @@ proc `()`*(
     props: if props == []: ui.props else: @props,
   )
 
-proc tagOrDefault*(ui: UiContext, default: cstring): cstring =
+proc tag*(ui: UiContext, tag: cstring): UiContext =
+  UiContext(
+    tag: tag,
+    classes: ui.classes,
+    props: ui.props,
+  )
+
+proc classes*(ui: UiContext, classes: varargs[cstring]): UiContext =
+  UiContext(
+    tag: ui.tag,
+    classes: @classes,
+    props: ui.props,
+  )
+
+proc props*(ui: UiContext, props: varargs[(cstring, cstring)]): UiContext =
+  UiContext(
+    tag: ui.tag,
+    classes: ui.classes,
+    props: @props,
+  )
+
+proc getTagOrDefault*(ui: UiContext, default: cstring): cstring =
   if ui.tag == "": default else: ui.tag
 
 # -----------------------------------------------------------------------------
@@ -82,7 +101,7 @@ method getNodes*(self: Text): seq[Node] =
 
 proc text*(ui: UiContext, text: cstring): Text =
   ## Creates text wrapped in an element
-  let el = document.createElement(ui.tagOrDefault("span"))
+  let el = document.createElement(ui.getTagOrDefault("span"))
   let node = document.createTextNode(text)
   el.appendChild(node)
   el.addClasses(ui.classes)
@@ -99,31 +118,31 @@ proc setInnerHtml*(self: Text, text: cstring) =
 
 # Alternative constructors
 proc tdiv*(ui: UiContext, text: cstring): Text =
-  ui(tag="div").text(text)
+  ui.with(tag="div").text(text)
 
 proc span*(ui: UiContext, text: cstring): Text =
-  ui(tag="span").text(text)
+  ui.with(tag="span").text(text)
 
 proc h1*(ui: UiContext, text: cstring): Text =
-  ui(tag="h1").text(text)
+  ui.with(tag="h1").text(text)
 
 proc h2*(ui: UiContext, text: cstring): Text =
-  ui(tag="h2").text(text)
+  ui.with(tag="h2").text(text)
 
 proc h3*(ui: UiContext, text: cstring): Text =
-  ui(tag="h3").text(text)
+  ui.with(tag="h3").text(text)
 
 proc h4*(ui: UiContext, text: cstring): Text =
-  ui(tag="h4").text(text)
+  ui.with(tag="h4").text(text)
 
 proc h5*(ui: UiContext, text: cstring): Text =
-  ui(tag="h5").text(text)
+  ui.with(tag="h5").text(text)
 
 proc h6*(ui: UiContext, text: cstring): Text =
-  ui(tag="h6").text(text)
+  ui.with(tag="h6").text(text)
 
 proc li*(ui: UiContext, text: cstring): Text =
-  ui(tag="li").text(text)
+  ui.with(tag="li").text(text)
 
 # -----------------------------------------------------------------------------
 # Button

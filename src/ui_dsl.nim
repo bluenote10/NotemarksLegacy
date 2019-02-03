@@ -12,10 +12,6 @@ import ui_units
 
 ]#
 
-template classes*(args: varargs[cstring, cstring]): seq[cstring] = @args
-
-template units*(args: varargs[UiUnit, UiUnit]): seq[UiUnit] = @args
-
 
 template fixBaseType(x: typed): untyped =
   when compiles(x.UiUnit):
