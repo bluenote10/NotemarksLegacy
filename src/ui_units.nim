@@ -15,19 +15,18 @@ import dom_utils
 
 type
   UiContext* = ref object
-    #classes: JDict[cstring, cstring]
     tag: cstring
     classes: seq[cstring]
     attrs: seq[(cstring, cstring)]
 
 proc with*(
     ui: UiContext,
-    tag: cstring = "",
+    tag: cstring = nil,
     classes: openarray[cstring] = [],
     attrs: openarray[(cstring, cstring)] = [],
   ): UiContext =
   UiContext(
-    tag: if tag == "": ui.tag else: tag,
+    tag: if tag.isNil: ui.tag else: tag,
     classes: if classes == []: ui.classes else: @classes,
     attrs: if attrs == []: ui.attrs else: @attrs,
   )
@@ -54,7 +53,7 @@ proc attrs*(ui: UiContext, attrs: varargs[(cstring, cstring)]): UiContext =
   )
 
 proc getTagOrDefault*(ui: UiContext, default: cstring): cstring =
-  if ui.tag == "": default else: ui.tag
+  if ui.tag.isNil: default else: ui.tag
 
 # -----------------------------------------------------------------------------
 # TextNode
@@ -144,12 +143,15 @@ proc h6*(ui: UiContext, text: cstring): Text =
 proc li*(ui: UiContext, text: cstring): Text =
   ui.with(tag="li").text(text)
 
+proc a*(ui: UiContext, text: cstring): Text =
+  ui.with(tag="a").text(text)
+
 # -----------------------------------------------------------------------------
 # Button
 # -----------------------------------------------------------------------------
 
 type
-  ButtonCallback = proc ()
+  ButtonCallback* = proc ()
 
   Button* = ref object of UiUnit
     el: Element
@@ -184,7 +186,7 @@ proc setOnClick*(self: Button, cb: ButtonCallback): Button {.discardable.} =
 # -----------------------------------------------------------------------------
 
 type
-  InputCallback = proc (text: cstring)
+  InputCallback* = proc (text: cstring)
 
   Input* = ref object of UiUnit
     el: Element
@@ -194,12 +196,15 @@ method getNodes*(self: Input): seq[Node] =
   @[self.el.Node]
 
 proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input =
+  var attrs = ui.attrs
+  attrs.add({
+    "value".cstring: text,
+    "placeholder".cstring: placeholder,
+  })
+
   let el = h(ui.getTagOrDefault("input"),
     class = ui.classes,
-    attrs = {
-      "value".cstring: text,
-      "placeholder".cstring: placeholder,
-    },  # TODO merge with ui.attrs
+    attrs = attrs,
   )
   let self = Input(
     el: el,
@@ -325,6 +330,16 @@ proc clear*(self: Container) =
 
   self.children = @[]
   self.indices = @[]
+
+
+iterator items*(self: Container): UiUnit =
+  for child in self.children:
+    yield child
+
+
+iterator pairs*(self: Container): (int, UiUnit) =
+  for i, child in self.children:
+    yield (i, child)
 
 # -----------------------------------------------------------------------------
 # Tests
