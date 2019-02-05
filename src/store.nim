@@ -5,11 +5,43 @@ import js_yaml
 import js_fs
 import jsffi
 
+randomize()
+
 type
-  Note = object
-    id: cstring
-    title: cstring
-    notes: cstring
+  Note* = ref object
+    id*: cstring
+    title*: cstring
+    labels*: seq[cstring]
+    markdown*: cstring
+
+proc fileNameYaml*(n: Note): cstring =
+  (&"data/{n.id}.yaml").cstring
+
+proc fileNameMarkdown*(n: Note): cstring =
+  (&"data/{n.id}.md").cstring
+
+proc yamlData*(n: Note): cstring =
+  let js = JsObject{
+    id: n.id,
+    title: n.title,
+    labels: n.labels,
+  }
+  yaml.safeDump(js).to(cstring)
+
+proc updateTitle*(n: Note, title: cstring) =
+  n.title = title
+
+proc updateLabels*(n: Note, labels: seq[cstring]) =
+  n.labels = labels
+
+proc updateMarkdown*(n: Note, markdown: cstring) =
+  n.markdown = markdown
+
+proc storeYaml*(n: Note) =
+  fs.writeFileSync(n.fileNameYaml, n.yamlData)
+
+proc storeMarkdown*(n: Note) =
+  fs.writeFileSync(n.fileNameMarkdown, n.markdown)
 
 proc randHash*(): cstring =
   var chars = newSeq[char]()
@@ -31,10 +63,10 @@ proc newNote*(): Note =
   result = Note(
     id: id,
     title: "",
-    notes: "",
+    labels: @[],
+    markdown: "",
   )
-  let yamlStr = yaml.safeDump(result).to(cstring)
-  let fileName = (&"data/{id}.yaml").cstring
-  echo fileName
-  fs.writeFileSync(fileName, yamlStr)
+  result.storeYaml()
+  result.storeMarkdown()
+
 

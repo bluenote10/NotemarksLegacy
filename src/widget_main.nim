@@ -34,12 +34,13 @@ proc widgetMain*(ui: UiContext): WidgetMain =
           ]) as addButton
         ])
       ]).UiUnit,
-      mdEditor
+      mdEditor,
     ]) as unit
 
   addButton.setOnClick() do ():
     echo "clicked"
     let note = newNote()
+    mdEditor.setNote(note)
 
   var self = WidgetMain(
     unit: unit,
