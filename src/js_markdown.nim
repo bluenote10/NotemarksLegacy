@@ -1,4 +1,5 @@
 import jsffi
+import js_utils
 
 #[
 {.emit: """
@@ -19,12 +20,10 @@ proc convertMarkdown*(t: cstring): cstring =
   text.to(cstring)
 ]#
 
-proc require(lib: cstring, T: typedesc): T {.importcpp: """require(#)""".}
-
 type
-  Showdown = JsObject
+  Showdown* = JsObject
 
-var showdown = require("../node_modules/showdown/dist/showdown.js", Showdown)
+var showdown* = require("../node_modules/showdown/dist/showdown.js", Showdown)
 
 proc newConverter(showdown: Showdown): JsObject {.importcpp: "new #.Converter()".}
 

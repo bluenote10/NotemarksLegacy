@@ -173,10 +173,27 @@ proc button*(ui: UiContext, text: cstring): Button =
     el: el,
     onClick: none(ButtonCallback),
   )
-
   proc onClick(e: Event) =
     if self.onClick.isSome: (self.onClick.get)()
+  self.el.addEventListener("click", onClick)
+  return self
 
+proc button*(ui: UiContext, units: openarray[UiUnit]): Button =
+  var childNodes = newSeq[Node]()
+  for unit in units:
+    for node in unit.getNodes():
+      childNodes.add(node)
+  let el = h(ui.getTagOrDefault("button"),
+    children = childNodes,
+    class = ui.classes,
+    attrs = ui.attrs,
+  )
+  let self = Button(
+    el: el,
+    onClick: none(ButtonCallback),
+  )
+  proc onClick(e: Event) =
+    if self.onClick.isSome: (self.onClick.get)()
   self.el.addEventListener("click", onClick)
   return self
 

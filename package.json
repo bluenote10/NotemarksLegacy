@@ -20,5 +20,8 @@
   "devDependencies": {
     "electron": "^4.0.1",
     "showdown": "^1.9.0"
+  },
+  "dependencies": {
+    "js-yaml": "^3.12.1"
   }
 }

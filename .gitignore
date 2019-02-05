@@ -6,3 +6,5 @@ build/main.js
 build/renderer.js
 
 .watchcode.log
+
+/data/

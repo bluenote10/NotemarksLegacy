@@ -2,7 +2,7 @@ import karax/kdom
 import ui_units
 import ui_dsl
 
-import markdown
+import js_markdown
 
 # Bulma helpers
 proc field*(ui: UiContext, units: openarray[UiUnit]): Container =
