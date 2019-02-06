@@ -9,6 +9,7 @@ import store
 
 import widget_search
 import widget_markdown_editor
+import widget_list
 
 type
   WidgetMain* = ref object of UiUnit
@@ -21,6 +22,10 @@ proc widgetMain*(ui: UiContext): WidgetMain =
 
   let search = widgetSearch(ui)
   let mdEditor = widgetMarkdownEditor(ui)
+  let list = widgetList(ui)
+
+  let notes = store.getNotes()
+  list.setNotes(notes)
 
   uiDefs: discard
     ui.container([
@@ -34,6 +39,7 @@ proc widgetMain*(ui: UiContext): WidgetMain =
           ]) as addButton
         ])
       ]).UiUnit,
+      list,
       mdEditor,
     ]) as unit
 

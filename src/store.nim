@@ -3,7 +3,9 @@ import strformat
 
 import js_yaml
 import js_fs
+import js_glob
 import jsffi
+import jstr_utils
 
 randomize()
 
@@ -13,6 +15,8 @@ type
     title*: cstring
     labels*: seq[cstring]
     markdown*: cstring
+
+proc `$`(n: Note): string = $n[]
 
 proc fileNameYaml*(n: Note): cstring =
   (&"data/{n.id}.yaml").cstring
@@ -70,3 +74,22 @@ proc newNote*(): Note =
   result.storeMarkdown()
 
 
+proc getNotes*(): seq[Note] =
+  result = newSeq[Note]()
+  let yamlFiles = glob.sync("data/*.yaml").to(seq[cstring])
+  for yamlFile in yamlFiles:
+    let mdFile = yamlFile.replace(".yaml", ".md")
+    echo yamlFile
+    let dataYaml = yaml.safeLoad(fs.readFileSync(yamlFile, "utf8"))
+    try:
+      let dataMd = fs.readFileSync(mdFile, "utf8")
+      # TODO: safe extraction
+      result.add(Note(
+        id: dataYaml.id.to(cstring),
+        title: dataYaml.title.to(cstring),
+        labels: dataYaml.labels.to(seq[cstring]),
+        markdown: dataMd.to(cstring),
+      ))
+    except Exception as e:
+      echo e[]
+  echo result
