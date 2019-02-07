@@ -48,6 +48,11 @@ proc widgetMain*(ui: UiContext): WidgetMain =
     let note = newNote()
     mdEditor.setNote(note)
 
+  list.setOnSelect() do (id: cstring):
+    echo "clicked list"
+    let note = getNote(id)
+    mdEditor.setNote(note)
+
   var self = WidgetMain(
     unit: unit,
   )

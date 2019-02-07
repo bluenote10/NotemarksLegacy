@@ -93,3 +93,9 @@ proc getNotes*(): seq[Note] =
     except Exception as e:
       echo e[]
   echo result
+
+proc getNote*(id: cstring): Note =
+  for note in getNotes():
+    if note.id == id:
+      return note
+  return nil

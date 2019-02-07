@@ -62,7 +62,7 @@ proc createWindow() =
   )
 
   var devToolsOpened = true
-  mainWindow.webContents.openDevTools()
+  # mainWindow.webContents.openDevTools()
 
   globalShortcut.register("CommandOrControl+Shift+I", proc () =
     console.log("Toggeling dev tools")

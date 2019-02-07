@@ -39,3 +39,14 @@
 .has-margin-top {
   margin-top: 0.75rem;
 }
+
+
+/* Get rid of native scrollbar style... */
+::-webkit-scrollbar {
+  background-color: #fff;
+  width: .4em
+}
+::-webkit-scrollbar-thumb:window-inactive,
+::-webkit-scrollbar-thumb {
+  background:  black
+}

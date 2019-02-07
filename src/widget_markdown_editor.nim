@@ -20,6 +20,8 @@ proc control*(ui: UiContext, units: openarray[UiUnit]): Container =
 type
   WidgetMarkdownEditor* = ref object of UiUnit
     container: UiUnit
+    inTitle: Input
+    inLable: Input
     note: Note
 
 method getNodes*(self: WidgetMarkdownEditor): seq[Node] =
@@ -52,12 +54,12 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
           ui.tag("textarea")
             .classes("textarea", "is-small", "is-family-monospace", "font-mono", "is-maximized")
             .attrs({"rows": "20"})
-            .input(placeholder="placeholder") as input,
+            .input(placeholder="placeholder") as inMarkdown,
         ]),
         ui.classes("column").container([
           ui.classes("message").tag("article").container([
             ui.classes("message-body").container([
-              ui.classes("content").tdiv("") as md,
+              ui.classes("content").tdiv("") as outMarkdown,
             ]),
           ]),
         ]),
@@ -77,9 +79,9 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
       self.note.updateLabels(labels)
       self.note.storeYaml()
 
-  input.setOnChange() do (newText: cstring):
+  inMarkdown.setOnChange() do (newText: cstring):
     let markdownHtml = convertMarkdown(newText)
-    md.setInnerHtml(markdownHtml)
+    outMarkdown.setInnerHtml(markdownHtml)
     echo "is note nil:", self.note.isNil
     if not self.note.isNil:
       #self.note.notes = newText
