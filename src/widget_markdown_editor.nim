@@ -6,6 +6,7 @@ import store
 
 import js_markdown
 import jstr_utils
+import js_utils
 
 
 # Bulma helpers
@@ -31,17 +32,22 @@ method getNodes*(self: WidgetMarkdownEditor): seq[Node] =
   self.unit.getNodes()
 
 
-proc updateOutMarkdown*(self: WidgetMarkdownEditor) =
-  if not self.note.isNil:
-    let markdownHtml = convertMarkdown(self.note.markdown)
-    self.outMarkdown.setInnerHtml(markdownHtml)
+proc updateOutMarkdown*(self: WidgetMarkdownEditor, title: cstring, markdown: cstring) =
+  # TODO: maybe joining with title is not needed?
+  #let markdownFull = [cstring"#", title, "\n", markdown].join()
+  let markdownFull = markdown
+  let markdownHtml = convertMarkdown(markdownFull)
+  self.outMarkdown.setInnerHtml(markdownHtml)
 
 
 proc setNote*(self: WidgetMarkdownEditor, note: Note) =
   echo "Switched to note:", note.id
   self.note = note
-  # TODO update dom contents
-  self.updateOutMarkdown()
+  # Update dom contents
+  self.inTitle.setValue(self.note.title)
+  self.inLabels.setValue(self.note.labels.join(" "))
+  self.inMarkdown.setValue(self.note.markdown)
+  self.updateOutMarkdown(self.note.title, self.note.markdown)
 
 
 proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
@@ -102,11 +108,9 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
       self.note.storeYaml()
 
   inMarkdown.setOnChange() do (newText: cstring):
-    echo "is note nil:", self.note.isNil
     if not self.note.isNil:
-      #self.note.notes = newText
+      self.updateOutMarkdown(self.note.title, newText)
       self.note.updateMarkdown(newText)
       self.note.storeMarkdown()
-      self.updateOutMarkdown()
 
   self

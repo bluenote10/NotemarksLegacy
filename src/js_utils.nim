@@ -3,6 +3,8 @@ proc require*(lib: cstring, T: typedesc): T {.importcpp: """require(#)""".}
 
 proc debug*[T](x: T) {.importc: "console.log", varargs.}
 
+proc isNil[T](a: openarray[T]): bool {.importcpp: "(# === null)"}
+
 # -----------------------------------------------------------------------------
 # JDict
 # -----------------------------------------------------------------------------
@@ -36,6 +38,14 @@ iterator pairs*[K, V](d: JDict[K, V]): (K, V) =
 # TODO: How to solve this?
 # proc `toJSStr`*[K, V](d: JDict[K, V]): cstring = cstring"asdf"
 # proc `$`*[K, V](d: JDict[K, V]): cstring = toJSStr(d)
+
+proc joinImpl*(a: openArray[cstring]; sep: cstring = ""): cstring {.importcpp: "#.join(#)".}
+
+proc join*(a: openArray[cstring]; sep: cstring = ""): cstring =
+  if a.isNil:
+    "".cstring
+  else:
+    joinImpl(a, sep)
 
 # -----------------------------------------------------------------------------
 # JSeq

@@ -246,6 +246,14 @@ proc setOnChange*(self: Input, cb: InputCallback): Input {.discardable.} =
   self.onChange = some(cb)
   self
 
+proc setValue*(self: Input, value: cstring) =
+  #self.el.setAttribute("value", value)
+  self.el.value = value
+
+proc setPlaceholder*(self: Input, placeholder: cstring) =
+  self.el.setAttribute("placeholder", placeholder)
+
+
 # -----------------------------------------------------------------------------
 # Container
 # -----------------------------------------------------------------------------

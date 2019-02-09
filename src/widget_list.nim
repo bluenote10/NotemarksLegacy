@@ -23,8 +23,10 @@ type
     ui: UiContext
     onSelect: Option[SelectCallback]
 
+
 method getNodes*(self: WidgetList): seq[Node] =
   self.unit.getNodes()
+
 
 proc setOnSelect*(self: WidgetList, cb: SelectCallback): WidgetList {.discardable.} =
   self.onSelect = some(cb)
