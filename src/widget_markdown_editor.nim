@@ -19,19 +19,30 @@ proc control*(ui: UiContext, units: openarray[UiUnit]): Container =
 
 type
   WidgetMarkdownEditor* = ref object of UiUnit
-    container: UiUnit
+    unit: UiUnit
     inTitle: Input
-    inLable: Input
+    inLabels: Input
+    inMarkdown: Input
+    outMarkdown: Text
     note: Note
 
+
 method getNodes*(self: WidgetMarkdownEditor): seq[Node] =
-  self.container.getNodes()
+  self.unit.getNodes()
+
+
+proc updateOutMarkdown*(self: WidgetMarkdownEditor) =
+  if not self.note.isNil:
+    let markdownHtml = convertMarkdown(self.note.markdown)
+    self.outMarkdown.setInnerHtml(markdownHtml)
 
 
 proc setNote*(self: WidgetMarkdownEditor, note: Note) =
   echo "Switched to note:", note.id
   self.note = note
   # TODO update dom contents
+  self.updateOutMarkdown()
+
 
 proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
 
@@ -41,7 +52,7 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
   var outMarkdown: Text
 
   uiDefs:
-    var container = ui.classes("container").container([
+    var unit = ui.classes("container").container([
       ui.field([
         ui.control([
           ui.classes("input")
@@ -71,7 +82,13 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
       ]),
     ])
 
-  var self = WidgetMarkdownEditor(container: container)
+  var self = WidgetMarkdownEditor(
+    unit: unit,
+    inTitle: inTitle,
+    inLabels: inLabels,
+    inMarkdown: inMarkdown,
+    outMarkdown: outMarkdown,
+  )
 
   inTitle.setOnChange() do (newTitle: cstring):
     if not self.note.isNil:
@@ -85,12 +102,11 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
       self.note.storeYaml()
 
   inMarkdown.setOnChange() do (newText: cstring):
-    let markdownHtml = convertMarkdown(newText)
-    outMarkdown.setInnerHtml(markdownHtml)
     echo "is note nil:", self.note.isNil
     if not self.note.isNil:
       #self.note.notes = newText
       self.note.updateMarkdown(newText)
       self.note.storeMarkdown()
+      self.updateOutMarkdown()
 
   self

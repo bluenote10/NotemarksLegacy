@@ -9,6 +9,7 @@ import ui_dsl
 import store
 
 import js_markdown
+import js_utils
 import jstr_utils
 
 
@@ -36,26 +37,20 @@ proc setNotes*(self: WidgetList, notes: seq[Note]) =
 
   # TODO what's the nicest way to pass ui context to setter members?
   let ui = self.ui
-  #[
-  for note in notes:
-    uiDefs:
-      let el = ui.tag("tr").container([
-        ui.tag("td").container([
-          ui.tag("a").button(if note.title.len > 0: note.title else: "\u2060")# avoid collapsing rows with empty titles => use WORD JOINER char
-        ]) as noteLinks
-      ])
-    self.container.append(el)
-  ]#
-  var noteLinks: seq[UiUnit]
+
+  var buttons = newJDict[cstring, Button]()
+
   uiDefs:
     let newContainer = ui.tag("table").classes("table", "is-bordered", "is-striped", "is-narrow", "is-hoverable", "is-fullwidth").container(
       self.notes.map((note) =>
         ui.tag("tr").container([
           ui.tag("td").container([
-            ui.tag("a").button(if note.title.len > 0: note.title else: "\u2060")# avoid collapsing rows with empty titles => use WORD JOINER char
+            ui.tag("a").button(
+              if note.title.len > 0: note.title else: "\u2060" # avoid collapsing rows with empty titles => use WORD JOINER char
+            ) as buttons[note.id]
           ])
         ]).UiUnit
-      ) as noteLinks
+      )
     )
 
   # TODO that sucks, how to solve this?
@@ -63,19 +58,16 @@ proc setNotes*(self: WidgetList, notes: seq[Note]) =
   for c in newContainer:
     self.container.append(c)
 
-  proc onClick(i: int): ButtonCallback =
+  proc onClick(id: cstring): ButtonCallback =
     return proc () =
       echo "list clicked native handler"
       if self.onSelect.isSome:
-        let selectedId = self.notes[i].id
-        echo "Switching to ", selectedId
-        self.onSelect.get()(selectedId)
+        #let selectedId = self.notes[i].id
+        echo "Switching to ", id
+        self.onSelect.get()(id)
 
-  # bind events -- TODO: how to do this nicer?
-  for i, tr in noteLinks:
-    for td in tr.Container:
-      for btn in td.Container:
-        btn.Button.setOnClick(onClick(i))
+  for id in buttons:
+    buttons[id].setOnClick(onClick(id))
 
 
 proc widgetList*(ui: UiContext): WidgetList =

@@ -42,7 +42,8 @@ proc createWindow() =
       width: 1000,
       height: 800,
       webPreferences: JsObject{
-        devTools: true
+        nodeIntegration: true,   # required for Electron 5.x
+        devTools: true,
       }
     }
   )
