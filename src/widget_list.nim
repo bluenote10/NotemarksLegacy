@@ -46,6 +46,7 @@ proc setNotes*(self: WidgetList, notes: seq[Note]) =
       ])
     self.container.append(el)
   ]#
+  var noteLinks: seq[UiUnit]
   uiDefs:
     let newContainer = ui.tag("table").classes("table", "is-bordered", "is-striped", "is-narrow", "is-hoverable", "is-fullwidth").container(
       self.notes.map((note) =>
@@ -78,6 +79,8 @@ proc setNotes*(self: WidgetList, notes: seq[Note]) =
 
 
 proc widgetList*(ui: UiContext): WidgetList =
+
+  var container: Container
 
   uiDefs:
     var unit = ui.classes("container").container([

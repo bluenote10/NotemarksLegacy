@@ -167,6 +167,7 @@ method getNodes*(self: Button): seq[Node] =
   @[self.el.Node]
 
 proc button*(ui: UiContext, text: cstring): Button =
+  ## Constructor for simple text button.
   let el = h(ui.getTagOrDefault("button"),
     text = text,
     class = ui.classes,
@@ -182,6 +183,7 @@ proc button*(ui: UiContext, text: cstring): Button =
   return self
 
 proc button*(ui: UiContext, units: openarray[UiUnit]): Button =
+  ## Constructor for button with nested units.
   var childNodes = newSeq[Node]()
   for unit in units:
     for node in unit.getNodes():

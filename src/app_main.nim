@@ -46,6 +46,7 @@ proc createWindow() =
       }
     }
   )
+  mainWindow.setMenu(nil.JsObject)    # disable default menu
   mainWindow.maximize()
 
   #[
@@ -61,8 +62,9 @@ proc createWindow() =
     mainWindow = nil
   )
 
-  var devToolsOpened = true
-  # mainWindow.webContents.openDevTools()
+  var devToolsOpened = false
+  if devToolsOpened:
+    mainWindow.webContents.openDevTools()
 
   globalShortcut.register("CommandOrControl+Shift+I", proc () =
     console.log("Toggeling dev tools")

@@ -35,6 +35,11 @@ proc setNote*(self: WidgetMarkdownEditor, note: Note) =
 
 proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
 
+  var inTitle: Input
+  var inLabels: Input
+  var inMarkdown: Input
+  var outMarkdown: Text
+
   uiDefs:
     var container = ui.classes("container").container([
       ui.field([

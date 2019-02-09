@@ -42,6 +42,9 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
       #ui.classes("panel-block").container(children=[ui.tdiv(s).UiUnit])
       ui.classes("is-size-6", "panel-block").tdiv(s)
 
+  var input: Input
+  var c: Container
+
   uiDefs:
     var container = ui.classes("container").container([
       ui.container([

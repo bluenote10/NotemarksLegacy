@@ -27,6 +27,9 @@ proc widgetMain*(ui: UiContext): WidgetMain =
   let notes = store.getNotes()
   list.setNotes(notes)
 
+  var unit: UiUnit
+  var addButton: Button
+
   uiDefs: discard
     ui.container([
       ui.classes("navbar", "is-dark").container([

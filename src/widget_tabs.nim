@@ -32,6 +32,11 @@ proc activate*(self: WidgetTabs, i: int) =
   # TODO: set active class
 
 proc widgetTabs*(ui: UiContext, tabs: openarray[TabContent]): WidgetTabs =
+
+  var header: Container
+  var content: Container
+  var unit: UiUnit
+
   uiDefs: discard
     ui.container([
       ui.classes("tabs", "is-boxed").container([
