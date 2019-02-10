@@ -24,8 +24,8 @@ type
     onSelect: Option[SelectCallback]
 
 
-method getNodes*(self: WidgetList): seq[Node] =
-  self.unit.getNodes()
+defaultImpls(WidgetList, unit)
+
 
 
 proc setOnSelect*(self: WidgetList, cb: SelectCallback): WidgetList {.discardable.} =

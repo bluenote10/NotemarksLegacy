@@ -25,8 +25,7 @@ type
     switchToHome: proc()
     switchToEditor: proc()
 
-method getNodes*(self: WidgetMain): seq[Node] =
-  self.unit.getNodes()
+defaultImpls(WidgetMain, unit)
 
 
 proc widgetMain*(ui: UiContext): WidgetMain =

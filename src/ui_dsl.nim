@@ -104,3 +104,18 @@ macro uiDefs*(code: untyped): untyped =
   echo " * Input code:\n", code.repr
   result = fixAst(injectAssignments(code.copy()))
   echo " * Final code:\n", result.repr
+
+
+template defaultImpls*(T, field) =
+
+  method getDomNode*(self: T): Node =
+    self.field.getDomNode()
+
+  method activate*(self: T) =
+    self.field.activate()
+
+  method deactivate*(self: T) =
+    self.field.deactivate()
+
+  method setFocus*(self: T) =
+    self.field.setFocus()

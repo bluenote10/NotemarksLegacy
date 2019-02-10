@@ -27,9 +27,7 @@ type
     outMarkdown: Text
     note: Note
 
-
-method getNodes*(self: WidgetMarkdownEditor): seq[Node] =
-  self.unit.getNodes()
+defaultImpls(WidgetMarkdownEditor, unit)
 
 
 proc updateOutMarkdown*(self: WidgetMarkdownEditor, title: cstring, markdown: cstring) =
@@ -96,18 +94,18 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
     outMarkdown: outMarkdown,
   )
 
-  inTitle.setOnChange() do (newTitle: cstring):
+  inTitle.setOnInput() do (newTitle: cstring):
     if not self.note.isNil:
       self.note.updateTitle(newTitle)
       self.note.storeYaml()
 
-  inLabels.setOnChange() do (newLabels: cstring):
+  inLabels.setOnInput() do (newLabels: cstring):
     if not self.note.isNil:
       let labels = newLabels.split(" ")
       self.note.updateLabels(labels)
       self.note.storeYaml()
 
-  inMarkdown.setOnChange() do (newText: cstring):
+  inMarkdown.setOnInput() do (newText: cstring):
     if not self.note.isNil:
       self.updateOutMarkdown(self.note.title, newText)
       self.note.updateMarkdown(newText)

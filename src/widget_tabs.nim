@@ -20,8 +20,8 @@ type
     content: Container
     tabs: seq[TabContent]
 
-method getNodes*(self: WidgetTabs): seq[Node] =
-  self.unit.getNodes()
+defaultImpls(WidgetTabs, unit)
+
 
 proc activate*(self: WidgetTabs, i: int) =
   echo "Activating tab: ", i

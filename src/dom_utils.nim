@@ -28,6 +28,24 @@ proc addClasses*(el: Element, class: openarray[cstring]) =
     el.classList.add(c)
 
 
+proc removeAllChildren*(el: Element) =
+  # Lots of discussion/confusion about the most efficient way to remove
+  # all elements at once:
+  # - https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript
+  # Using node.innerHTML = '' looks atomic, but apparently it is slower
+  # than iterating and using removeChild (I'm wondering if the benchmarks
+  # properly account for reflow/redraws, this could change the results
+  # entirely).
+  # According to https://jsperf.com/innerhtml-vs-removechild/457 the fastest
+  # solution is to use firstChild, but make sure there is only one call
+  # to firstChild per iteration.
+  var child: Node
+  while true:
+    child = el.firstChild
+    if child.isNil:
+      break
+    el.removeChild(child)
+
 
 type
   EventListener* = proc(ev: Event)
@@ -43,13 +61,13 @@ proc h*(
     class: openarray[cstring] = @[],
     attrs: openarray[(cstring, cstring)] = [],
     events: openarray[(cstring, EventListener)] = [],
-    children: openarray[Node] = @[],
+    #children: openarray[Node] = @[],
     text="".cstring): Element =
 
   var element = document.createElement(tagName)
 
-  for child in children:
-    element.appendChild(child)
+  #for child in children:
+  #  element.appendChild(child)
 
   if text.len > 0:
     var textnode = document.createTextNode(text)

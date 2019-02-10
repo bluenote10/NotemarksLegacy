@@ -16,8 +16,8 @@ type
   WidgetSearch* = ref object of UiUnit
     container: UiUnit
 
-method getNodes*(self: WidgetSearch): seq[Node] =
-  self.container.getNodes()
+defaultImpls(WidgetSearch, container)
+
 
 proc widgetSearch*(ui: UiContext): WidgetSearch =
 
@@ -84,8 +84,7 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
         #model.itemsFiltered.add(item)
         c.append(ui.makeSearchUnit(item))
 
-  input.setOnChange(onChange)
+  input.setOnInput(onChange)
   onChange("")
-
 
   WidgetSearch(container: container)

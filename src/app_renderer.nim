@@ -8,26 +8,12 @@ import widget_tabs
 import widget_main
 
 proc run(unit: UiUnit) =
-  let nodes = unit.getNodes()
+  echo "Mounting main unit"
+  unit.activate()
+  let node = unit.getDomNode()
   let root = document.getElementById("ROOT")
-  root.appendChildren(nodes)
-
-
+  root.appendChild(node)
 
 let ui = UiContext()
-
-#[
-let tabs = [
-  tabContent("Search", widgetSearch(ui)),
-  tabContent("Edit", widgetMarkdownEditor(ui)),
-]
-
-let mainWidget = widgetTabs(ui, tabs)
-]#
-
-let mainWidget = widgetMain(ui)
-
+let mainWidget = ui.widgetMain()
 run(mainWidget)
-
-#run(widgetSearch(ui))
-#run(widgetMarkdownEditor(ui))

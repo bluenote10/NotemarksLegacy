@@ -4,10 +4,14 @@ import karax/jstrutils
 import karax/jdict
 import strformat
 import sugar
-import options
+import better_options
 
 import dom_utils
 
+
+type
+  # Somehow missing in kdom
+  EventHandler = proc(ev: Event)
 
 # -----------------------------------------------------------------------------
 # Context definition
@@ -56,14 +60,42 @@ proc getTagOrDefault*(ui: UiContext, default: cstring): cstring =
   if ui.tag.isNil: default else: ui.tag
 
 # -----------------------------------------------------------------------------
-# TextNode
+# UiUnit base class
 # -----------------------------------------------------------------------------
 
 type
   UiUnit* = ref object of RootObj
 
-method getNodes*(self: UiUnit): seq[Node] {.base.} =
-  doAssert false
+method getDomNode*(self: UiUnit): Node {.base.} =
+  doAssert false, "called abstract method 'getDomNode'"
+
+method activate*(self: UiUnit) {.base.} =
+  discard
+
+method deactivate*(self: UiUnit) {.base.} =
+  discard
+
+method setFocus*(self: UiUnit) {.base.} =
+  discard
+
+# -----------------------------------------------------------------------------
+# Helpers
+# -----------------------------------------------------------------------------
+
+proc getDomNodes*(children: openarray[UiUnit]): seq[Node] =
+  result = newSeq[Node](children.len)
+  for i in 0 ..< children.len:
+    result[i] = children[i].getDomNode()
+
+# Missing in kdom?
+proc createDocumentFragment*(d: Document): Node {.importcpp.}
+
+proc getDomFragment(children: openarray[UiUnit]): Node =
+  # https://coderwall.com/p/o9ws2g/why-you-should-always-append-dom-elements-using-documentfragments
+  let fragment = document.createDocumentFragment()
+  for child in children:
+    fragment.appendChild(child.getDomNode())
+  fragment
 
 # -----------------------------------------------------------------------------
 # TextNode
@@ -73,8 +105,8 @@ type
   TextNode* = ref object of UiUnit
     node: Node
 
-method getNodes*(self: TextNode): seq[Node] =
-  @[self.node]
+method getDomNode*(self: TextNode): Node =
+  self.node
 
 proc textNode*(ui: UiContext, text: cstring): TextNode =
   ## Creates a raw text node (not wrapped in an element)
@@ -92,27 +124,32 @@ proc setText*(self: TextNode, text: cstring) =
 
 type
   Text* = ref object of UiUnit
-    node: Node
     el: Element
+    textNode: Node
 
-method getNodes*(self: Text): seq[Node] =
-  @[self.el.Node]
+method getDomNode*(self: Text): Node =
+  self.el
 
 proc text*(ui: UiContext, text: cstring): Text =
   ## Creates text wrapped in an element
   let el = document.createElement(ui.getTagOrDefault("span"))
-  let node = document.createTextNode(text)
-  el.appendChild(node)
+  let textNode = document.createTextNode(text)
+  el.appendChild(textNode)
   el.addClasses(ui.classes)
   Text(
-    node: node,
     el: el,
+    textNode: textNode,
   )
 
 proc setText*(self: Text, text: cstring) =
-  self.node.nodeValue = text
+  self.textNode.nodeValue = text
 
 proc setInnerHtml*(self: Text, text: cstring) =
+  # FIXME: This invalidates the reference to the textNode, so after
+  # using setInnerHtml once, setText can no longer be used. Should
+  # we have two kinds of text elements, one which wraps a text node
+  # and one which offers the generic setInnerHtml? Currently this
+  # is only for the element which holds the markdown HTML.
   self.el.innerHTML = text
 
 # Alternative constructors
@@ -161,10 +198,22 @@ type
 
   Button* = ref object of UiUnit
     el: Element
-    onClick: Option[ButtonCallback]
+    onClickHandler: EventHandler
+    onClickCB: Option[ButtonCallback]
 
-method getNodes*(self: Button): seq[Node] =
-  @[self.el.Node]
+method getDomNode*(self: Button): Node =
+  self.el
+
+method activate(self: Button) =
+  proc onClick(e: Event) =
+    for cb in self.onClickCB:
+      cb()
+  self.el.addEventListener("click", onClick)
+  self.onClickHandler = onClick
+
+method deactivate(self: Button) =
+  self.el.removeEventListener("click", self.onClickHandler)
+  self.onClickHandler = nil
 
 proc button*(ui: UiContext, text: cstring): Button =
   ## Constructor for simple text button.
@@ -173,38 +222,27 @@ proc button*(ui: UiContext, text: cstring): Button =
     class = ui.classes,
     attrs = ui.attrs,
   )
-  let self = Button(
+  Button(
     el: el,
-    onClick: none(ButtonCallback),
+    onClickHandler: nil,
+    onClickCB: none(ButtonCallback),
   )
-  proc onClick(e: Event) =
-    if self.onClick.isSome: (self.onClick.get)()
-  self.el.addEventListener("click", onClick)
-  return self
 
-proc button*(ui: UiContext, units: openarray[UiUnit]): Button =
+proc button*(ui: UiContext, children: openarray[UiUnit]): Button =
   ## Constructor for button with nested units.
-  var childNodes = newSeq[Node]()
-  for unit in units:
-    for node in unit.getNodes():
-      childNodes.add(node)
   let el = h(ui.getTagOrDefault("button"),
-    children = childNodes,
     class = ui.classes,
     attrs = ui.attrs,
   )
-  let self = Button(
+  el.appendChild(getDomFragment(children))
+  Button(
     el: el,
-    onClick: none(ButtonCallback),
+    onClickHandler: nil,
+    onClickCB: none(ButtonCallback),
   )
-  proc onClick(e: Event) =
-    if self.onClick.isSome: (self.onClick.get)()
-  self.el.addEventListener("click", onClick)
-  return self
 
-proc setOnClick*(self: Button, cb: ButtonCallback): Button {.discardable.} =
-  self.onClick = some(cb)
-  self
+proc setOnClick*(self: Button, cb: ButtonCallback) =
+  self.onClickCB = some(cb)
 
 # -----------------------------------------------------------------------------
 # Input
@@ -215,39 +253,46 @@ type
 
   Input* = ref object of UiUnit
     el: Element
-    onChange: Option[InputCallback]
+    onInputHandler: EventHandler
+    onInputCB: Option[InputCallback]
 
-method getNodes*(self: Input): seq[Node] =
-  @[self.el.Node]
+method getDomNode*(self: Input): Node =
+  self.el
+
+method activate(self: Input) =
+  proc onInput(e: Event) =
+    for cb in self.onInputCB:
+      cb(e.target.value)
+  self.el.addEventListener("input", onInput)
+  self.onInputHandler = onInput
+
+method deactivate(self: Input) =
+  self.el.removeEventListener("input", self.onInputHandler)
+  self.onInputHandler = nil
 
 proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input =
+  # Merge ui.attrs with explicit parameters
   var attrs = ui.attrs
   attrs.add({
     "value".cstring: text,
     "placeholder".cstring: placeholder,
   })
-
   let el = h(ui.getTagOrDefault("input"),
     class = ui.classes,
     attrs = attrs,
   )
-  let self = Input(
+  Input(
     el: el,
-    onChange: none(InputCallback),
+    onInputHandler: nil,
+    onInputCB: none(InputCallback),
   )
 
-  proc onChange(e: Event) =
-    if self.onChange.isSome: (self.onChange.get)(e.target.value)
-
-  self.el.addEventListener("input", onChange)
-  return self
-
-proc setOnChange*(self: Input, cb: InputCallback): Input {.discardable.} =
-  self.onChange = some(cb)
-  self
+proc setOnInput*(self: Input, cb: InputCallback) =
+  self.onInputCB = some(cb)
 
 proc setValue*(self: Input, value: cstring) =
-  #self.el.setAttribute("value", value)
+  # setAttribute doesn't seem to work for textarea
+  # self.el.setAttribute("value", value)
   self.el.value = value
 
 proc setPlaceholder*(self: Input, placeholder: cstring) =
@@ -259,110 +304,129 @@ proc setPlaceholder*(self: Input, placeholder: cstring) =
 # -----------------------------------------------------------------------------
 
 type
-  Index = object
-    i1, i2: int
-
   Container* = ref object of UiUnit
     el: Element
     children: seq[UiUnit]
-    indices: seq[Index]
+    isActive: bool
 
-method getNodes*(self: Container): seq[Node] =
-  @[self.el.Node]
+method getDomNode*(self: Container): Node =
+  self.el
 
-proc len(i: Index): int = i.i2 - i.i1
+method activate(self: Container) =
+  self.isActive = true
+  for child in self.children:
+    child.activate()
+  echo "Activated container with ", self.children.len, " children."
+
+method deactivate(self: Container) =
+  self.isActive = false
+  for child in self.children:
+    child.deactivate()
+  echo "Deactivated container with ", self.children.len, " children."
+
 
 proc container*(ui: UiContext, children: openarray[UiUnit]): Container =
-  var childrenNodes = newSeq[Node]()
-  var indices = newSeq[Index]()
-
-  var index = 0
-  for i, child in children:
-    let childElements = child.getNodes()
-    let i1 = index
-    for el in childElements:
-      childrenNodes.add(el)
-      index += 1
-    let i2 = index
-    indices.add(Index(i1: i1, i2: i2))
-    echo("children", i, " goes form ", i1, " to ", i2)
-
   let el = h(ui.getTagOrDefault("div"),
-    children = childrenNodes,
     class = ui.classes,
     attrs = ui.attrs,
   )
-
+  el.appendChild(getDomFragment(children))
   Container(
     el: el,
     children: @children,
-    indices: indices,
+    isActive: false,
   )
 
-proc insert*(self: Container, index: int, newEl: UiUnit) =
-  #let (i1, i2) = self.indices[index]
-  let i1 = self.indices[index].i1
-  let i2 = self.indices[index].i2
 
-  # TODO: handle case where there is no elementAfter
-  let elementAfter = self.el.childNodes[i1]
+proc insert*(self: Container, index: int, newChild: UiUnit) =
+  # Activate/Deactivate
+  if self.isActive:
+    newChild.activate()
 
-  let newDomElements = newEl.getNodes()
-  for newDomElement in newDomElements:
-    self.el.insertBefore(newDomElement, elementAfter)
+  # Update self.children
+  self.children.insert(newChild, index)
 
-  # TODO: we need to update self.indices
-
-  #kout(i1, i2, elementBefore, newDomElements.len)
-
-proc append*(self: Container, newEl: UiUnit) =
-  echo "indices @ append:", self.indices
-  #[
-  let curMaxIndex =
-    if self.indices.len > 0:
-      0
+  # Update DOM
+  let newDomNode = newChild.getDomNode()
+  # TODO: need to handle case where there is no elementAfter?
+  let elementAfter =
+    if self.el.childNodes.len > index:
+      self.el.childNodes[index]
     else:
-      self.indices[^0].i2
-  ]#
-  var curMaxIndex = 0
-  if self.indices.len > 0:
-    echo self.indices[^1]
-    curMaxIndex = self.indices[^1].i2
+      nil
+  self.el.insertBefore(newDomNode, elementAfter)
 
-  let newDomElements = newEl.getNodes()
-  #echo newDomElements
-  for newDomElement in newDomElements:
-    self.el.insertBefore(newDomElement, nil)
+  doAssert self.children.len == self.el.childNodes.len
 
-  self.children.add(newEl)
-  self.indices.add(Index(i1: curMaxIndex, i2: curMaxIndex + newDomElements.len))
+
+proc append*(self: Container, newChild: UiUnit) =
+  # Activate/Deactivate
+  if self.isActive:
+    newChild.activate()
+
+  # Update self.children
+  self.children.add(newChild)
+
+  # Update DOM
+  let newDomNode = newChild.getDomNode()
+  self.el.insertBefore(newDomNode, nil)
+
+  doAssert self.children.len == self.el.childNodes.len
+
 
 proc remove*(self: Container, index: int) =
-  echo(index, self.indices.len, self.indices[index].i1)
+  # TODO: OOB check
 
-  # Since we remove by dom references, we can repeatedly remove
-  # at the i1 index.
-  let numToRemove = self.indices[index].len
-  for _ in 0 ..< numToRemove:
-    let toRemove = self.el.childNodes[self.indices[index].i1]
-    self.el.removeChild(toRemove)
+  # Activate/Deactivate
+  self.children[index].deactivate()
 
-  # we need to update self.indices
-  self.indices.delete(index)
-  for i in index ..< self.indices.len:
-    self.indices[i].i1 -= numToRemove
-    self.indices[i].i2 -= numToRemove
-  echo(self.indices)
+  # Update self.children
+  self.children.delete(index)
+
+  # Update DOM
+  let nodeToRemove = self.el.childNodes[index]
+  self.el.removeChild(nodeToRemove)
+
+  doAssert self.children.len == self.el.childNodes.len
+
 
 proc clear*(self: Container) =
+  # Activate/Deactivate
+  for child in self.children:
+    child.deactivate()
 
-  #for childNode in self.el.childNodes:
-  #  self.el.removeChild(childNode)
-  while self.el.childNodes.len > 0:
-    self.el.removeChild(self.el.childNodes[0])
+  # Update self.children
+  self.children.setLen(0)
 
-  self.children = @[]
-  self.indices = @[]
+  # Update DOM
+  let oldDisplay = self.el.style.display
+  self.el.style.display = "none"
+  self.el.removeAllChildren()
+  self.el.style.display = oldDisplay
+
+  doAssert self.children.len == self.el.childNodes.len
+
+
+proc replaceChildren(self: Container, children: openarray[UiUnit]) =
+  ## Performs a clear + inserts in an optimized way.
+
+  # Activate/Deactivate
+  if self.isActive:
+    for child in children:
+      child.activate()
+
+  # Update self.children
+  self.children = @children
+
+  # Update DOM
+  var childrenNodes = getDomNodes(children)
+  let oldDisplay = self.el.style.display
+  self.el.style.display = "none"
+  self.el.removeAllChildren()
+  self.el.appendChild(getDomFragment(children))
+  self.el.style.display = oldDisplay
+
+  doAssert self.children.len == self.el.childNodes.len
 
 
 iterator items*(self: Container): UiUnit =

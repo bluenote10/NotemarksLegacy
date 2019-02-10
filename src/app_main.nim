@@ -49,6 +49,8 @@ proc createWindow() =
   )
   mainWindow.setMenu(nil.JsObject)    # disable default menu
   mainWindow.maximize()
+  #mainWindow.ELECTRON_DISABLE_SECURITY_WARNINGS = true
+  #mainWindow["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true"
 
   #[
   mainWindow.loadURL(url.format(JsObject{
