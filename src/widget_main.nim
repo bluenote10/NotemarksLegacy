@@ -39,7 +39,7 @@ proc widgetMain*(ui: UiContext): WidgetMain =
 
   uiDefs: discard
     ui.container([
-      ui.classes("navbar", "is-dark").container([
+      ui.classes("navbar", "is-dark", "color-light-gray").container([
         ui.widgetSearch() as search,
         ui.classes("buttons").tag("p").container([
           ui.classes("button").tag("a").button([
@@ -54,9 +54,13 @@ proc widgetMain*(ui: UiContext): WidgetMain =
           ]) as newNoteButton,
         ])
       ]).UiUnit,
-      ui.container([
-        ui.widgetList as list,
-      ]) as widgetContainer
+      ui.classes("columns", "main-container").container([
+        ui.classes("column", "sidebar-left", "is-fullheight").tdiv(""),
+        ui.classes("column", "center-col").container([
+          ui.widgetList as list,
+        ]) as widgetContainer,
+        ui.classes("column", "sidebar-right", "is-fullheight").tdiv(""),
+      ])
     ]) as unit
 
   let self = WidgetMain(
@@ -94,12 +98,10 @@ proc widgetMain*(ui: UiContext): WidgetMain =
     # Refresh notes
     let notes = store.getNotes()
     list.setNotes(notes)
-    widgetContainer.clear()
-    widgetContainer.append(self.list)
+    widgetContainer.replaceChildren([self.list.UiUnit])
 
   self.switchToEditor = proc() =
-    widgetContainer.clear()
-    widgetContainer.append(self.getEditor())
+    widgetContainer.replaceChildren([self.getEditor().UiUnit])
 
   # Initialization
   self.switchToHome()

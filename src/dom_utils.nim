@@ -48,7 +48,8 @@ proc removeAllChildren*(el: Element) =
 
 
 type
-  EventListener* = proc(ev: Event)
+  # Somehow missing in kdom
+  EventHandler* = proc(ev: Event)
 
 
 proc textNode*(text: cstring): Node =
@@ -60,7 +61,7 @@ proc h*(
     id: cstring = "",
     class: openarray[cstring] = @[],
     attrs: openarray[(cstring, cstring)] = [],
-    events: openarray[(cstring, EventListener)] = [],
+    events: openarray[(cstring, EventHandler)] = [],
     #children: openarray[Node] = @[],
     text="".cstring): Element =
 
@@ -86,10 +87,10 @@ proc h*(
   return element
 
 
-proc onclick*(handler: proc (e: Event)): (cstring, EventListener) =
+proc onclick*(handler: proc (e: Event)): (cstring, EventHandler) =
   # Making this a template results in illformed AST, why?
-  ("click".cstring, EventListener(handler))
+  ("click".cstring, EventHandler(handler))
 
-proc oninput*(handler: proc (e: Event)): (cstring, EventListener) =
+proc oninput*(handler: proc (e: Event)): (cstring, EventHandler) =
   # Making this a template results in illformed AST, why?
-  ("input".cstring, EventListener(handler))
+  ("input".cstring, EventHandler(handler))

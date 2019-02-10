@@ -1,12 +1,96 @@
+/* -------------------------------------------------------------------------
+ * General style
+ * ------------------------------------------------------------------------- */
+
 .font-mono {
   font-family: "monospace";
+}
+
+/* -------------------------------------------------------------------------
+ * General layout
+ * ------------------------------------------------------------------------- */
+
+.has-margin-top {
+  margin-top: 0.75rem;
+}
+
+.navbar.color-light-gray {
+  background: #F4F3F2;
+}
+.navbar.color-dark-gray {
+  background: #21252B;
 }
 
 /* https://stackoverflow.com/questions/51467546/make-column-fill-vertical-space-in-bulma */
 /* https://github.com/jgthms/bulma/issues/860 */
 .is-fullheight {
-  height: calc(100vh - ( 3.25rem - .75rem ) );
+  /*height: calc(100vh - ( 3.25rem - .75rem - .75rem) );*/
+  /*height: calc(100vh - ( 3.25rem - .75rem ) );*/
 }
+
+.main-container {
+  height: calc(100vh - ( 3.25rem ));
+  /* height: 100%; */
+  display: flex;
+}
+
+.sidebar-left {
+  background: #F4F3F2;
+  /* rules similar to Bulma's is-X width classes */
+  flex: none;
+  width: 12%;
+
+  display: table-cell;
+  border-collapse: collapse;
+  border-right: 1px solid #DADADA;
+
+  overflow: auto;
+}
+
+.sidebar-right {
+  background: #F4F3F2;
+  /* rules similar to Bulma's is-X width classes */
+  flex: none;
+  width: 3%;
+
+  display: table-cell;
+  border-collapse: collapse;
+  border-left: 1px solid #DADADA;
+
+  overflow: auto;
+}
+
+.center-col {
+  padding: 0;
+  margin-top: 0.75rem;
+  overflow: scroll;
+}
+
+ /* -------------------------------------------------------------------------
+ * Table stuff
+ * ------------------------------------------------------------------------- */
+
+/* For cell truncation / avoiding line breaks */
+.table-fixed {
+  table-layout: fixed; /* https://stackoverflow.com/questions/5932018/fluid-table-with-td-nowrap-text-overflow */
+}
+
+.truncate {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;  /* https://stackoverflow.com/questions/22260240/width-of-element-with-white-space-nowrap-doesnt-adjust-to-child-content */
+  /* consider switching to box-sizing: border-box */
+
+  /* overflow: hidden seems to affect the height: https://stackoverflow.com/questions/32190967/why-does-overflow-hidden-affect-height-and-how-can-i-fix-it-in-this-example   */
+  /* Apparently we have to mess with vertical-align to fix it... */
+  vertical-align: top;
+}
+
+/* -------------------------------------------------------------------------
+ * Text area helpers
+ * ------------------------------------------------------------------------- */
 
 /* https://stackoverflow.com/questions/6795981/textarea-to-fill-a-parent-container-exactly-with-padding/6796064 */
 .is-maximized {
@@ -16,6 +100,10 @@
   -moz-box-sizing: border-box;    /* For Firefox                          */
   -webkit-box-sizing: border-box; /* For Safari                           */
 }
+
+/* -------------------------------------------------------------------------
+ * Float overlays
+ * ------------------------------------------------------------------------- */
 
 .float-wrapper {
   position: relative;
@@ -36,12 +124,11 @@
   /* float: left; */
 }
 
-.has-margin-top {
-  margin-top: 0.75rem;
-}
 
+/* -------------------------------------------------------------------------
+ * Scrollbar styling
+ * ------------------------------------------------------------------------- */
 
-/* Get rid of native scrollbar style... */
 ::-webkit-scrollbar {
   background-color: #fff;
   width: .4em

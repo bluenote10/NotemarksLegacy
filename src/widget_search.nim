@@ -48,15 +48,12 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
   uiDefs:
     var container = ui.classes("container").container([
       ui.container([
-        ui.classes("field", "has-addons", "has-margin-top").container([
+        ui.classes("field", "has-margin-top").container([
           ui.classes("control", "has-icons-left").container([
             ui.classes("input").input(placeholder="Search...") as input,
             ui.tag("span").classes("icon", "is-left").container([
               ui.classes("fas", "fa-search").i(""),
             ]),
-          ]),
-          ui.classes("control").container([
-            ui.tag("a").classes("button", "is-info").text("Search"),
           ]),
         ]),
         ui.classes("float-wrapper").container([

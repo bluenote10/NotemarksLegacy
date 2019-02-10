@@ -1,4 +1,5 @@
 import macros
+import typetraits
 
 import ui_units
 
@@ -112,9 +113,11 @@ template defaultImpls*(T, field) =
     self.field.getDomNode()
 
   method activate*(self: T) =
+    echo "Activating: ", name(T)
     self.field.activate()
 
   method deactivate*(self: T) =
+    echo "Deactivating: ", name(T)
     self.field.deactivate()
 
   method setFocus*(self: T) =

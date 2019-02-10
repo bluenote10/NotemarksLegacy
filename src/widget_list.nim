@@ -27,7 +27,6 @@ type
 defaultImpls(WidgetList, unit)
 
 
-
 proc setOnSelect*(self: WidgetList, cb: SelectCallback): WidgetList {.discardable.} =
   self.onSelect = some(cb)
   self
@@ -43,22 +42,17 @@ proc setNotes*(self: WidgetList, notes: seq[Note]) =
   var buttons = newJDict[cstring, Button]()
 
   uiDefs:
-    let newContainer = ui.tag("table").classes("table", "is-bordered", "is-striped", "is-narrow", "is-hoverable", "is-fullwidth").container(
-      self.notes.map((note) =>
-        ui.tag("tr").container([
-          ui.tag("td").container([
-            ui.tag("a").button(
-              if note.title.len > 0: note.title else: "\u2060" # avoid collapsing rows with empty titles => use WORD JOINER char
-            ) as buttons[note.id]
-          ])
-        ]).UiUnit
-      )
+    let newChildren = self.notes.map((note) =>
+      ui.tag("tr").container([
+        ui.tag("td").container([
+          ui.tag("a").classes("truncate").button(
+            if note.title.len > 0: note.title else: "\u2060" # avoid collapsing rows with empty titles => use WORD JOINER char
+          ) as buttons[note.id]
+        ])
+      ]).UiUnit
     )
 
-  # TODO that sucks, how to solve this?
-  # self.container = newContainer
-  for c in newContainer:
-    self.container.append(c)
+  self.container.replaceChildren(newChildren)
 
   proc onClick(id: cstring): ButtonCallback =
     return proc () =
@@ -77,8 +71,10 @@ proc widgetList*(ui: UiContext): WidgetList =
   var container: Container
 
   uiDefs:
-    var unit = ui.classes("container").container([
-      ui.tag("table").classes("table", "is-bordered", "is-striped", "is-narrow", "is-hoverable", "is-fullwidth").container([]) as container
+    var unit = ui.container([
+      ui.tag("table").classes(
+        "table", "is-bordered", "is-striped", "is-narrow", "is-hoverable", "is-fullwidth", "table-fixed"
+        ).container([]) as container
     ])
 
   var self = WidgetList(

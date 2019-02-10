@@ -9,34 +9,42 @@ import better_options
 import dom_utils
 
 
-type
-  # Somehow missing in kdom
-  EventHandler = proc(ev: Event)
-
 # -----------------------------------------------------------------------------
 # Context definition
 # -----------------------------------------------------------------------------
 
 type
   UiContext* = ref object
+    id: cstring
     tag: cstring
     classes: seq[cstring]
     attrs: seq[(cstring, cstring)]
 
 proc with*(
     ui: UiContext,
+    id: cstring = nil,
     tag: cstring = nil,
     classes: openarray[cstring] = [],
     attrs: openarray[(cstring, cstring)] = [],
   ): UiContext =
   UiContext(
+    id: if id.isNil: ui.id else: id,
     tag: if tag.isNil: ui.tag else: tag,
     classes: if classes == []: ui.classes else: @classes,
     attrs: if attrs == []: ui.attrs else: @attrs,
   )
 
+proc id*(ui: UiContext, id: cstring): UiContext =
+  UiContext(
+    id: id,
+    tag: ui.tag,
+    classes: ui.classes,
+    attrs: ui.attrs,
+  )
+
 proc tag*(ui: UiContext, tag: cstring): UiContext =
   UiContext(
+    id: ui.id,
     tag: tag,
     classes: ui.classes,
     attrs: ui.attrs,
@@ -44,6 +52,7 @@ proc tag*(ui: UiContext, tag: cstring): UiContext =
 
 proc classes*(ui: UiContext, classes: varargs[cstring]): UiContext =
   UiContext(
+    id: ui.id,
     tag: ui.tag,
     classes: @classes,
     attrs: ui.attrs,
@@ -51,6 +60,7 @@ proc classes*(ui: UiContext, classes: varargs[cstring]): UiContext =
 
 proc attrs*(ui: UiContext, attrs: varargs[(cstring, cstring)]): UiContext =
   UiContext(
+    id: ui.id,
     tag: ui.tag,
     classes: ui.classes,
     attrs: @attrs,
@@ -204,14 +214,14 @@ type
 method getDomNode*(self: Button): Node =
   self.el
 
-method activate(self: Button) =
+method activate*(self: Button) =
   proc onClick(e: Event) =
     for cb in self.onClickCB:
       cb()
   self.el.addEventListener("click", onClick)
   self.onClickHandler = onClick
 
-method deactivate(self: Button) =
+method deactivate*(self: Button) =
   self.el.removeEventListener("click", self.onClickHandler)
   self.onClickHandler = nil
 
@@ -259,14 +269,14 @@ type
 method getDomNode*(self: Input): Node =
   self.el
 
-method activate(self: Input) =
+method activate*(self: Input) =
   proc onInput(e: Event) =
     for cb in self.onInputCB:
       cb(e.target.value)
   self.el.addEventListener("input", onInput)
   self.onInputHandler = onInput
 
-method deactivate(self: Input) =
+method deactivate*(self: Input) =
   self.el.removeEventListener("input", self.onInputHandler)
   self.onInputHandler = nil
 
@@ -312,17 +322,17 @@ type
 method getDomNode*(self: Container): Node =
   self.el
 
-method activate(self: Container) =
+method activate*(self: Container) =
   self.isActive = true
   for child in self.children:
     child.activate()
-  echo "Activated container with ", self.children.len, " children."
+  # echo "Activated container with ", self.children.len, " children."
 
-method deactivate(self: Container) =
+method deactivate*(self: Container) =
   self.isActive = false
   for child in self.children:
     child.deactivate()
-  echo "Deactivated container with ", self.children.len, " children."
+  # echo "Deactivated container with ", self.children.len, " children."
 
 
 proc container*(ui: UiContext, children: openarray[UiUnit]): Container =
@@ -378,7 +388,8 @@ proc remove*(self: Container, index: int) =
   # TODO: OOB check
 
   # Activate/Deactivate
-  self.children[index].deactivate()
+  if self.isActive:
+    self.children[index].deactivate()
 
   # Update self.children
   self.children.delete(index)
@@ -392,8 +403,9 @@ proc remove*(self: Container, index: int) =
 
 proc clear*(self: Container) =
   # Activate/Deactivate
-  for child in self.children:
-    child.deactivate()
+  if self.isActive:
+    for child in self.children:
+      child.deactivate()
 
   # Update self.children
   self.children.setLen(0)
@@ -407,23 +419,24 @@ proc clear*(self: Container) =
   doAssert self.children.len == self.el.childNodes.len
 
 
-proc replaceChildren(self: Container, children: openarray[UiUnit]) =
+proc replaceChildren*(self: Container, newChildren: openarray[UiUnit]) =
   ## Performs a clear + inserts in an optimized way.
 
   # Activate/Deactivate
   if self.isActive:
-    for child in children:
+    for child in self.children:
+      child.deactivate()
+    for child in newChildren:
       child.activate()
 
   # Update self.children
-  self.children = @children
+  self.children = @newChildren
 
   # Update DOM
-  var childrenNodes = getDomNodes(children)
   let oldDisplay = self.el.style.display
   self.el.style.display = "none"
   self.el.removeAllChildren()
-  self.el.appendChild(getDomFragment(children))
+  self.el.appendChild(getDomFragment(newChildren))
   self.el.style.display = oldDisplay
 
   doAssert self.children.len == self.el.childNodes.len
