@@ -28,7 +28,7 @@ type
 defaultImpls(WidgetMain, unit)
 
 
-proc widgetMain*(ui: UiContext): WidgetMain =
+proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
 
   var unit: UiUnit
   var widgetContainer: Container
@@ -75,7 +75,7 @@ proc widgetMain*(ui: UiContext): WidgetMain =
     self.switchToHome()
 
   newNoteButton.setOnClick() do ():
-    let note = newNote()
+    let note = store.newNote()
     let editor = self.getEditor()
     editor.setNote(note)
     #self.editor.setNote(note)
@@ -83,7 +83,7 @@ proc widgetMain*(ui: UiContext): WidgetMain =
 
   list.setOnSelect() do (id: cstring):
     echo "clicked list"
-    let note = getNote(id)
+    let note = store.getNote(id)
     let editor = self.getEditor()
     editor.setNote(note)
     self.switchToEditor()
@@ -91,7 +91,7 @@ proc widgetMain*(ui: UiContext): WidgetMain =
   # Members
   self.getEditor = proc(): WidgetMarkdownEditor =
     if self.editor.isNone:
-      self.editor = some(ui.widgetMarkdownEditor())
+      self.editor = some(ui.widgetMarkdownEditor(store))
     self.editor.get
 
   self.switchToHome = proc() =

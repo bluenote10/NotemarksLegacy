@@ -2,6 +2,8 @@ import karax/kdom
 import dom_utils
 import ui_units
 
+import store
+
 import widget_search
 import widget_markdown_editor
 import widget_tabs
@@ -14,6 +16,8 @@ proc run(unit: UiUnit) =
   let root = document.getElementById("ROOT")
   root.appendChild(node)
 
+let s = newStore()
+
 let ui = UiContext()
-let mainWidget = ui.widgetMain()
+let mainWidget = ui.widgetMain(s)
 run(mainWidget)

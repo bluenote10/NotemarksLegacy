@@ -48,7 +48,7 @@ proc setNote*(self: WidgetMarkdownEditor, note: Note) =
   self.updateOutMarkdown(self.note.title, self.note.markdown)
 
 
-proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
+proc widgetMarkdownEditor*(ui: UiContext, store: Store): WidgetMarkdownEditor =
 
   var inTitle: Input
   var inLabels: Input
@@ -97,18 +97,21 @@ proc widgetMarkdownEditor*(ui: UiContext): WidgetMarkdownEditor =
   inTitle.setOnInput() do (newTitle: cstring):
     if not self.note.isNil:
       self.note.updateTitle(newTitle)
-      self.note.storeYaml()
+      store.storeYaml(self.note)
+      #self.note.storeYaml()
 
   inLabels.setOnInput() do (newLabels: cstring):
     if not self.note.isNil:
       let labels = newLabels.split(" ")
       self.note.updateLabels(labels)
-      self.note.storeYaml()
+      #self.note.storeYaml()
+      store.storeYaml(self.note)
 
   inMarkdown.setOnInput() do (newText: cstring):
     if not self.note.isNil:
       self.updateOutMarkdown(self.note.title, newText)
       self.note.updateMarkdown(newText)
-      self.note.storeMarkdown()
+      #self.note.storeMarkdown()
+      store.storeMarkdown(self.note)
 
   self
