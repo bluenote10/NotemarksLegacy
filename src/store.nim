@@ -1,5 +1,6 @@
 import random
 import strformat
+import times
 
 import js_yaml
 import js_fs
@@ -7,6 +8,7 @@ import js_path
 import js_glob
 import jsffi
 import jstr_utils
+import js_utils
 
 randomize()
 
@@ -35,6 +37,8 @@ type
     title*: cstring
     labels*: seq[cstring]
     markdown*: cstring
+    timeCreated*: DateTime
+    timeUpdated*: DateTime
 
 proc `$`(n: Note): string = $n[]
 
@@ -43,16 +47,22 @@ proc yamlData*(n: Note): cstring =
     id: n.id,
     title: n.title,
     labels: n.labels,
+    timeCreated: n.timeCreated.toTime().toUnix(),
+    timeUpdated: n.timeUpdated.toTime().toUnix(),
   }
+  debug(js)
   yaml.safeDump(js).to(cstring)
 
 proc updateTitle*(n: Note, title: cstring) =
+  n.timeUpdated = now()
   n.title = title
 
 proc updateLabels*(n: Note, labels: seq[cstring]) =
+  n.timeUpdated = now()
   n.labels = labels
 
 proc updateMarkdown*(n: Note, markdown: cstring) =
+  n.timeUpdated = now()
   n.markdown = markdown
 
 
@@ -98,11 +108,14 @@ proc storeMarkdown*(store: Store, n: Note) =
 
 proc newNote*(store: Store): Note =
   let id = store.randId()
+  let time = now()
   result = Note(
     id: id,
     title: "",
     labels: @[],
     markdown: "",
+    timeCreated: time,
+    timeUpdated: time,
   )
   store.storeYaml(result)
   store.storeMarkdown(result)
@@ -115,6 +128,7 @@ proc getNotes*(store: Store): seq[Note] =
     let mdFile = yamlFile.replace(".yaml", ".md")
     echo yamlFile
     let dataYaml = yaml.safeLoad(fs.readFileSync(yamlFile, "utf8"))
+    debug(dataYaml)
     try:
       let dataMd = fs.readFileSync(mdFile, "utf8")
       # TODO: safe extraction
@@ -123,6 +137,8 @@ proc getNotes*(store: Store): seq[Note] =
         title: dataYaml.title.to(cstring),
         labels: dataYaml.labels.to(seq[cstring]),
         markdown: dataMd.to(cstring),
+        timeCreated: dataYaml.timeCreated.to(int).fromUnix().local(),
+        timeUpdated: dataYaml.timeUpdated.to(int).fromUnix().local(),
       ))
     except Exception as e:
       echo e[]

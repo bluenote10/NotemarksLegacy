@@ -1,3 +1,5 @@
+import times
+
 import karax/kdom
 import ui_units
 import ui_dsl
@@ -30,10 +32,15 @@ type
 defaultImpls(WidgetMarkdownEditor, unit)
 
 
-proc updateOutMarkdown*(self: WidgetMarkdownEditor, title: cstring, markdown: cstring) =
+proc updateOutMarkdown*(self: WidgetMarkdownEditor, note: Note, markdown: cstring) =
   # TODO: maybe joining with title is not needed?
-  #let markdownFull = [cstring"#", title, "\n", markdown].join()
-  let markdownFull = markdown
+  let markdownFull = [
+    cstring"#", note.title, "\n\n",
+    "Date created: ", note.timeCreated.format("yyyy-MM-dd HH:mm:ss"), "\n\n",
+    "Date updated: ", note.timeUpdated.format("yyyy-MM-dd HH:mm:ss"), "\n\n",
+    markdown
+  ].join()
+  #let markdownFull = markdown
   let markdownHtml = convertMarkdown(markdownFull)
   self.outMarkdown.setInnerHtml(markdownHtml)
 
@@ -45,7 +52,7 @@ proc setNote*(self: WidgetMarkdownEditor, note: Note) =
   self.inTitle.setValue(self.note.title)
   self.inLabels.setValue(self.note.labels.join(" "))
   self.inMarkdown.setValue(self.note.markdown)
-  self.updateOutMarkdown(self.note.title, self.note.markdown)
+  self.updateOutMarkdown(self.note, self.note.markdown)
 
 
 proc widgetMarkdownEditor*(ui: UiContext, store: Store): WidgetMarkdownEditor =
@@ -109,7 +116,7 @@ proc widgetMarkdownEditor*(ui: UiContext, store: Store): WidgetMarkdownEditor =
 
   inMarkdown.setOnInput() do (newText: cstring):
     if not self.note.isNil:
-      self.updateOutMarkdown(self.note.title, newText)
+      self.updateOutMarkdown(self.note, newText)
       self.note.updateMarkdown(newText)
       #self.note.storeMarkdown()
       store.storeMarkdown(self.note)
