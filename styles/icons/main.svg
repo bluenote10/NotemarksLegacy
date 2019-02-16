@@ -11,7 +11,10 @@
    version="1.1"
    id="svg4"
    sodipodi:docname="main.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:export-filename="/home/fabian/git/NimVanillaUi/styles/icons/main.png"
+   inkscape:export-xdpi="192"
+   inkscape:export-ydpi="192">
   <metadata
      id="metadata10">
     <rdf:RDF>
@@ -106,7 +109,7 @@
      showgrid="true"
      inkscape:snap-bbox="true"
      inkscape:zoom="1.3037281"
-     inkscape:cx="-17.62207"
+     inkscape:cx="-18.389101"
      inkscape:cy="201.29826"
      inkscape:window-x="51"
      inkscape:window-y="27"
