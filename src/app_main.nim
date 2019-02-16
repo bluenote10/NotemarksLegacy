@@ -1,7 +1,5 @@
 import jsffi
 import sugar
-import karax/karax # kout
-#import karax/kdom
 import jstr_utils
 
 {.emit: """
@@ -41,10 +39,12 @@ proc createWindow() =
     JsObject{
       width: 1000,
       height: 800,
+      # https://www.christianengvall.se/electron-app-icons/
+      icon: path.join(dirname, "../styles/icons/main.png_64x64.png"),
       webPreferences: JsObject{
         nodeIntegration: true,   # required for Electron 5.x
         devTools: true,
-      }
+      },
     }
   )
   mainWindow.setMenu(nil.JsObject)    # disable default menu

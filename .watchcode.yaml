@@ -3,7 +3,7 @@ filesets:
     include:
       - ".watchcode.yaml"
       - "*.nim"
-      - "*.css"
+      - "*.scss"
       - "*.html"
       - "nim.cfg"
     exclude:

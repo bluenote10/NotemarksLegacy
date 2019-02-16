@@ -1,9 +1,50 @@
+@charset "utf-8";
+
+// https://fonts.google.com/?sort=popularity
+// TODO: use https://google-webfonts-helper.herokuapp.com
+//@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+$family-sans-serif: "Roboto", sans-serif;
+
+@import "../node_modules/bulma/bulma.sass";
+
+
+
 /* -------------------------------------------------------------------------
  * General style
  * ------------------------------------------------------------------------- */
 
 .font-mono {
   font-family: "monospace";
+}
+
+/* -------------------------------------------------------------------------
+ * Navbar
+ * ------------------------------------------------------------------------- */
+
+$ui-navbar-height: 3.25rem;
+$ui-width-col-left: 12%;
+$ui-width-col-right: 3.25rem;
+
+.ui-navbar {
+  height: $ui-navbar-height;
+  display: flex;
+  background: #F4F3F2;
+  align-items: center;
+}
+.ui-navbar-left {
+  flex: none;
+  width: $ui-width-col-left;
+}
+.ui-navbar-right {
+  flex: none;
+  width: $ui-width-col-right;
+}
+.ui-navbar-middle {
+  flex: 1;
+}
+.ui-navbar-button {
+  margin-left: 0.75rem;
 }
 
 /* -------------------------------------------------------------------------
@@ -28,17 +69,17 @@
   /*height: calc(100vh - ( 3.25rem - .75rem ) );*/
 }
 
-.main-container {
-  height: calc(100vh - ( 3.25rem ));
+.ui-main-container {
+  height: calc(100vh - #{$ui-navbar-height});
   /* height: 100%; */
   display: flex;
 }
 
-.sidebar-left {
+.ui-column-left {
   background: #F4F3F2;
-  /* rules similar to Bulma's is-X width classes */
+
   flex: none;
-  width: 12%;
+  width: $ui-width-col-left;
 
   display: table-cell;
   border-collapse: collapse;
@@ -47,11 +88,11 @@
   overflow: auto;
 }
 
-.sidebar-right {
+.ui-column-right {
   background: #F4F3F2;
-  /* rules similar to Bulma's is-X width classes */
+
   flex: none;
-  width: 3%;
+  width: $ui-width-col-right;
 
   display: table-cell;
   border-collapse: collapse;
@@ -60,10 +101,11 @@
   overflow: auto;
 }
 
-.center-col {
+.ui-column-middle {
   padding: 0;
-  margin-top: 0.75rem;
+  //margin-top: 0.75rem;
   overflow: scroll;
+  border-top: 1px solid #DADADA;
 }
 
  /* -------------------------------------------------------------------------

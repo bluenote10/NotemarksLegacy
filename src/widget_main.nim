@@ -39,27 +39,30 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
 
   uiDefs: discard
     ui.container([
-      ui.classes("navbar", "is-dark", "color-light-gray").container([
-        ui.widgetSearch() as search,
-        ui.classes("buttons").tag("p").container([
-          ui.classes("button").tag("a").button([
+      ui.classes("ui-navbar").container([
+        ui.classes("ui-navbar-left").container([
+          ui.classes("button", "ui-navbar-button").tag("a").button([
             ui.classes("icon").tag("span").container([
               ui.classes("fas", "fa-home").i("")
             ])
           ]) as homeButton,
-          ui.classes("button").tag("a").button([
+          ui.classes("button", "ui-navbar-button").tag("a").button([
             ui.classes("icon").tag("span").container([
               ui.classes("fas", "fa-plus").i("")
             ])
           ]) as newNoteButton,
-        ])
+        ]),
+        ui.classes("ui-navbar-middle").container([
+          ui.widgetSearch() as search,
+        ]),
+        ui.classes("ui-navbar-right").tdiv(""),
       ]).UiUnit,
-      ui.classes("columns", "main-container").container([
-        ui.classes("column", "sidebar-left", "is-fullheight").tdiv(""),
-        ui.classes("column", "center-col").container([
+      ui.classes("ui-main-container").container([
+        ui.classes("column", "ui-column-left", "is-fullheight").tdiv(""),
+        ui.classes("column", "ui-column-middle").container([
           ui.widgetList as list,
         ]) as widgetContainer,
-        ui.classes("column", "sidebar-right", "is-fullheight").tdiv(""),
+        ui.classes("column", "ui-column-right", "is-fullheight").tdiv(""),
       ])
     ]) as unit
 
