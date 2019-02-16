@@ -71,7 +71,6 @@ $ui-width-col-right: 3.25rem;
 
 .ui-main-container {
   height: calc(100vh - #{$ui-navbar-height});
-  /* height: 100%; */
   display: flex;
 }
 
@@ -141,6 +140,11 @@ $ui-width-col-right: 3.25rem;
   box-sizing: border-box;         /* For IE and modern versions of Chrome */
   -moz-box-sizing: border-box;    /* For Firefox                          */
   -webkit-box-sizing: border-box; /* For Safari                           */
+}
+
+.ui-text-area:not([rows]) { // need to overrule Bulma's text-area:not([rows])
+  height: 800px;
+  max-height: 800px;
 }
 
 /* -------------------------------------------------------------------------

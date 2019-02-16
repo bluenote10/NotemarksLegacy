@@ -1,4 +1,4 @@
-import jsffi
+import jsffi except `&`
 import sugar
 import jstr_utils
 

@@ -1,4 +1,5 @@
 import times
+import better_options
 
 import karax/kdom
 import ui_units
@@ -6,6 +7,7 @@ import ui_dsl
 
 import store
 
+import dom_utils
 import js_markdown
 import jstr_utils
 import js_utils
@@ -19,13 +21,86 @@ proc control*(ui: UiContext, units: openarray[UiUnit]): Container =
   ui.classes("field".cstring).container(units)
 
 
+# -----------------------------------------------------------------------------
+# Fancy input
+# -----------------------------------------------------------------------------
+
+type
+  FancyInput* = ref object of UiUnit
+    el: InputElement
+    onInputCB: Option[InputCallback]
+    onInputHandler: EventHandler
+    onKeydownHandler: EventHandler
+
+method getDomNode*(self: FancyInput): Node =
+  self.el
+
+method activate*(self: FancyInput) =
+  proc onInput(e: Event) =
+    for cb in self.onInputCB:
+      cb(e.target.value)
+  self.el.addEventListener("input", onInput)
+  self.onInputHandler = onInput
+
+  proc onKeydown(e: Event) =
+    debug(e)
+    let keyEvt = e.KeyboardEvent
+    let keyCode =  keyEvt.keyCode
+    if keyCode == 9 and not keyEvt.shiftKey:
+      e.preventDefault()
+      let selStart = self.el.selectionStart
+      let selEnd = self.el.selectionEnd
+      echo selStart, selEnd
+      if selStart == selEnd:
+        self.el.value = self.el.value.substr(0, selStart) & cstring"  " & self.el.value.substr(selEnd)
+        self.el.selectionStart = selStart + 2
+        self.el.selectionEnd = selEnd + 2
+
+  self.el.addEventListener("keydown", onKeydown)
+  self.onKeydownHandler = onKeydown
+
+method deactivate*(self: FancyInput) =
+  self.el.removeEventListener("input", self.onInputHandler)
+  self.onInputHandler = nil
+
+proc fancyInput*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): FancyInput =
+  # Merge ui.attrs with explicit parameters
+  var attrs = ui.getAttrs()
+  attrs.add({
+    "value".cstring: text,
+    "placeholder".cstring: placeholder,
+  })
+  let el = h(ui.getTagOrDefault("input"),
+    class = ui.getClasses,
+    attrs = attrs,
+  )
+  FancyInput(
+    el: el.InputElement,
+    onInputHandler: nil,
+    onInputCB: none(InputCallback),
+  )
+
+proc setOnInput*(self: FancyInput, cb: InputCallback) =
+  self.onInputCB = some(cb)
+
+proc setValue*(self: FancyInput, value: cstring) =
+  # setAttribute doesn't seem to work for textarea
+  # self.el.setAttribute("value", value)
+  self.el.value = value
+
+proc setPlaceholder*(self: FancyInput, placeholder: cstring) =
+  self.el.setAttribute("placeholder", placeholder)
+
+# -----------------------------------------------------------------------------
+# Widget
+# -----------------------------------------------------------------------------
 
 type
   WidgetMarkdownEditor* = ref object of UiUnit
     unit: UiUnit
     inTitle: Input
     inLabels: Input
-    inMarkdown: Input
+    inMarkdown: FancyInput
     outMarkdown: Text
     note: Note
 
@@ -59,7 +134,7 @@ proc widgetMarkdownEditor*(ui: UiContext, store: Store): WidgetMarkdownEditor =
 
   var inTitle: Input
   var inLabels: Input
-  var inMarkdown: Input
+  var inMarkdown: FancyInput
   var outMarkdown: Text
 
   uiDefs:
@@ -79,9 +154,9 @@ proc widgetMarkdownEditor*(ui: UiContext, store: Store): WidgetMarkdownEditor =
       ui.classes("columns").container([
         ui.classes("column", "is-fullheight").container([
           ui.tag("textarea")
-            .classes("textarea", "is-small", "is-family-monospace", "font-mono", "is-maximized")
-            .attrs({"rows": "20"})
-            .input(placeholder="placeholder") as inMarkdown,
+            .classes("textarea", "is-small", "font-mono", "ui-text-area")
+            #.attrs({"rows": "40"})
+            .fancyInput(placeholder="placeholder") as inMarkdown,
         ]),
         ui.classes("column").container([
           ui.classes("message").tag("article").container([

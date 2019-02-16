@@ -6,9 +6,13 @@ type
 
 var showdown* = require("../node_modules/showdown/dist/showdown.js", Showdown)
 
-proc newConverter(showdown: Showdown): JsObject {.importcpp: "new #.Converter()".}
+proc newConverter*(showdown: Showdown): JsObject {.importcpp: "new #.Converter()".}
+proc newConverter*(showdown: Showdown, options: JsObject): JsObject {.importcpp: "new #.Converter(#)".}
+
+var defaultConverter = showdown.newConverter(JsObject{
+  ghCodeBlocks: true,
+  tasklists: true,
+})
 
 proc convertMarkdown*(t: cstring): cstring =
-  let c = showdown.newConverter()
-  let text = c.makeHtml(t)
-  text.to(cstring)
+  defaultConverter.makeHtml(t).to(cstring)

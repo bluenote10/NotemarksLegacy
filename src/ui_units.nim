@@ -1,11 +1,9 @@
 
-import karax/kdom
-import karax/jstrutils
-import karax/jdict
 import strformat
 import sugar
 import better_options
 
+import karax/kdom
 import dom_utils
 
 
@@ -19,6 +17,21 @@ type
     tag: cstring
     classes: seq[cstring]
     attrs: seq[(cstring, cstring)]
+
+proc getId*(ui: UiContext): cstring =
+  ui.id
+
+proc getTag*(ui: UiContext): cstring =
+  ui.tag
+
+proc getclasses*(ui: UiContext): seq[cstring] =
+  ui.classes
+
+proc getAttrs*(ui: UiContext): seq[(cstring, cstring)] =
+  ui.attrs
+
+proc getTagOrDefault*(ui: UiContext, default: cstring): cstring =
+  if ui.tag.isNil: default else: ui.tag
 
 proc with*(
     ui: UiContext,
@@ -65,9 +78,6 @@ proc attrs*(ui: UiContext, attrs: varargs[(cstring, cstring)]): UiContext =
     classes: ui.classes,
     attrs: @attrs,
   )
-
-proc getTagOrDefault*(ui: UiContext, default: cstring): cstring =
-  if ui.tag.isNil: default else: ui.tag
 
 # -----------------------------------------------------------------------------
 # UiUnit base class

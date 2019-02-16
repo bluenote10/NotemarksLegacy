@@ -6976,7 +6976,6 @@ label.panel-block {
 
 .ui-main-container {
   height: calc(100vh - 3.25rem);
-  /* height: 100%; */
   display: flex; }
 
 .ui-column-left {
@@ -7035,6 +7034,10 @@ label.panel-block {
   /* For Firefox                          */
   -webkit-box-sizing: border-box;
   /* For Safari                           */ }
+
+.ui-text-area:not([rows]) {
+  height: 800px;
+  max-height: 800px; }
 
 /* -------------------------------------------------------------------------
  * Float overlays

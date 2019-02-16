@@ -6,7 +6,7 @@ import js_yaml
 import js_fs
 import js_path
 import js_glob
-import jsffi
+import jsffi except `&`
 import jstr_utils
 import js_utils
 
