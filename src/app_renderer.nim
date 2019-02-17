@@ -3,7 +3,6 @@ import dom_utils
 import ui_units
 
 import store
-
 import widget_main
 
 proc run(unit: UiUnit) =
