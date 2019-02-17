@@ -4,9 +4,6 @@ import ui_units
 
 import store
 
-import widget_search
-import widget_markdown_editor
-import widget_tabs
 import widget_main
 
 proc run(unit: UiUnit) =

@@ -96,7 +96,8 @@ proc fileNameMarkdown*(store: Store, n: Note): cstring =
 proc ensureDirExists(store: Store, n: Note) =
   let dir = path.join(store.path, n.id)
   if not fs.existsSync(dir).to(bool):
-    discard fs.mkdirSync(dir)
+    # https://github.com/nodejs/node/issues/24698
+    discard fs.mkdirSync(dir, JsObject{recursive: true})
 
 proc storeYaml*(store: Store, n: Note) =
   store.ensureDirExists(n)

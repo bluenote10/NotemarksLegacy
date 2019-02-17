@@ -105,6 +105,8 @@ $ui-width-col-right: 3.25rem;
   //margin-top: 0.75rem;
   overflow: scroll;
   border-top: 1px solid #DADADA;
+
+  min-height: 100%;
 }
 
  /* -------------------------------------------------------------------------
@@ -143,8 +145,8 @@ $ui-width-col-right: 3.25rem;
 }
 
 .ui-text-area:not([rows]) { // need to overrule Bulma's text-area:not([rows])
-  height: 800px;
-  max-height: 800px;
+  height: 100%;
+  min-height: 600px;
 }
 
 /* -------------------------------------------------------------------------

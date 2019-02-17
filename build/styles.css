@@ -6999,7 +6999,8 @@ label.panel-block {
 .ui-column-middle {
   padding: 0;
   overflow: scroll;
-  border-top: 1px solid #DADADA; }
+  border-top: 1px solid #DADADA;
+  min-height: 100%; }
 
 /* -------------------------------------------------------------------------
  * Table stuff
@@ -7036,8 +7037,8 @@ label.panel-block {
   /* For Safari                           */ }
 
 .ui-text-area:not([rows]) {
-  height: 800px;
-  max-height: 800px; }
+  height: 100%;
+  min-height: 600px; }
 
 /* -------------------------------------------------------------------------
  * Float overlays

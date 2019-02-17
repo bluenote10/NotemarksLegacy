@@ -9,7 +9,8 @@ import better_options
 import store
 
 import widget_search
-import widget_markdown_editor
+import widget_editor
+#import widget_noteview
 import widget_list
 
 {.experimental: "notnil".}
@@ -19,11 +20,12 @@ type
     unit: UiUnit
     widgetContainer: Container
     list: WidgetList
-    editor: Option[WidgetMarkdownEditor]
+    editor: Option[WidgetEditor]
 
-    getEditor: proc(): WidgetMarkdownEditor
+    getEditor: proc(): WidgetEditor
     switchToHome: proc()
     switchToEditor: proc()
+    switchToNoteview: proc()
 
 defaultImpls(WidgetMain, unit)
 
@@ -70,7 +72,7 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
     unit: unit,
     widgetContainer: widgetContainer,
     list: list,
-    editor: none(WidgetMarkdownEditor),
+    editor: none(WidgetEditor),
   )
 
   # Event handlers
@@ -81,7 +83,6 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
     let note = store.newNote()
     let editor = self.getEditor()
     editor.setNote(note)
-    #self.editor.setNote(note)
     self.switchToEditor()
 
   list.setOnSelect() do (id: cstring):
@@ -91,10 +92,12 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
     editor.setNote(note)
     self.switchToEditor()
 
+
+
   # Members
-  self.getEditor = proc(): WidgetMarkdownEditor =
+  self.getEditor = proc(): WidgetEditor =
     if self.editor.isNone:
-      self.editor = some(ui.widgetMarkdownEditor(store))
+      self.editor = some(ui.widgetEditor())
     self.editor.get
 
   self.switchToHome = proc() =
@@ -105,6 +108,9 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
 
   self.switchToEditor = proc() =
     widgetContainer.replaceChildren([self.getEditor().UiUnit])
+
+  self.switchToNoteview = proc() =
+    discard
 
   # Initialization
   self.switchToHome()
