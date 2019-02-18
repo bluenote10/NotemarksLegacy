@@ -141,8 +141,8 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
     ])
 
   # Internal state
-  var note = none(Note)
-  var onNoteChange = none(NoteChangeCallback)
+  var optNote = none(Note)
+  var optOnNoteChange = none(NoteChangeCallback)
 
   var self = WidgetEditor(
     unit: unit,
@@ -150,43 +150,43 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
 
   # Event handler
   inTitle.setOnInput() do (newTitle: cstring):
-    for n in note:
-      n.updateTitle(newTitle)
-      for cb in onNoteChange:
-        cb(n)
+    for note in optNote:
+      note.updateTitle(newTitle)
+      for cb in optOnNoteChange:
+        cb(note)
       #store.storeYaml(self.note)
       #self.note.storeYaml()
 
   inLabels.setOnInput() do (newLabels: cstring):
-    for n in note:
+    for note in optNote:
       let labels = newLabels.split(" ")
-      n.updateLabels(labels)
-      for cb in onNoteChange:
-        cb(n)
+      note.updateLabels(labels)
+      for cb in optOnNoteChange:
+        cb(note)
       #self.note.storeYaml()
       #store.storeYaml(self.note)
 
   inMarkdown.setOnInput() do (newText: cstring):
-    for n in note:
-      n.updateMarkdown(newText)
-      for cb in onNoteChange:
-        cb(n)
+    for note in optNote:
+      note.updateMarkdown(newText)
+      for cb in optOnNoteChange:
+        cb(note)
       #self.updateOutMarkdown(n, newText)
       #self.note.storeMarkdown()
       #store.storeMarkdown(self.note)
 
   # Members
-  self.setNote = proc(n: Note) =
-    echo "Switched to note:", n.id
-    note = some(n)
+  self.setNote = proc(note: Note) =
+    echo "Switched to note:", note.id
+    optNote = some(note)
     # Update dom contents
-    inTitle.setValue(n.title)
-    inLabels.setValue(n.labels.join(" "))
-    inMarkdown.setValue(n.markdown)
-    # TODO not need here anymore?
+    inTitle.setValue(note.title)
+    inLabels.setValue(note.labels.join(" "))
+    inMarkdown.setValue(note.markdown)
+    # TODO not needed here anymore?
     # self.updateOutMarkdown(self.note, self.note.markdown)
 
   self.setOnNoteChange = proc(onNoteChangeCB: NoteChangeCallback) =
-    onNoteChange = some(onNoteChangeCB)
+    optOnNoteChange = some(onNoteChangeCB)
 
   self

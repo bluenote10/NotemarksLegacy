@@ -10,20 +10,25 @@ import store
 
 import widget_search
 import widget_editor
-#import widget_noteview
+import widget_noteview
 import widget_list
+
+import jsmod_mousetrap
 
 {.experimental: "notnil".}
 
 type
+  ViewState {.pure.} = enum
+    List, Editor, Noteview
+
   WidgetMain* = ref object of UiUnit
     unit: UiUnit
     widgetContainer: Container
     list: WidgetList
-    editor: Option[WidgetEditor]
+    #editor: Option[WidgetEditor]
 
     getEditor: proc(): WidgetEditor
-    switchToHome: proc()
+    switchToList: proc()
     switchToEditor: proc()
     switchToNoteview: proc()
 
@@ -37,7 +42,10 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
   var homeButton: Button
   var newNoteButton: Button
   var search: WidgetSearch
+
   var list: WidgetList
+  var editor = ui.widgetEditor()
+  var noteview = ui.widgetNoteview()
 
   uiDefs: discard
     ui.container([
@@ -68,52 +76,72 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
       ])
     ]) as unit
 
+  # Internal state
+  var state = ViewState.List
+  var optSelectedNote = none(Note)
+
   let self = WidgetMain(
     unit: unit,
     widgetContainer: widgetContainer,
     list: list,
-    editor: none(WidgetEditor),
+    #editor: none(WidgetEditor),
   )
 
   # Event handlers
   homeButton.setOnClick() do ():
-    self.switchToHome()
+    self.switchToList()
 
   newNoteButton.setOnClick() do ():
     let note = store.newNote()
-    let editor = self.getEditor()
-    editor.setNote(note)
-    self.switchToEditor()
+    optSelectedNote = some(note)
+    self.switchToNoteview()
 
   list.setOnSelect() do (id: cstring):
-    echo "clicked list"
     let note = store.getNote(id)
-    let editor = self.getEditor()
-    editor.setNote(note)
-    self.switchToEditor()
+    optSelectedNote = some(note)
+    self.switchToNoteview()
 
+  editor.setOnNoteChange() do (note: Note):
+    optSelectedNote = some(note)
+    store.storeYaml(note)
+    store.storeMarkdown(note)
 
+  mousetrap.bindKey([cstring"command+e", "ctrl+e"]) do ():
+    case state
+    of ViewState.Editor:
+      echo "switching to view"
+      state = ViewState.Noteview
+      self.switchToNoteview()
+    of ViewState.Noteview:
+      echo "switching to editor"
+      state = ViewState.Editor
+      self.switchToEditor()
+    of ViewState.List:
+      echo "no switch possible"
+      discard
 
   # Members
-  self.getEditor = proc(): WidgetEditor =
-    if self.editor.isNone:
-      self.editor = some(ui.widgetEditor())
-    self.editor.get
-
-  self.switchToHome = proc() =
+  self.switchToList = proc() =
     # Refresh notes
     let notes = store.getNotes()
     list.setNotes(notes)
     widgetContainer.replaceChildren([self.list.UiUnit])
+    state = ViewState.List
 
   self.switchToEditor = proc() =
-    widgetContainer.replaceChildren([self.getEditor().UiUnit])
+    for note in optSelectedNote:
+      editor.setNote(note)
+      widgetContainer.replaceChildren([editor.UiUnit])
+      state = ViewState.Editor
 
   self.switchToNoteview = proc() =
-    discard
+    for note in optSelectedNote:
+      noteview.setMarkdownOutput(note)
+      widgetContainer.replaceChildren([noteview.UiUnit])
+      state = ViewState.Noteview
 
   # Initialization
-  self.switchToHome()
+  self.switchToList()
 
   self
 
