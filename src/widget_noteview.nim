@@ -31,7 +31,7 @@ proc widgetNoteview*(ui: UiContext): WidgetNoteview =
 
   uiDefs:
     var unit = ui.classes("container").container([
-      ui.classes("message").tag("article").container([
+      ui.classes("message", "has-margin-top").tag("article").container([
         ui.classes("message-body").container([
           ui.classes("content").tdiv("") as outMarkdown,
         ]),

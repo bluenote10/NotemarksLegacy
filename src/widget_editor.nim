@@ -15,10 +15,23 @@ import js_utils
 
 # Bulma helpers
 proc field*(ui: UiContext, units: openarray[UiUnit]): Container =
-  ui.classes("field".cstring, "has-margin-top".cstring).container(units)
+  uiDefs:
+    ui.classes("field", "has-margin-top").container(units)
+    #ui.classes("field", "has-margin-top", "is-horizontal").container(units)
+
+proc fieldLabel*(ui: UiContext, text: cstring): Container =
+  uiDefs:
+    ui.classes("field-label").container([
+      ui.tag("label").classes("label").text(text)
+    ])
+
+proc fieldBody*(ui: UiContext, units: openarray[UiUnit]): Container =
+  uiDefs:
+    ui.classes("field-body").container(units)
 
 proc control*(ui: UiContext, units: openarray[UiUnit]): Container =
-  ui.classes("field".cstring).container(units)
+  uiDefs:
+    ui.classes("control").container(units)
 
 
 # -----------------------------------------------------------------------------
@@ -110,13 +123,25 @@ type
 
 defaultImpls(WidgetEditor, unit)
 
+#[
+method getDomNode*(self: T): Node =
+  self.unit.getDomNode()
+
+method activate*(self: T) =
+  echo "Activating: ", name(T)
+  self.unit.activate()
+
+method deactivate*(self: T) =
+  echo "Deactivating: ", name(T)
+  self.unit.deactivate()
+]#
+
 
 proc widgetEditor*(ui: UiContext): WidgetEditor =
 
   var inTitle: Input
   var inLabels: Input
   var inMarkdown: FancyInput
-  var outMarkdown: Text
 
   uiDefs:
     var unit = ui.classes("container").container([
@@ -125,6 +150,13 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
           ui.classes("input")
             .input(placeholder="Title") as inTitle,
         ])
+        #ui.fieldLabel("Input"),
+        #ui.fieldBody([
+        #  ui.control([
+        #    ui.classes("input")
+        #      .input(placeholder="Title") as inTitle,
+        #  ]),
+        #]),
       ]),
       ui.field([
         ui.control([
@@ -132,11 +164,13 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
             .input(placeholder="Labels") as inLabels,
         ])
       ]),
-      ui.classes("column", "is-fullheight").container([
-        ui.tag("textarea")
-          .classes("textarea", "is-small", "font-mono", "ui-text-area")
-          #.attrs({"rows": "40"})
-          .fancyInput(placeholder="placeholder") as inMarkdown,
+      ui.field([
+        ui.control([
+          ui.tag("textarea")
+            .classes("textarea", "is-small", "font-mono", "ui-text-area")
+            #.attrs({"rows": "40"})
+            .fancyInput(placeholder="placeholder") as inMarkdown,
+        ]),
       ]),
     ])
 
@@ -188,5 +222,9 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
 
   self.setOnNoteChange = proc(onNoteChangeCB: NoteChangeCallback) =
     optOnNoteChange = some(onNoteChangeCB)
+
+  self.setFocus = proc() =
+    echo "setting focus"
+    inMarkdown.el.focus()
 
   self

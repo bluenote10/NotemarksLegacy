@@ -132,6 +132,7 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
     for note in optSelectedNote:
       editor.setNote(note)
       widgetContainer.replaceChildren([editor.UiUnit])
+      editor.setFocus()
       state = ViewState.Editor
 
   self.switchToNoteview = proc() =
