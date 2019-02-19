@@ -70,13 +70,41 @@ proc updateMarkdown*(n: Note, markdown: cstring) =
 # Store
 # -----------------------------------------------------------------------------
 
+proc loadNotes*(path: cstring): JDict[cstring, Note] =
+  result = newJDict[cstring, Note]()
+  let yamlFiles = glob.sync(path & "/*/note.yaml").to(seq[cstring])
+  for yamlFile in yamlFiles:
+    let mdFile = yamlFile.replace(".yaml", ".md")
+    echo yamlFile
+    let dataYaml = yaml.safeLoad(fs.readFileSync(yamlFile, "utf8"))
+    debug(dataYaml)
+    try:
+      let dataMd = fs.readFileSync(mdFile, "utf8")
+      # TODO: safe extraction
+      result[dataYaml.id.to(cstring)] = Note(
+        id: dataYaml.id.to(cstring),
+        title: dataYaml.title.to(cstring),
+        labels: dataYaml.labels.to(seq[cstring]),
+        markdown: dataMd.to(cstring),
+        timeCreated: dataYaml.timeCreated.to(int).fromUnix().local(),
+        timeUpdated: dataYaml.timeUpdated.to(int).fromUnix().local(),
+      )
+    except Exception as e:
+      echo e[]
+  debug(result)
+
+
 type
   Store* = object
-    path: string
+    path: cstring
+    notes: JDict[cstring, Note]
 
 proc newStore*(): Store =
+  let path = cstring"data"
+  let notes = loadNotes(path)
   Store(
-    path: "data",
+    path: path,
+    notes: notes,
   )
 
 proc randId*(store: Store): cstring =
@@ -100,10 +128,12 @@ proc ensureDirExists(store: Store, n: Note) =
     discard fs.mkdirSync(dir, JsObject{recursive: true})
 
 proc storeYaml*(store: Store, n: Note) =
+  store.notes[n.id] = n
   store.ensureDirExists(n)
   fs.writeFileSync(store.fileNameYaml(n), n.yamlData)
 
 proc storeMarkdown*(store: Store, n: Note) =
+  store.notes[n.id] = n
   store.ensureDirExists(n)
   fs.writeFileSync(store.fileNameMarkdown(n), n.markdown)
 
@@ -118,35 +148,27 @@ proc newNote*(store: Store): Note =
     timeCreated: time,
     timeUpdated: time,
   )
+  store.notes[id] = result
   store.storeYaml(result)
   store.storeMarkdown(result)
 
-
 proc getNotes*(store: Store): seq[Note] =
-  result = newSeq[Note]()
-  let yamlFiles = glob.sync(store.path & "/*/note.yaml").to(seq[cstring])
-  for yamlFile in yamlFiles:
-    let mdFile = yamlFile.replace(".yaml", ".md")
-    echo yamlFile
-    let dataYaml = yaml.safeLoad(fs.readFileSync(yamlFile, "utf8"))
-    debug(dataYaml)
-    try:
-      let dataMd = fs.readFileSync(mdFile, "utf8")
-      # TODO: safe extraction
-      result.add(Note(
-        id: dataYaml.id.to(cstring),
-        title: dataYaml.title.to(cstring),
-        labels: dataYaml.labels.to(seq[cstring]),
-        markdown: dataMd.to(cstring),
-        timeCreated: dataYaml.timeCreated.to(int).fromUnix().local(),
-        timeUpdated: dataYaml.timeUpdated.to(int).fromUnix().local(),
-      ))
-    except Exception as e:
-      echo e[]
-  echo result
+  store.notes.values()
 
 proc getNote*(store: Store, id: cstring): Note =
-  for note in store.getNotes():
-    if note.id == id:
-      return note
+  if id in store.notes:
+    return store.notes[id]
+  #for note in store.getNotes():
+  #  if note.id == id:
+  #    return note
   return nil
+
+proc getLabelCounts*(store: Store): JDict[cstring, int] =
+  result = newJDict[cstring, int]()
+  for note in store.notes.values():
+    for label in note.labels:
+      if result.contains(label):
+        result[label] = result[label] + 1
+      else:
+        result[label] = 1
+  debug(result)

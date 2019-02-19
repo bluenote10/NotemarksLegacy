@@ -124,6 +124,7 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
   self.switchToList = proc() =
     # Refresh notes
     let notes = store.getNotes()
+    discard store.getLabelCounts()
     list.setNotes(notes)
     widgetContainer.replaceChildren([self.list.UiUnit])
     state = ViewState.List

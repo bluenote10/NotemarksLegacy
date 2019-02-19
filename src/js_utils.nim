@@ -5,6 +5,14 @@ proc debug*[T](x: T) {.importc: "console.log", varargs.}
 
 proc isNil[T](a: openarray[T]): bool {.importcpp: "(# === null)"}
 
+proc joinImpl*(a: openArray[cstring]; sep: cstring = ""): cstring {.importcpp: "#.join(#)".}
+
+proc join*(a: openArray[cstring]; sep: cstring = ""): cstring =
+  if a.isNil:
+    "".cstring
+  else:
+    joinImpl(a, sep)
+
 # -----------------------------------------------------------------------------
 # JDict
 # -----------------------------------------------------------------------------
@@ -35,17 +43,21 @@ iterator pairs*[K, V](d: JDict[K, V]): (K, V) =
   yield (kkk, vvv)
   {.emit: "}".}
 
+proc keys*[K, V](d: JDict[K, V]): seq[K] {.importcpp: "Object.keys(#)".}
+
+proc values*[K, V](d: JDict[K, V]): seq[V] {.importcpp: "Object.values(#)".}
+
+#[
+proc values*[K, V](d: JDict[K, V]): seq[V] =
+  # TODO: This could be optimized
+  result = newSeq[V]()
+  for k, v in d.pairs:
+    result.add(v)
+]#
+
 # TODO: How to solve this?
 # proc `toJSStr`*[K, V](d: JDict[K, V]): cstring = cstring"asdf"
 # proc `$`*[K, V](d: JDict[K, V]): cstring = toJSStr(d)
-
-proc joinImpl*(a: openArray[cstring]; sep: cstring = ""): cstring {.importcpp: "#.join(#)".}
-
-proc join*(a: openArray[cstring]; sep: cstring = ""): cstring =
-  if a.isNil:
-    "".cstring
-  else:
-    joinImpl(a, sep)
 
 # -----------------------------------------------------------------------------
 # JSeq
