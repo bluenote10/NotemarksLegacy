@@ -224,7 +224,9 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
     optOnNoteChange = some(onNoteChangeCB)
 
   self.setFocus = proc() =
-    echo "setting focus"
-    inMarkdown.el.focus()
+    if optNote.isSome and optNote.get.title.len == 0:
+      inTitle.getDomNode().focus()
+    else:
+      inMarkdown.getDomNode().focus()
 
   self
