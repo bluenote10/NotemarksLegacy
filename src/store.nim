@@ -122,17 +122,21 @@ proc fileNameMarkdown*(store: Store, n: Note): cstring =
   (&"{store.path}/{n.id}/note.md").cstring
 
 proc ensureDirExists(store: Store, n: Note) =
+  debug(store)
+  debug(store.path)
   let dir = path.join(store.path, n.id)
   if not fs.existsSync(dir).to(bool):
     # https://github.com/nodejs/node/issues/24698
     discard fs.mkdirSync(dir, JsObject{recursive: true})
 
 proc storeYaml*(store: Store, n: Note) =
+  echo "storing to:", store.fileNameYaml(n)
   store.notes[n.id] = n
   store.ensureDirExists(n)
   fs.writeFileSync(store.fileNameYaml(n), n.yamlData)
 
 proc storeMarkdown*(store: Store, n: Note) =
+  echo "storing to:", store.fileNameMarkdown(n)
   store.notes[n.id] = n
   store.ensureDirExists(n)
   fs.writeFileSync(store.fileNameMarkdown(n), n.markdown)

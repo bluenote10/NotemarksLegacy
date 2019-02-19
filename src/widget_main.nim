@@ -9,6 +9,7 @@ import better_options
 import store
 
 import widget_search
+import widget_labeltree
 import widget_editor
 import widget_noteview
 import widget_list
@@ -44,6 +45,7 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
   var search: WidgetSearch
 
   var list: WidgetList
+  var labeltree: WidgetLabeltree
   var editor = ui.widgetEditor()
   var noteview = ui.widgetNoteview()
 
@@ -68,7 +70,9 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
         ui.classes("ui-navbar-right").tdiv(""),
       ]).UiUnit,
       ui.classes("ui-main-container").container([
-        ui.classes("column", "ui-column-left", "is-fullheight").tdiv(""),
+        ui.classes("column", "ui-column-left", "is-fullheight").container([
+          ui.widgetLabeltree() as labeltree,
+        ]),
         ui.classes("column", "ui-column-middle").container([
           ui.widgetList as list,
         ]) as widgetContainer,
@@ -124,10 +128,11 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
   self.switchToList = proc() =
     # Refresh notes
     let notes = store.getNotes()
-    discard store.getLabelCounts()
     list.setNotes(notes)
     widgetContainer.replaceChildren([self.list.UiUnit])
     state = ViewState.List
+    let labels = store.getLabelCounts()
+    labeltree.setLabels(labels)
 
   self.switchToEditor = proc() =
     for note in optSelectedNote:
