@@ -7022,6 +7022,12 @@ label.panel-block {
   /* Apparently we have to mess with vertical-align to fix it... */
   vertical-align: top; }
 
+.ui-note-header-table {
+  line-height: 1.7; }
+
+table.ui-note-header-table td {
+  padding-right: 15px; }
+
 /* -------------------------------------------------------------------------
  * Text area helpers
  * ------------------------------------------------------------------------- */

@@ -94,7 +94,7 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
   newNoteButton.setOnClick() do ():
     let note = store.newNote()
     optSelectedNote = some(note)
-    self.switchToNoteview()
+    self.switchToEditor()
 
   list.setOnSelect() do (id: cstring):
     let note = store.getNote(id)
