@@ -33,11 +33,15 @@ proc setOnSelect*(self: WidgetList, cb: SelectCallback): WidgetList {.discardabl
 
 
 proc setNotes*(self: WidgetList, notes: seq[Note]) =
-  self.notes = notes
-  self.container.clear()
-
   # TODO what's the nicest way to pass ui context to setter members?
   let ui = self.ui
+
+  proc label(name: cstring): UiUnit =
+    uiDefs:
+      ui.classes("tag", "is-dark").span(name)
+
+  self.notes = notes
+  self.container.clear()
 
   var buttons = newJDict[cstring, Button]()
 
@@ -48,7 +52,12 @@ proc setNotes*(self: WidgetList, notes: seq[Note]) =
           ui.tag("a").classes("truncate").button(
             if note.title.len > 0: note.title else: "\u2060" # avoid collapsing rows with empty titles => use WORD JOINER char
           ) as buttons[note.id]
-        ])
+        ]),
+        ui.tag("td").container([
+          ui.classes("tags", "truncate").container(
+            note.labels.map(l => label(l))
+          ),
+        ]),
       ]).UiUnit
     )
 
