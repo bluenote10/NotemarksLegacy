@@ -1,6 +1,7 @@
 import karax/kdom
 import ui_units
 import ui_dsl
+import jstr_utils
 
 import sequtils
 import sugar
@@ -109,6 +110,13 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
     optSelectedNote = some(note)
     store.storeYaml(note)
     store.storeMarkdown(note)
+
+  search.setOnSearch() do (text: cstring) -> seq[cstring]:
+    var suggestions = newSeq[cstring]()
+    for note in store.getNotes():
+      if note.title.toLowerCase().contains(text.toLowerCase()):
+        suggestions.add(note.title)
+    suggestions
 
   mousetrap.bindKey([cstring"command+e", "ctrl+e"]) do ():
     case state

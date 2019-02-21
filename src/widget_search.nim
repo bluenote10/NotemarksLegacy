@@ -1,3 +1,7 @@
+import better_options
+import sequtils
+import sugar
+
 import karax / kdom
 import jstr_utils
 import sequtils
@@ -8,34 +12,16 @@ import ui_dsl
 
 
 type
-  Model = object
-    searchText: cstring
-    items: seq[cstring]
-    itemsFiltered: seq[cstring]
+  SearchCallback = proc(text: cstring): seq[cstring]
 
   WidgetSearch* = ref object of UiUnit
-    container: UiUnit
+    unit: UiUnit
+    setOnSearch*: proc(onSearch: SearchCallback)
 
-defaultImpls(WidgetSearch, container)
+defaultImpls(WidgetSearch, unit)
 
 
 proc widgetSearch*(ui: UiContext): WidgetSearch =
-
-  var model = Model(
-    searchText: "",
-    items: @[
-      "Item 1".cstring,
-      "Item 2",
-      "Hello",
-      "World",
-    ],
-    itemsFiltered: @[
-      "Item 1".cstring,
-      "Item 2",
-      "Hello",
-      "World",
-    ],
-  )
 
   proc makeSearchUnit(ui: UiContext, s: cstring): UiUnit =
     uiDefs:
@@ -43,10 +29,10 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
       ui.classes("is-size-6", "panel-block").tdiv(s)
 
   var input: Input
-  var c: Container
+  var container: Container
 
   uiDefs:
-    var container = ui.classes("container").container([
+    var unit = ui.classes("container").container([
       ui.container([
         ui.classes("field", "has-margin-top").container([
           ui.classes("control", "has-icons-left").container([
@@ -57,18 +43,31 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
           ]),
         ]),
         ui.classes("float-wrapper").container([
-          ui.classes("card", "float-box").container([]) as c,
+          ui.classes("card", "float-box", "is-hidden").container([]) as container,
         ]),
       ]),
       #ui.tdiv("Follup text..."),
     ])
 
-  proc onChange(newText: cstring) =
-    if newText.isNil or newText == "":
-      c.clear()
+  # Internal state
+  var optOnSearch = none(SearchCallback)
 
-    else:
-      echo newText
+  let self = WidgetSearch(unit: unit)
+
+  # Event handler
+  input.setOnInput() do (newText: cstring):
+    for onSearch in optOnSearch:
+      let suggestions = onSearch(newText)
+      if newText.isNil or newText == "" or suggestions.len == 0:
+        container.clear()
+        container.getDomNode().Element.classList.add("is-hidden")
+      else:
+        container.replaceChildren(
+          suggestions.map(item => ui.makeSearchUnit(item).UiUnit)
+        )
+        container.getDomNode().Element.classList.remove("is-hidden")
+
+      #[
       model.searchText = newText
       model.itemsFiltered.setLen(0)
       for item in model.items:
@@ -76,12 +75,17 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
           model.itemsFiltered.add(item)
 
       echo model.itemsFiltered
-      c.clear()
+      container.clear()
       for item in model.itemsFiltered:
         #model.itemsFiltered.add(item)
-        c.append(ui.makeSearchUnit(item))
+        container.append(ui.makeSearchUnit(item))
+      ]#
 
-  input.setOnInput(onChange)
-  onChange("")
+  # Members
+  self.setOnSearch = proc(onSearch: SearchCallback) =
+    optOnSearch = some(onSearch)
 
-  WidgetSearch(container: container)
+  # Initialize
+  # selonChange("") # needed?
+
+  self

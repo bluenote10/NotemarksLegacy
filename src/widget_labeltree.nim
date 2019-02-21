@@ -31,10 +31,10 @@ proc widgetLabeltree*(ui: UiContext): WidgetLabeltree =
 
   var labels: Container
 
-  proc label(name: cstring): UiUnit =
+  proc label(name: cstring, count: int): UiUnit =
     uiDefs:
       ui.container([
-        ui.classes("tag", "is-dark").span(name)
+        ui.classes("tag", "is-dark").span(name & " (" & $count & ")")
       ])
 
   uiDefs:
@@ -47,6 +47,6 @@ proc widgetLabeltree*(ui: UiContext): WidgetLabeltree =
   # Members
   self.setLabels = proc(labelsDict: JDict[cstring, int]) =
     let labelNames = labelsDict.keys()
-    labels.replaceChildren(labelNames.map(l => label(l)))
+    labels.replaceChildren(labelsDict.items().map(kv => label(kv[0], kv[1])))
 
   self

@@ -47,6 +47,11 @@ proc keys*[K, V](d: JDict[K, V]): seq[K] {.importcpp: "Object.keys(#)".}
 
 proc values*[K, V](d: JDict[K, V]): seq[V] {.importcpp: "Object.values(#)".}
 
+proc items*[K, V](d: JDict[K, V]): seq[(K, V)] =
+  result = newSeq[(K, V)]()
+  for k in d:
+    result.add((k, d[k]))
+
 #[
 proc values*[K, V](d: JDict[K, V]): seq[V] =
   # TODO: This could be optimized
@@ -74,3 +79,11 @@ proc len*[T](s: JSeq[T]): int {.importcpp: "#.length", noSideEffect.}
 proc add*[T](s: JSeq[T]; x: T) {.importcpp: "#.push(#)", noSideEffect.}
 
 proc shrink*[T](s: JSeq[T]; shorterLen: int) {.importcpp: "#.length = #", noSideEffect.}
+
+# -----------------------------------------------------------------------------
+# seq JS extensions (use with care, violate seq semantics)
+# -----------------------------------------------------------------------------
+
+proc sortJS*[T](s: seq[T]): seq[T] {.importcpp: "#.sort()".}
+proc sortJS*[T](s: seq[T], compare: proc(a: T, b: T): int): seq[T] {.importcpp: "#.sort(#)".}
+
