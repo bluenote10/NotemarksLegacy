@@ -157,16 +157,18 @@ proc newNote*(store: Store): Note =
   store.storeMarkdown(result)
 
 proc getNotes*(store: Store): seq[Note] =
-  proc cmp(a, b: cstring): int =
-    let aLower = a.toLowerCase()
-    let bLower = b.toLowerCase()
+  proc compare(a, b: Note): int =
+    let aLower = a.title.toLowerCase()
+    let bLower = b.title.toLowerCase()
     if aLower == bLower:
       0
     elif aLower < bLower:
       -1
     else:
       +1
-  store.notes.values().sortJS(cmp)
+  #debug(store.notes.values())
+  #debug(store.notes.values().sortJS(cmp))
+  store.notes.values().sortJS(compare)
 
 proc getNote*(store: Store, id: cstring): Note =
   if id in store.notes:

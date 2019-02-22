@@ -272,6 +272,7 @@ proc setOnClick*(self: Button, cb: ButtonCallback) =
 type
   InputCallback* = proc (text: cstring)
   KeydownCallback* = proc (evt: KeyboardEvent)
+  BlurCallback* = proc ()
 
   Input* = ref object of UiUnit
     el: Element
@@ -279,27 +280,39 @@ type
     onInputCB: Option[InputCallback]
     onKeydownHandler: EventHandler
     onKeydownCB: Option[KeydownCallback]
+    onBlurHandler: EventHandler
+    onBlurCB: Option[BlurCallback]
 
 method getDomNode*(self: Input): Node =
   self.el
 
 method activate*(self: Input) =
+
   proc onInput(e: Event) =
     for cb in self.onInputCB:
       cb(e.target.value)
   self.el.addEventListener("input", onInput)
   self.onInputHandler = onInput
+
   proc onKeydown(e: Event) =
     for cb in self.onKeydownCB:
       cb(e.KeyboardEvent)
   self.el.addEventListener("keydown", onKeydown)
   self.onKeydownHandler = onKeydown
 
+  proc onBlur(e: Event) =
+    for cb in self.onBlurCB:
+      cb()
+  self.el.addEventListener("blur", onBlur)
+  self.onBlurHandler = onBlur
+
 method deactivate*(self: Input) =
   self.el.removeEventListener("input", self.onInputHandler)
   self.el.removeEventListener("keydown", self.onKeydownHandler)
+  self.el.removeEventListener("blur", self.onBlurHandler)
   self.onInputHandler = nil
   self.onKeydownHandler = nil
+  self.onBlurHandler = nil
 
 proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input =
   # Merge ui.attrs with explicit parameters
@@ -316,6 +329,10 @@ proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input
     el: el,
     onInputHandler: nil,
     onInputCB: none(InputCallback),
+    onKeydownHandler: nil,
+    onKeydownCB: none(KeydownCallback),
+    onBlurHandler: nil,
+    onBlurCB: none(BlurCallback),
   )
 
 proc setOnInput*(self: Input, cb: InputCallback) =
@@ -323,6 +340,9 @@ proc setOnInput*(self: Input, cb: InputCallback) =
 
 proc setOnKeydown*(self: Input, cb: KeydownCallback) =
   self.onKeydownCB = some(cb)
+
+proc setOnBlur*(self: Input, cb: BlurCallback) =
+  self.onBlurCB = some(cb)
 
 proc setValue*(self: Input, value: cstring) =
   # setAttribute doesn't seem to work for textarea

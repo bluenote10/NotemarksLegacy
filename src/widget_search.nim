@@ -46,7 +46,6 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
           ui.classes("card", "float-box", "is-hidden").container([]) as container,
         ]),
       ]),
-      #ui.tdiv("Follup text..."),
     ])
 
   # Internal state
@@ -69,19 +68,6 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
         )
         container.getDomNode().Element.classList.remove("is-hidden")
 
-      #[
-      model.searchText = newText
-      model.itemsFiltered.setLen(0)
-      for item in model.items:
-        if item.contains(newText):
-          model.itemsFiltered.add(item)
-
-      echo model.itemsFiltered
-      container.clear()
-      for item in model.itemsFiltered:
-        #model.itemsFiltered.add(item)
-        container.append(ui.makeSearchUnit(item))
-      ]#
   input.setOnKeydown() do (evt: KeyboardEvent):
     if evt.keyCode == 38:     # up
       echo "up"
@@ -90,11 +76,12 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
       echo "down"
       evt.preventDefault()
 
+  input.setOnBlur() do ():
+    container.clear()
+    container.getDomNode().Element.classList.add("is-hidden")
+
   # Members
   self.setOnSearch = proc(onSearch: SearchCallback) =
     optOnSearch = some(onSearch)
-
-  # Initialize
-  # selonChange("") # needed?
 
   self
