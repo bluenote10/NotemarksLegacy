@@ -271,11 +271,14 @@ proc setOnClick*(self: Button, cb: ButtonCallback) =
 
 type
   InputCallback* = proc (text: cstring)
+  KeydownCallback* = proc (evt: KeyboardEvent)
 
   Input* = ref object of UiUnit
     el: Element
     onInputHandler: EventHandler
     onInputCB: Option[InputCallback]
+    onKeydownHandler: EventHandler
+    onKeydownCB: Option[KeydownCallback]
 
 method getDomNode*(self: Input): Node =
   self.el
@@ -286,10 +289,17 @@ method activate*(self: Input) =
       cb(e.target.value)
   self.el.addEventListener("input", onInput)
   self.onInputHandler = onInput
+  proc onKeydown(e: Event) =
+    for cb in self.onKeydownCB:
+      cb(e.KeyboardEvent)
+  self.el.addEventListener("keydown", onKeydown)
+  self.onKeydownHandler = onKeydown
 
 method deactivate*(self: Input) =
   self.el.removeEventListener("input", self.onInputHandler)
+  self.el.removeEventListener("keydown", self.onKeydownHandler)
   self.onInputHandler = nil
+  self.onKeydownHandler = nil
 
 proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input =
   # Merge ui.attrs with explicit parameters
@@ -310,6 +320,9 @@ proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input
 
 proc setOnInput*(self: Input, cb: InputCallback) =
   self.onInputCB = some(cb)
+
+proc setOnKeydown*(self: Input, cb: KeydownCallback) =
+  self.onKeydownCB = some(cb)
 
 proc setValue*(self: Input, value: cstring) =
   # setAttribute doesn't seem to work for textarea

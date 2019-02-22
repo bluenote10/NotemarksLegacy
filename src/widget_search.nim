@@ -50,6 +50,8 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
     ])
 
   # Internal state
+  var suggestions = newSeq[cstring]()
+  var selectedIndex = 0
   var optOnSearch = none(SearchCallback)
 
   let self = WidgetSearch(unit: unit)
@@ -57,7 +59,7 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
   # Event handler
   input.setOnInput() do (newText: cstring):
     for onSearch in optOnSearch:
-      let suggestions = onSearch(newText)
+      suggestions = onSearch(newText)
       if newText.isNil or newText == "" or suggestions.len == 0:
         container.clear()
         container.getDomNode().Element.classList.add("is-hidden")
@@ -80,6 +82,13 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
         #model.itemsFiltered.add(item)
         container.append(ui.makeSearchUnit(item))
       ]#
+  input.setOnKeydown() do (evt: KeyboardEvent):
+    if evt.keyCode == 38:     # up
+      echo "up"
+      evt.preventDefault()
+    elif evt.keyCode == 40:   # down
+      echo "down"
+      evt.preventDefault()
 
   # Members
   self.setOnSearch = proc(onSearch: SearchCallback) =
