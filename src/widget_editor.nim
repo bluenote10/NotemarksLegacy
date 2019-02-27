@@ -19,6 +19,15 @@ proc field*(ui: UiContext, units: openarray[UiUnit]): Container =
     ui.classes("field", "has-margin-top").container(units)
     #ui.classes("field", "has-margin-top", "is-horizontal").container(units)
 
+proc label*(ui: UiContext, text: cstring): Text =
+  uiDefs:
+    ui.tag("label").classes("label", "is-small").text(text)
+
+proc control*(ui: UiContext, units: openarray[UiUnit]): Container =
+  uiDefs:
+    ui.classes("control").container(units)
+
+#[
 proc fieldLabel*(ui: UiContext, text: cstring): Container =
   uiDefs:
     ui.classes("field-label").container([
@@ -29,10 +38,7 @@ proc fieldBody*(ui: UiContext, units: openarray[UiUnit]): Container =
   uiDefs:
     ui.classes("field-body").container(units)
 
-proc control*(ui: UiContext, units: openarray[UiUnit]): Container =
-  uiDefs:
-    ui.classes("control").container(units)
-
+]#
 
 # -----------------------------------------------------------------------------
 # Fancy input
@@ -105,6 +111,52 @@ proc setPlaceholder*(self: FancyInput, placeholder: cstring) =
   self.el.setAttribute("placeholder", placeholder)
 
 # -----------------------------------------------------------------------------
+# AddFieldDropdown
+# -----------------------------------------------------------------------------
+
+type
+  WidgetAddFieldDropdown* = ref object of UiUnit
+    unit: UiUnit
+
+defaultImpls(WidgetAddFieldDropdown, unit)
+
+proc widgetAddFieldDropdown*(ui: UiContext): WidgetAddFieldDropdown =
+
+  var button: Button
+
+  uiDefs:
+    let unit = ui.classes("dropdown").container([
+      ui.classes("dropdown-trigger").container([
+        ui.tag("button").classes("button", "is-tiny").button([
+          #ui.span("Add..."),
+          ui.tag("span").classes("icon", "is-small").container([
+            ui.classes("fas", "fa-plus").i("") #fa-angle-down
+          ]),
+        ]) as button
+      ]),
+      ui.classes("dropdown-menu").container([
+        ui.classes("dropdown-content").container([
+          ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Link"),
+          ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Date"),
+          ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Author"),
+        ]),
+      ])
+    ])
+
+  # Internal state
+  var isActive = false
+
+  button.setOnClick() do ():
+    if not isActive:
+      unit.getDomNode().Element.classList.add("is-active")
+      isActive = true
+    else:
+      unit.getDomNode().Element.classList.remove("is-active")
+      isActive = false
+
+  WidgetAddFieldDropdown(unit: unit)
+
+# -----------------------------------------------------------------------------
 # Widget
 # -----------------------------------------------------------------------------
 
@@ -146,8 +198,9 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
   uiDefs:
     var unit = ui.classes("container").container([
       ui.field([
+        ui.label("Title"),
         ui.control([
-          ui.classes("input")
+          ui.classes("input", "is-small")
             .input(placeholder="Title") as inTitle,
         ])
         #ui.fieldLabel("Input"),
@@ -159,12 +212,15 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
         #]),
       ]),
       ui.field([
+        ui.label("Labels"),
         ui.control([
-          ui.classes("input")
+          ui.classes("input", "is-small")
             .input(placeholder="Labels") as inLabels,
         ])
       ]),
+      ui.widgetAddFieldDropdown(),
       ui.field([
+        ui.label("Notes"),
         ui.control([
           ui.tag("textarea")
             .classes("textarea", "is-small", "font-mono", "ui-text-area")
