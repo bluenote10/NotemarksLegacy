@@ -486,6 +486,9 @@ proc replaceChildren*(self: Container, newChildren: openarray[UiUnit]) =
   doAssert self.children.len == self.el.childNodes.len
 
 
+proc getChildren*(self: Container): seq[UiUnit] =
+  self.children
+
 iterator items*(self: Container): UiUnit =
   for child in self.children:
     yield child

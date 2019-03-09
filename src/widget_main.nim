@@ -111,12 +111,16 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
     store.storeYaml(note)
     store.storeMarkdown(note)
 
-  search.setOnSearch() do (text: cstring) -> seq[cstring]:
-    var suggestions = newSeq[cstring]()
+  search.setOnSearch() do (text: cstring) -> seq[Note]:
+    var suggestions = newSeq[Note]()
     for note in store.getNotes():
       if note.title.toLowerCase().contains(text.toLowerCase()):
-        suggestions.add(note.title)
+        suggestions.add(note)
     suggestions
+
+  search.setOnSelection() do (note: Note):
+    optSelectedNote = some(note)
+    self.switchToNoteview()
 
   mousetrap.bindKey([cstring"command+e", "ctrl+e"]) do ():
     case state

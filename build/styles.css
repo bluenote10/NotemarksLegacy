@@ -7035,6 +7035,12 @@ table.ui-note-header-table td {
   padding-right: 15px; }
 
 /* -------------------------------------------------------------------------
+ * Input helpers
+ * ------------------------------------------------------------------------- */
+.complete-selection {
+  background: #1111EE; }
+
+/* -------------------------------------------------------------------------
  * Text area helpers
  * ------------------------------------------------------------------------- */
 /* https://stackoverflow.com/questions/6795981/textarea-to-fill-a-parent-container-exactly-with-padding/6796064 */
