@@ -20,74 +20,88 @@ import js_utils
 # -----------------------------------------------------------------------------
 
 type
-  WidgetNoteview* = ref object of UiUnit
-    unit: UiUnit
-    setMarkdownOutput*: proc(note: Note)
+  WidgetNoteviewUnits* = ref object
+    main: UiUnit
+    title: Text
+    outMarkdown: Text
+    outLabels: Container
+    outCreatedDate: Text
+    outCreatedTime: Text
+    outUpdatedDate: Text
+    outUpdatedTime: Text
+    renderLabel: proc(name: cstring): UiUnit
 
-defaultImpls(WidgetNoteview, self, self.unit)
+  WidgetNoteview* = ref object of UiUnit
+    units: WidgetNoteviewUnits
+
+# -----------------------------------------------------------------------------
+# Overloads
+# -----------------------------------------------------------------------------
+
+defaultImpls(WidgetNoteview, self, self.units.main)
+
+# -----------------------------------------------------------------------------
+# Public methods
+# -----------------------------------------------------------------------------
+
+method setMarkdownOutput*(self: WidgetNoteview, note: Note) {.base.} =
+  self.units.title.setText(note.title)
+  self.units.outLabels.replaceChildren(note.labels.map(l => self.units.renderLabel(l)))
+  self.units.outCreatedDate.setText(note.timeCreated.format("yyyy-MM-dd"))
+  self.units.outCreatedTime.setText(note.timeCreated.format("HH:mm:ss"))
+  self.units.outUpdatedDate.setText(note.timeUpdated.format("yyyy-MM-dd"))
+  self.units.outUpdatedTime.setText(note.timeUpdated.format("HH:mm:ss"))
+  #[
+  let markdownFull = [
+    #cstring"#", note.title, "\n\n",
+    cstring"Date created: ", note.timeCreated.format("yyyy-MM-dd HH:mm:ss"), "\n\n",
+    "Date updated: ", note.timeUpdated.format("yyyy-MM-dd HH:mm:ss"), "\n\n",
+    note.markdown
+  ].join()
+  ]#
+  let markdownHtml = convertMarkdown(note.markdown)
+  self.units.outMarkdown.setInnerHtml(markdownHtml)
+
+# -----------------------------------------------------------------------------
+# Constructor
+# -----------------------------------------------------------------------------
 
 
 proc widgetNoteview*(ui: UiContext): WidgetNoteview =
 
-  var title: Text
-  var outMarkdown: Text
-  var outLabels: Container
-  var outCreatedDate: Text
-  var outCreatedTime: Text
-  var outUpdatedDate: Text
-  var outUpdatedTime: Text
-
-  proc label(name: cstring): UiUnit =
+  var units = WidgetNoteviewUnits()
+  units.renderLabel = proc(name: cstring): UiUnit =
     uiDefs:
       ui.classes("tag", "is-dark").span(name)
 
-  uiDefs:
-    var unit = ui.classes("container").container([
-      ui.classes("title", "has-margin-top").h1("") as title,
+  uiDefs: discard
+    ui.classes("container").container([
+      ui.classes("title", "has-margin-top").h1("") as units.title,
       ui.classes("message", "is-info", "has-margin-top").tag("article").container([
         ui.classes("message-body").container([
           ui.tag("table").classes("ui-note-header-table").container([
             ui.tag("tr").container([
               ui.tag("td").container([ui.tag("b").text("Labels")]),
-              ui.tag("td").classes("tags").container([]) as outLabels,
+              ui.tag("td").classes("tags").container([]) as units.outLabels,
             ]),
             ui.tag("tr").container([
               ui.tag("td").container([ui.tag("b").text("Created")]),
-              ui.tag("td").text("") as outCreatedDate,
-              ui.tag("td").text("") as outCreatedTime,
+              ui.tag("td").text("") as units.outCreatedDate,
+              ui.tag("td").text("") as units.outCreatedTime,
             ]),
             ui.tag("tr").container([
               ui.tag("td").container([ui.tag("b").text("Updated")]),
-              ui.tag("td").text("") as outUpdatedDate,
-              ui.tag("td").text("") as outUpdatedTime,
+              ui.tag("td").text("") as units.outUpdatedDate,
+              ui.tag("td").text("") as units.outUpdatedTime,
             ]),
           ]),
         ]),
       ]),
-      ui.classes("content").tdiv("") as outMarkdown,
-    ])
+      ui.classes("content").tdiv("") as units.outMarkdown,
+    ]) as units.main
 
   var self = WidgetNoteview(
-    unit: unit,
+    units: units,
   )
-
-  # Members
-  self.setMarkdownOutput = proc(note: Note) =
-    title.setText(note.title)
-    outLabels.replaceChildren(note.labels.map(l => label(l)))
-    outCreatedDate.setText(note.timeCreated.format("yyyy-MM-dd"))
-    outCreatedTime.setText(note.timeCreated.format("HH:mm:ss"))
-    outUpdatedDate.setText(note.timeUpdated.format("yyyy-MM-dd"))
-    outUpdatedTime.setText(note.timeUpdated.format("HH:mm:ss"))
-    #[
-    let markdownFull = [
-      #cstring"#", note.title, "\n\n",
-      cstring"Date created: ", note.timeCreated.format("yyyy-MM-dd HH:mm:ss"), "\n\n",
-      "Date updated: ", note.timeUpdated.format("yyyy-MM-dd HH:mm:ss"), "\n\n",
-      note.markdown
-    ].join()
-    ]#
-    let markdownHtml = convertMarkdown(note.markdown)
-    outMarkdown.setInnerHtml(markdownHtml)
 
   self

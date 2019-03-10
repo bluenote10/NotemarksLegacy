@@ -19,40 +19,85 @@ import jsmod_mousetrap
 
 {.experimental: "notnil".}
 
+# -----------------------------------------------------------------------------
+# Types
+# -----------------------------------------------------------------------------
+
 type
   ViewState {.pure.} = enum
     List, Editor, Noteview
 
+  WidgetMainUnits* = ref object
+    main*: UiUnit
+    widgetContainer*: Container
+    homeButton*: Button
+    newNoteButton*: Button
+    search*: WidgetSearch
+
+    list*: WidgetList
+    labeltree*: WidgetLabeltree
+    editor*: WidgetEditor
+    noteview*: WidgetNoteview
+
+  WidgetMainState = ref object
+    store: Store
+    mode: ViewState
+    optSelectedNote: Option[Note]
+
   WidgetMain* = ref object of UiUnit
-    unit: UiUnit
-    search: WidgetSearch
-    #widgetContainer: Container
-    #list: WidgetList
-    #editor: Option[WidgetEditor]
+    units: WidgetMainUnits
+    state: WidgetMainState
 
-    getEditor: proc(): WidgetEditor
-    switchToList: proc()
-    switchToEditor: proc()
-    switchToNoteview: proc()
+    #getEditor: proc(): WidgetEditor
+    #switchToList: proc()
+    #switchToEditor: proc()
+    #switchToNoteview: proc()
 
-defaultImpls(WidgetMain, self, self.unit)
+# -----------------------------------------------------------------------------
+# Overloads
+# -----------------------------------------------------------------------------
+
+defaultImpls(WidgetMain, self, self.units.main)
 
 method setFocus*(self: WidgetMain) =
-  self.search.setFocus() # getDomNode().focus()
+  self.units.search.setFocus()
 
+# -----------------------------------------------------------------------------
+# Private members
+# -----------------------------------------------------------------------------
+
+proc switchToList(self: WidgetMain) =
+  # Refresh notes
+  let notes = self.state.store.getNotes()
+  self.units.list.setNotes(notes)
+  self.units.widgetContainer.replaceChildren([self.units.list.UiUnit])
+  self.state.mode = ViewState.List
+  let labels = self.state.store.getLabelCounts()
+  self.units.labeltree.setLabels(labels)
+  self.units.search.setFocus()
+
+proc switchToEditor(self: WidgetMain) =
+  for note in self.state.optSelectedNote:
+    self.units.editor.setNote(note)
+    self.units.widgetContainer.replaceChildren([self.units.editor.UiUnit])
+    self.units.editor.setFocus()
+    self.state.mode = ViewState.Editor
+
+proc switchToNoteview(self: WidgetMain) =
+  for note in self.state.optSelectedNote:
+    self.units.noteview.setMarkdownOutput(note)
+    self.units.widgetContainer.replaceChildren([self.units.noteview.UiUnit])
+    self.state.mode = ViewState.Noteview
+
+# -----------------------------------------------------------------------------
+# Constructor
+# -----------------------------------------------------------------------------
 
 proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
 
-  var unit: UiUnit
-  var widgetContainer: Container
-  var homeButton: Button
-  var newNoteButton: Button
-  var search: WidgetSearch
-
-  var list: WidgetList
-  var labeltree: WidgetLabeltree
-  var editor = ui.widgetEditor()
-  var noteview = ui.widgetNoteview()
+  var units = WidgetMainUnits()
+  units.editor = ui.widgetEditor()
+  units.noteview = ui.widgetNoteview()
 
   uiDefs: discard
     ui.container([
@@ -62,108 +107,81 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
             ui.classes("icon").tag("span").container([
               ui.classes("fas", "fa-home").i("")
             ])
-          ]) as homeButton,
+          ]) as units.homeButton,
           ui.classes("button", "ui-navbar-button").tag("a").button([
             ui.classes("icon").tag("span").container([
               ui.classes("fas", "fa-plus").i("")
             ])
-          ]) as newNoteButton,
+          ]) as units.newNoteButton,
         ]),
         ui.classes("ui-navbar-middle").container([
-          ui.widgetSearch() as search,
+          ui.widgetSearch() as units.search,
         ]),
         ui.classes("ui-navbar-right").tdiv(""),
       ]).UiUnit,
       ui.classes("ui-main-container").container([
         ui.classes("column", "ui-column-left", "is-fullheight").container([
-          ui.widgetLabeltree() as labeltree,
+          ui.widgetLabeltree() as units.labeltree,
         ]),
         ui.classes("column", "ui-column-middle").container([
-          ui.widgetList as list,
-        ]) as widgetContainer,
+          ui.widgetList as units.list,
+        ]) as units.widgetContainer,
         ui.classes("column", "ui-column-right", "is-fullheight").tdiv(""),
       ])
-    ]) as unit
-
-  # Internal state
-  var state = ViewState.List
-  var optSelectedNote = none(Note)
+    ]) as units.main
 
   let self = WidgetMain(
-    unit: unit,
-    search: search,
-    #widgetContainer: widgetContainer,
-    #list: list,
-    #editor: none(WidgetEditor),
+    units: units,
+    state: WidgetMainState(
+      store: store,
+      mode: ViewState.List,
+      optSelectedNote: none(Note),
+    )
   )
 
   # Event handlers
-  homeButton.setOnClick() do ():
+  self.units.homeButton.setOnClick() do ():
     self.switchToList()
 
-  newNoteButton.setOnClick() do ():
-    let note = store.newNote()
-    optSelectedNote = some(note)
+  self.units.newNoteButton.setOnClick() do ():
+    let note = self.state.store.newNote()
+    self.state.optSelectedNote = some(note)
     self.switchToEditor()
 
-  list.setOnSelect() do (id: cstring):
-    let note = store.getNote(id)
-    optSelectedNote = some(note)
+  self.units.list.setOnSelect() do (id: cstring):
+    let note = self.state.store.getNote(id)
+    self.state.optSelectedNote = some(note)
     self.switchToNoteview()
 
-  editor.setOnNoteChange() do (note: Note):
-    optSelectedNote = some(note)
-    store.storeYaml(note)
-    store.storeMarkdown(note)
+  self.units.editor.setOnNoteChange() do (note: Note):
+    self.state.optSelectedNote = some(note)
+    self.state.store.storeYaml(note)
+    self.state.store.storeMarkdown(note)
 
-  search.setOnSearch() do (text: cstring) -> seq[Note]:
+  self.units.search.setOnSearch() do (text: cstring) -> seq[Note]:
     var suggestions = newSeq[Note]()
-    for note in store.getNotes():
+    for note in self.state.store.getNotes():
       if note.title.toLowerCase().contains(text.toLowerCase()):
         suggestions.add(note)
     suggestions
 
-  search.setOnSelection() do (note: Note):
-    optSelectedNote = some(note)
+  self.units.search.setOnSelection() do (note: Note):
+    self.state.optSelectedNote = some(note)
     self.switchToNoteview()
 
   mousetrap.bindKey([cstring"command+e", "ctrl+e"]) do ():
-    case state
+    case self.state.mode
     of ViewState.Editor:
       echo "switching to view"
-      state = ViewState.Noteview
+      self.state.mode = ViewState.Noteview
       self.switchToNoteview()
     of ViewState.Noteview:
       echo "switching to editor"
-      state = ViewState.Editor
+      self.state.mode = ViewState.Editor
       self.switchToEditor()
     of ViewState.List:
       echo "no switch possible"
       discard
-
-  # Members
-  self.switchToList = proc() =
-    # Refresh notes
-    let notes = store.getNotes()
-    list.setNotes(notes)
-    widgetContainer.replaceChildren([list.UiUnit])
-    state = ViewState.List
-    let labels = store.getLabelCounts()
-    labeltree.setLabels(labels)
-    search.setFocus()
-
-  self.switchToEditor = proc() =
-    for note in optSelectedNote:
-      editor.setNote(note)
-      widgetContainer.replaceChildren([editor.UiUnit])
-      editor.setFocus()
-      state = ViewState.Editor
-
-  self.switchToNoteview = proc() =
-    for note in optSelectedNote:
-      noteview.setMarkdownOutput(note)
-      widgetContainer.replaceChildren([noteview.UiUnit])
-      state = ViewState.Noteview
 
   # Initialization
   self.switchToList()
