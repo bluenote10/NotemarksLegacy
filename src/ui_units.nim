@@ -5,6 +5,7 @@ import better_options
 
 import karax/kdom
 import dom_utils
+import js_utils
 
 
 # -----------------------------------------------------------------------------

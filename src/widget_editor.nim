@@ -116,8 +116,8 @@ proc setPlaceholder*(self: FancyInput, placeholder: cstring) =
 
 type
   WidgetAddFileDropdownUnits* = ref object
-    main: UiUnit
-    button: Button
+    main*: UiUnit
+    button*: Button
 
   WidgetAddFileDropdownState = ref object
     isActive: bool
@@ -167,6 +167,8 @@ proc widgetAddFieldDropdown*(ui: UiContext): WidgetAddFieldDropdown =
       self.units.main.getDomNode().Element.classList.remove("is-active")
       self.state.isActive = false
 
+  self
+
 
 # -----------------------------------------------------------------------------
 # Widget
@@ -176,10 +178,10 @@ type
   NoteChangeCallback = proc(note: Note)
 
   WidgetEditorUnits* = ref object
-    main: UiUnit
-    inTitle: Input
-    inLabels: Input
-    inMarkdown: FancyInput
+    main*: UiUnit
+    inTitle*: Input
+    inLabels*: Input
+    inMarkdown*: FancyInput
 
   WidgetEditorState = ref object
     optNote: Option[Note]
@@ -188,9 +190,6 @@ type
   WidgetEditor* = ref object of UiUnit
     units: WidgetEditorUnits
     state: WidgetEditorState
-
-    setNote*: proc(note: Note)
-    setOnNoteChange*: proc(onNoteChange: NoteChangeCallback)
 
 # -----------------------------------------------------------------------------
 # Overloads
@@ -208,7 +207,7 @@ method setFocus*(self: WidgetEditor) =
 # Public methods
 # -----------------------------------------------------------------------------
 
-method setNote(self: WidgetEditor, note: Note) {.base.} =
+method setNote*(self: WidgetEditor, note: Note) {.base.} =
   echo "Switched to note:", note.id
   self.state.optNote = some(note)
   # Update dom contents
@@ -218,7 +217,7 @@ method setNote(self: WidgetEditor, note: Note) {.base.} =
   # TODO not needed here anymore?
   # self.updateOutMarkdown(self.note, self.note.markdown)
 
-method setOnNoteChange(self: WidgetEditor, onNoteChangeCB: NoteChangeCallback) {.base.} =
+method setOnNoteChange*(self: WidgetEditor, onNoteChangeCB: NoteChangeCallback) {.base.} =
   self.state.optOnNoteChange = some(onNoteChangeCB)
 
 # -----------------------------------------------------------------------------

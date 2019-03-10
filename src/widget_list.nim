@@ -1,4 +1,4 @@
-import options
+import better_options
 import sequtils
 import sugar
 
@@ -12,46 +12,84 @@ import js_markdown
 import js_utils
 import jstr_utils
 
+# -----------------------------------------------------------------------------
+# Types
+# -----------------------------------------------------------------------------
 
 type
-  SelectCallback = proc (id: cstring)
+  SelectCallback* = proc (id: cstring)
 
-  WidgetList* = ref object of UiUnit
-    unit: UiUnit
-    container: Container
+  WidgetListUnits* = ref object
+    main*: UiUnit
+    container*: Container
+    renderNote*: proc(note: Note): tuple[main: UiUnit, button: Button]
+
+  WidgetListState = ref object
     notes: seq[Note]
-    ui: UiContext
     onSelect: Option[SelectCallback]
 
+  WidgetList* = ref object of UiUnit
+    units: WidgetListUnits
+    state: WidgetListState
 
-defaultImpls(WidgetList, self, self.unit)
+# -----------------------------------------------------------------------------
+# Overloads
+# -----------------------------------------------------------------------------
+
+defaultImpls(WidgetList, self, self.units.main)
+
+# -----------------------------------------------------------------------------
+# Public methods
+# -----------------------------------------------------------------------------
+
+method setOnSelect*(self: WidgetList, cb: SelectCallback) {.base.} =
+  self.state.onSelect = some(cb)
 
 
-proc setOnSelect*(self: WidgetList, cb: SelectCallback): WidgetList {.discardable.} =
-  self.onSelect = some(cb)
-  self
+method setNotes*(self: WidgetList, notes: seq[Note]) {.base.} =
 
-
-proc setNotes*(self: WidgetList, notes: seq[Note]) =
-  # TODO what's the nicest way to pass ui context to setter members?
-  let ui = self.ui
-
-  proc label(name: cstring): UiUnit =
-    uiDefs:
-      ui.classes("tag", "is-dark").span(name)
-
-  self.notes = notes
-  self.container.clear()
+  self.state.notes = notes
+  self.units.container.clear()
 
   var buttons = newJDict[cstring, Button]()
 
   uiDefs:
-    let newChildren = self.notes.map((note) =>
-      ui.tag("tr").container([
+    let newChildren = self.state.notes.map() do (note: Note) -> UiUnit:
+      let (main, button) = self.units.renderNote(note)
+      buttons[note.id] = button
+      main
+
+  self.units.container.replaceChildren(newChildren)
+
+  proc onClick(id: cstring): ButtonCallback =
+    return proc () =
+      echo "list clicked native handler"
+      for cb in self.state.onSelect:
+        echo "Switching to ", id
+        cb(id)
+
+  for id in buttons:
+    buttons[id].setOnClick(onClick(id))
+
+# -----------------------------------------------------------------------------
+# Constructor
+# -----------------------------------------------------------------------------
+
+proc widgetList*(ui: UiContext): WidgetList =
+
+  var units = WidgetListUnits()
+  uiDefs:
+    proc label(name: cstring): UiUnit =
+      uiDefs:
+        ui.classes("tag", "is-dark").span(name)
+
+    units.renderNote = proc(note: Note): tuple[main: UiUnit, button: Button] =
+      var button: Button
+      var main = ui.tag("tr").container([
         ui.tag("td").container([
           ui.tag("a").classes("truncate").button(
             if note.title.len > 0: note.title else: "\u2060" # avoid collapsing rows with empty titles => use WORD JOINER char
-          ) as buttons[note.id]
+          ) as button
         ]),
         ui.tag("td").container([
           ui.classes("tags", "truncate").container(
@@ -59,38 +97,21 @@ proc setNotes*(self: WidgetList, notes: seq[Note]) =
           ),
         ]),
       ]).UiUnit
-    )
+      return (main: main, button: button)
 
-  self.container.replaceChildren(newChildren)
-
-  proc onClick(id: cstring): ButtonCallback =
-    return proc () =
-      echo "list clicked native handler"
-      if self.onSelect.isSome:
-        #let selectedId = self.notes[i].id
-        echo "Switching to ", id
-        self.onSelect.get()(id)
-
-  for id in buttons:
-    buttons[id].setOnClick(onClick(id))
-
-
-proc widgetList*(ui: UiContext): WidgetList =
-
-  var container: Container
-
-  uiDefs:
-    var unit = ui.container([
+  uiDefs: discard
+    ui.container([
       ui.tag("table").classes(
         "table", "is-bordered", "is-striped", "is-narrow", "is-hoverable", "is-fullwidth", "table-fixed"
-        ).container([]) as container
-    ])
+        ).container([]) as units.container
+    ]) as units.main
 
   var self = WidgetList(
-    unit: unit,
-    container: container,
-    notes: @[],
-    ui: ui,
+    units: units,
+    state: WidgetListState(
+      notes: @[],
+      onSelect: none(SelectCallback),
+    )
   )
 
   self

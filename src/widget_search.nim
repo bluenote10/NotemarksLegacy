@@ -21,9 +21,9 @@ type
   SelectionCallback* = proc(note: Note)
 
   WigetSearchUnits* = ref object
-    main: UiUnit
-    input: Input
-    container: Container
+    main*: UiUnit
+    input*: Input
+    container*: Container
 
   State = ref object
     suggestions: seq[Note]
