@@ -279,10 +279,13 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
   self.setOnNoteChange = proc(onNoteChangeCB: NoteChangeCallback) =
     optOnNoteChange = some(onNoteChangeCB)
 
+  #[
+  # TODO reactivate
   self.setFocus = proc() =
     if optNote.isSome and optNote.get.title.len == 0:
       inTitle.getDomNode().focus()
     else:
       inMarkdown.getDomNode().focus()
+  ]#
 
   self

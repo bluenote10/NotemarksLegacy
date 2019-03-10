@@ -11,6 +11,7 @@ proc run(unit: UiUnit) =
   let node = unit.getDomNode()
   let root = document.getElementById("ROOT")
   root.appendChild(node)
+  unit.setFocus()
 
 let s = newStore()
 

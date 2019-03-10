@@ -85,19 +85,22 @@ proc attrs*(ui: UiContext, attrs: varargs[(cstring, cstring)]): UiContext =
 
 type
   UiUnit* = ref object of RootObj
-    setFocus*: proc()
+    #setFocus*: proc()
 
 method getDomNode*(self: UiUnit): Node {.base.} =
   doAssert false, "called abstract method 'getDomNode'"
 
 method activate*(self: UiUnit) {.base.} =
+  # Default behavior: do nothing
   discard
 
 method deactivate*(self: UiUnit) {.base.} =
+  # Default behavior: do nothing
   discard
 
-#method setFocus*(self: UiUnit) {.base.} =
-#  discard
+method setFocus*(self: UiUnit) {.base.} =
+  # Default behavior: focus main element
+  self.getDomNode().focus()
 
 # -----------------------------------------------------------------------------
 # Helpers

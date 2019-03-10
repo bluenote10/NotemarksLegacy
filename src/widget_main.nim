@@ -25,8 +25,9 @@ type
 
   WidgetMain* = ref object of UiUnit
     unit: UiUnit
-    widgetContainer: Container
-    list: WidgetList
+    search: WidgetSearch
+    #widgetContainer: Container
+    #list: WidgetList
     #editor: Option[WidgetEditor]
 
     getEditor: proc(): WidgetEditor
@@ -35,6 +36,9 @@ type
     switchToNoteview: proc()
 
 defaultImpls(WidgetMain, unit)
+
+method setFocus*(self: WidgetMain) =
+  self.search.setFocus() # getDomNode().focus()
 
 
 proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
@@ -87,8 +91,9 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
 
   let self = WidgetMain(
     unit: unit,
-    widgetContainer: widgetContainer,
-    list: list,
+    search: search,
+    #widgetContainer: widgetContainer,
+    #list: list,
     #editor: none(WidgetEditor),
   )
 
@@ -141,10 +146,11 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
     # Refresh notes
     let notes = store.getNotes()
     list.setNotes(notes)
-    widgetContainer.replaceChildren([self.list.UiUnit])
+    widgetContainer.replaceChildren([list.UiUnit])
     state = ViewState.List
     let labels = store.getLabelCounts()
     labeltree.setLabels(labels)
+    search.setFocus()
 
   self.switchToEditor = proc() =
     for note in optSelectedNote:

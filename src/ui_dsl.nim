@@ -120,5 +120,21 @@ template defaultImpls*(T, field) =
     echo "Deactivating: ", name(T)
     self.field.deactivate()
 
-  method setFocus*(self: T) =
-    self.field.setFocus()
+  #method setFocus*(self: T) =
+  #  self.field.setFocus()
+
+template defaultImpls2*(T, selfName, expression) =
+
+  method getDomNode*(selfName: T): Node =
+    expression.getDomNode()
+
+  method activate*(selfName: T) =
+    echo "Activating: ", name(T)
+    expression.activate()
+
+  method deactivate*(selfName: T) =
+    echo "Deactivating: ", name(T)
+    expression.deactivate()
+
+  #method setFocus*(self: T) =
+  #  self.field.setFocus()

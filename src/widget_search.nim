@@ -16,12 +16,21 @@ type
   SearchCallback = proc(text: cstring): seq[Note]
   SelectionCallback = proc(note: Note)
 
+  WigetSearchUnits = ref object
+    main: UiUnit
+    input: Input
+    container: Container
+
   WidgetSearch* = ref object of UiUnit
-    unit: UiUnit
+    units: WigetSearchUnits
     setOnSearch*: proc(onSearch: SearchCallback)
     setOnSelection*: proc(onSelection: SelectionCallback)
+    #setFocus*: proc()
 
-defaultImpls(WidgetSearch, unit)
+defaultImpls2(WidgetSearch, self, self.units.main)
+
+method setFocus*(self: WidgetSearch) =
+  self.units.input.setFocus() # getDomNode().focus()
 
 
 proc widgetSearch*(ui: UiContext): WidgetSearch =
@@ -31,25 +40,24 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
       #ui.classes("panel-block").container(children=[ui.tdiv(s).UiUnit])
       ui.classes("is-size-6", "panel-block").tdiv(note.title)
 
-  var input: Input
-  var container: Container
+  var units = WigetSearchUnits()
 
-  uiDefs:
-    var unit = ui.classes("container").container([
+  uiDefs: discard
+    ui.classes("container").container([
       ui.container([
         ui.classes("field", "has-margin-top").container([
           ui.classes("control", "has-icons-left").container([
-            ui.classes("input").input(placeholder="Search...") as input,
+            ui.classes("input").input(placeholder="Search...") as units.input,
             ui.tag("span").classes("icon", "is-left").container([
               ui.classes("fas", "fa-search").i(""),
             ]),
           ]),
         ]),
         ui.classes("float-wrapper").container([
-          ui.classes("card", "float-box", "is-hidden").container([]) as container,
+          ui.classes("card", "float-box", "is-hidden").container([]) as units.container,
         ]),
       ]),
-    ])
+    ]) as units.main
 
   # Internal state
   var suggestions = newSeq[Note]()
@@ -57,18 +65,18 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
   var optOnSearch = none(SearchCallback)
   var optOnSelection = none(SelectionCallback)
 
-  let self = WidgetSearch(unit: unit)
+  let self = WidgetSearch(units: units)
 
   proc hide() =
-    container.getDomNode().Element.classList.add("is-hidden")
+    units.container.getDomNode().Element.classList.add("is-hidden")
 
   proc show() =
-    container.getDomNode().Element.classList.remove("is-hidden")
+    units.container.getDomNode().Element.classList.remove("is-hidden")
 
   proc resetSuggestions() =
     suggestions.setLen(0)
     selectedIndex = -1
-    container.clear()
+    units.container.clear()
     hide()
 
   proc handleSelection(down: bool) =
@@ -88,26 +96,26 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
           selectedIndex -= 1
           while selectedIndex < 0:
             selectedIndex += suggestions.len
-      let children = container.getChildren()
+      let children = units.container.getChildren()
       if oldSelectedIndex >= 0:
         children[oldSelectedIndex].getDomNode().Element.classList.remove("complete-selection")
       children[selectedIndex].getDomNode().Element.classList.add("complete-selection")
       echo oldSelectedIndex, selectedIndex
 
   # Event handler
-  input.setOnInput() do (newText: cstring):
+  units.input.setOnInput() do (newText: cstring):
     for onSearch in optOnSearch:
       suggestions = onSearch(newText)
       if newText.isNil or newText == "" or suggestions.len == 0:
-        container.clear()
+        units.container.clear()
         hide()
       else:
-        container.replaceChildren(
+        units.container.replaceChildren(
           suggestions.map(note => ui.makeSearchUnit(note).UiUnit)
         )
         show()
 
-  input.setOnKeydown() do (evt: KeyboardEvent):
+  units.input.setOnKeydown() do (evt: KeyboardEvent):
     if evt.keyCode == 38:     # up
       evt.preventDefault()
       handleSelection(down=false)
@@ -122,9 +130,9 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
           onSelection(suggestions[selectedIndex])
           resetSuggestions()
 
-  input.setOnBlur() do ():
+  units.input.setOnBlur() do ():
     resetSuggestions()
-    #container.clear()
+    #units.container.clear()
     #hide()
 
   # Members
@@ -133,5 +141,8 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
 
   self.setOnSelection = proc(onSelection: SelectionCallback) =
     optOnSelection = some(onSelection)
+
+  #self.setFocus = proc() =
+  #  input.getDomNode().focus()
 
   self
