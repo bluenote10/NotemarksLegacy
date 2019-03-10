@@ -48,11 +48,6 @@ type
     units: WidgetMainUnits
     state: WidgetMainState
 
-    #getEditor: proc(): WidgetEditor
-    #switchToList: proc()
-    #switchToEditor: proc()
-    #switchToNoteview: proc()
-
 # -----------------------------------------------------------------------------
 # Overloads
 # -----------------------------------------------------------------------------

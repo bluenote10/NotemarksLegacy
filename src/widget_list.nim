@@ -53,17 +53,15 @@ method setNotes*(self: WidgetList, notes: seq[Note]) {.base.} =
 
   var buttons = newJDict[cstring, Button]()
 
-  uiDefs:
-    let newChildren = self.state.notes.map() do (note: Note) -> UiUnit:
-      let (main, button) = self.units.renderNote(note)
-      buttons[note.id] = button
-      main
+  let newChildren = self.state.notes.map() do (note: Note) -> UiUnit:
+    let (main, button) = self.units.renderNote(note)
+    buttons[note.id] = button
+    main
 
   self.units.container.replaceChildren(newChildren)
 
   proc onClick(id: cstring): ButtonCallback =
     return proc () =
-      echo "list clicked native handler"
       for cb in self.state.onSelect:
         echo "Switching to ", id
         cb(id)
@@ -78,13 +76,14 @@ method setNotes*(self: WidgetList, notes: seq[Note]) {.base.} =
 proc widgetList*(ui: UiContext): WidgetList =
 
   var units = WidgetListUnits()
-  uiDefs:
-    proc label(name: cstring): UiUnit =
-      uiDefs:
-        ui.classes("tag", "is-dark").span(name)
 
-    units.renderNote = proc(note: Note): tuple[main: UiUnit, button: Button] =
-      var button: Button
+  proc label(name: cstring): UiUnit =
+    uiDefs:
+      ui.classes("tag", "is-dark").span(name)
+
+  units.renderNote = proc(note: Note): tuple[main: UiUnit, button: Button] =
+    var button: Button
+    uiDefs:
       var main = ui.tag("tr").container([
         ui.tag("td").container([
           ui.tag("a").classes("truncate").button(
@@ -97,7 +96,7 @@ proc widgetList*(ui: UiContext): WidgetList =
           ),
         ]),
       ]).UiUnit
-      return (main: main, button: button)
+    return (main: main, button: button)
 
   uiDefs: discard
     ui.container([

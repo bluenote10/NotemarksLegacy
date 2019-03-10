@@ -66,7 +66,6 @@ method setMarkdownOutput*(self: WidgetNoteview, note: Note) {.base.} =
 # Constructor
 # -----------------------------------------------------------------------------
 
-
 proc widgetNoteview*(ui: UiContext): WidgetNoteview =
 
   var units = WidgetNoteviewUnits()
