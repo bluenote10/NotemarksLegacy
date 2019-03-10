@@ -107,34 +107,15 @@ macro uiDefs*(code: untyped): untyped =
   echo " * Final code:\n", result.repr
 
 
-template defaultImpls*(T, field) =
-
-  method getDomNode*(self: T): Node =
-    self.field.getDomNode()
-
-  method activate*(self: T) =
-    echo "Activating: ", name(T)
-    self.field.activate()
-
-  method deactivate*(self: T) =
-    echo "Deactivating: ", name(T)
-    self.field.deactivate()
-
-  #method setFocus*(self: T) =
-  #  self.field.setFocus()
-
-template defaultImpls2*(T, selfName, expression) =
+template defaultImpls*(T, selfName, unitExpr) =
 
   method getDomNode*(selfName: T): Node =
-    expression.getDomNode()
+    unitExpr.getDomNode()
 
   method activate*(selfName: T) =
     echo "Activating: ", name(T)
-    expression.activate()
+    unitExpr.activate()
 
   method deactivate*(selfName: T) =
     echo "Deactivating: ", name(T)
-    expression.deactivate()
-
-  #method setFocus*(self: T) =
-  #  self.field.setFocus()
+    unitExpr.deactivate()

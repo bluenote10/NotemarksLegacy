@@ -35,7 +35,7 @@ type
     switchToEditor: proc()
     switchToNoteview: proc()
 
-defaultImpls(WidgetMain, unit)
+defaultImpls(WidgetMain, self, self.unit)
 
 method setFocus*(self: WidgetMain) =
   self.search.setFocus() # getDomNode().focus()

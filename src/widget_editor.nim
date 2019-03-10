@@ -115,24 +115,32 @@ proc setPlaceholder*(self: FancyInput, placeholder: cstring) =
 # -----------------------------------------------------------------------------
 
 type
-  WidgetAddFieldDropdown* = ref object of UiUnit
-    unit: UiUnit
+  WidgetAddFileDropdownUnits* = ref object
+    main: UiUnit
+    button: Button
 
-defaultImpls(WidgetAddFieldDropdown, unit)
+  WidgetAddFileDropdownState = ref object
+    isActive: bool
+
+  WidgetAddFieldDropdown* = ref object of UiUnit
+    units: WidgetAddFileDropdownUnits
+    state: WidgetAddFileDropdownState
+
+defaultImpls(WidgetAddFieldDropdown, self, self.units.main)
 
 proc widgetAddFieldDropdown*(ui: UiContext): WidgetAddFieldDropdown =
 
-  var button: Button
+  var units = WidgetAddFileDropdownUnits()
 
-  uiDefs:
-    let unit = ui.classes("dropdown").container([
+  uiDefs: discard
+    ui.classes("dropdown").container([
       ui.classes("dropdown-trigger").container([
         ui.tag("button").classes("button", "is-tiny").button([
           #ui.span("Add..."),
           ui.tag("span").classes("icon", "is-small").container([
             ui.classes("fas", "fa-plus").i("") #fa-angle-down
           ]),
-        ]) as button
+        ]) as units.button
       ]),
       ui.classes("dropdown-menu").container([
         ui.classes("dropdown-content").container([
@@ -141,20 +149,24 @@ proc widgetAddFieldDropdown*(ui: UiContext): WidgetAddFieldDropdown =
           ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Author"),
         ]),
       ])
-    ])
+    ]) as units.main
 
   # Internal state
-  var isActive = false
+  var self = WidgetAddFieldDropdown(
+    units: units,
+    state: WidgetAddFileDropdownState(
+      isActive: false,
+    )
+  )
 
-  button.setOnClick() do ():
-    if not isActive:
-      unit.getDomNode().Element.classList.add("is-active")
-      isActive = true
+  self.units.button.setOnClick() do ():
+    if not self.state.isActive:
+      self.units.main.getDomNode().Element.classList.add("is-active")
+      self.state.isActive = true
     else:
-      unit.getDomNode().Element.classList.remove("is-active")
-      isActive = false
+      self.units.main.getDomNode().Element.classList.remove("is-active")
+      self.state.isActive = false
 
-  WidgetAddFieldDropdown(unit: unit)
 
 # -----------------------------------------------------------------------------
 # Widget
@@ -163,45 +175,67 @@ proc widgetAddFieldDropdown*(ui: UiContext): WidgetAddFieldDropdown =
 type
   NoteChangeCallback = proc(note: Note)
 
+  WidgetEditorUnits* = ref object
+    main: UiUnit
+    inTitle: Input
+    inLabels: Input
+    inMarkdown: FancyInput
+
+  WidgetEditorState = ref object
+    optNote: Option[Note]
+    optOnNoteChange: Option[NoteChangeCallback]
+
   WidgetEditor* = ref object of UiUnit
-    unit: UiUnit
-    #inTitle: Input
-    #inLabels: Input
-    #inMarkdown: FancyInput
-    #note: Note
+    units: WidgetEditorUnits
+    state: WidgetEditorState
 
     setNote*: proc(note: Note)
     setOnNoteChange*: proc(onNoteChange: NoteChangeCallback)
 
-defaultImpls(WidgetEditor, unit)
+# -----------------------------------------------------------------------------
+# Overloads
+# -----------------------------------------------------------------------------
 
-#[
-method getDomNode*(self: T): Node =
-  self.unit.getDomNode()
+defaultImpls(WidgetEditor, self, self.units.main)
 
-method activate*(self: T) =
-  echo "Activating: ", name(T)
-  self.unit.activate()
+method setFocus*(self: WidgetEditor) =
+  if self.state.optNote.isSome and self.state.optNote.get.title.len == 0:
+    self.units.inTitle.getDomNode().focus()
+  else:
+    self.units.inMarkdown.getDomNode().focus()
 
-method deactivate*(self: T) =
-  echo "Deactivating: ", name(T)
-  self.unit.deactivate()
-]#
+# -----------------------------------------------------------------------------
+# Public methods
+# -----------------------------------------------------------------------------
 
+method setNote(self: WidgetEditor, note: Note) {.base.} =
+  echo "Switched to note:", note.id
+  self.state.optNote = some(note)
+  # Update dom contents
+  self.units.inTitle.setValue(note.title)
+  self.units.inLabels.setValue(note.labels.join(" "))
+  self.units.inMarkdown.setValue(note.markdown)
+  # TODO not needed here anymore?
+  # self.updateOutMarkdown(self.note, self.note.markdown)
+
+method setOnNoteChange(self: WidgetEditor, onNoteChangeCB: NoteChangeCallback) {.base.} =
+  self.state.optOnNoteChange = some(onNoteChangeCB)
+
+# -----------------------------------------------------------------------------
+# Constructor
+# -----------------------------------------------------------------------------
 
 proc widgetEditor*(ui: UiContext): WidgetEditor =
 
-  var inTitle: Input
-  var inLabels: Input
-  var inMarkdown: FancyInput
+  var units = WidgetEditorUnits()
 
-  uiDefs:
-    var unit = ui.classes("container").container([
+  uiDefs: discard
+    ui.classes("container").container([
       ui.field([
         ui.label("Title"),
         ui.control([
           ui.classes("input", "is-small")
-            .input(placeholder="Title") as inTitle,
+            .input(placeholder="Title") as units.inTitle,
         ])
         #ui.fieldLabel("Input"),
         #ui.fieldBody([
@@ -215,7 +249,7 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
         ui.label("Labels"),
         ui.control([
           ui.classes("input", "is-small")
-            .input(placeholder="Labels") as inLabels,
+            .input(placeholder="Labels") as units.inLabels,
         ])
       ]),
       ui.widgetAddFieldDropdown(),
@@ -225,67 +259,44 @@ proc widgetEditor*(ui: UiContext): WidgetEditor =
           ui.tag("textarea")
             .classes("textarea", "is-small", "font-mono", "ui-text-area")
             #.attrs({"rows": "40"})
-            .fancyInput(placeholder="placeholder") as inMarkdown,
+            .fancyInput(placeholder="placeholder") as units.inMarkdown,
         ]),
       ]),
-    ])
-
-  # Internal state
-  var optNote = none(Note)
-  var optOnNoteChange = none(NoteChangeCallback)
+    ]) as units.main
 
   var self = WidgetEditor(
-    unit: unit,
+    units: units,
+    state: WidgetEditorState(
+      optNote: none(Note),
+      optOnNoteChange: none(NoteChangeCallback),
+    ),
   )
 
-  # Event handler
-  inTitle.setOnInput() do (newTitle: cstring):
-    for note in optNote:
+  # Event handlers
+  self.units.inTitle.setOnInput() do (newTitle: cstring):
+    for note in self.state.optNote:
       note.updateTitle(newTitle)
-      for cb in optOnNoteChange:
+      for cb in self.state.optOnNoteChange:
         cb(note)
       #store.storeYaml(self.note)
       #self.note.storeYaml()
 
-  inLabels.setOnInput() do (newLabels: cstring):
-    for note in optNote:
+  self.units.inLabels.setOnInput() do (newLabels: cstring):
+    for note in self.state.optNote:
       let labels = newLabels.split(" ")
       note.updateLabels(labels)
-      for cb in optOnNoteChange:
+      for cb in self.state.optOnNoteChange:
         cb(note)
       #self.note.storeYaml()
       #store.storeYaml(self.note)
 
-  inMarkdown.setOnInput() do (newText: cstring):
-    for note in optNote:
+  self.units.inMarkdown.setOnInput() do (newText: cstring):
+    for note in self.state.optNote:
       note.updateMarkdown(newText)
-      for cb in optOnNoteChange:
+      for cb in self.state.optOnNoteChange:
         cb(note)
       #self.updateOutMarkdown(n, newText)
       #self.note.storeMarkdown()
       #store.storeMarkdown(self.note)
-
-  # Members
-  self.setNote = proc(note: Note) =
-    echo "Switched to note:", note.id
-    optNote = some(note)
-    # Update dom contents
-    inTitle.setValue(note.title)
-    inLabels.setValue(note.labels.join(" "))
-    inMarkdown.setValue(note.markdown)
-    # TODO not needed here anymore?
-    # self.updateOutMarkdown(self.note, self.note.markdown)
-
-  self.setOnNoteChange = proc(onNoteChangeCB: NoteChangeCallback) =
-    optOnNoteChange = some(onNoteChangeCB)
-
-  #[
-  # TODO reactivate
-  self.setFocus = proc() =
-    if optNote.isSome and optNote.get.title.len == 0:
-      inTitle.getDomNode().focus()
-    else:
-      inMarkdown.getDomNode().focus()
-  ]#
 
   self

@@ -24,7 +24,7 @@ type
     unit: UiUnit
     setMarkdownOutput*: proc(note: Note)
 
-defaultImpls(WidgetNoteview, unit)
+defaultImpls(WidgetNoteview, self, self.unit)
 
 
 proc widgetNoteview*(ui: UiContext): WidgetNoteview =

@@ -20,7 +20,7 @@ type
     content: Container
     tabs: seq[TabContent]
 
-defaultImpls(WidgetTabs, unit)
+defaultImpls(WidgetTabs, self, self.unit)
 
 
 proc activate*(self: WidgetTabs, i: int) =

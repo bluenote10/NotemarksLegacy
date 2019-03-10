@@ -12,26 +12,91 @@ import ui_dsl
 
 import store
 
-type
-  SearchCallback = proc(text: cstring): seq[Note]
-  SelectionCallback = proc(note: Note)
+# -----------------------------------------------------------------------------
+# Types
+# -----------------------------------------------------------------------------
 
-  WigetSearchUnits = ref object
+type
+  SearchCallback* = proc(text: cstring): seq[Note]
+  SelectionCallback* = proc(note: Note)
+
+  WigetSearchUnits* = ref object
     main: UiUnit
     input: Input
     container: Container
 
+  State = ref object
+    suggestions: seq[Note]
+    selectedIndex: int
+    optOnSearch: Option[SearchCallback]
+    optOnSelection: Option[SelectionCallback]
+
   WidgetSearch* = ref object of UiUnit
     units: WigetSearchUnits
-    setOnSearch*: proc(onSearch: SearchCallback)
-    setOnSelection*: proc(onSelection: SelectionCallback)
-    #setFocus*: proc()
+    state: State
 
-defaultImpls2(WidgetSearch, self, self.units.main)
+# -----------------------------------------------------------------------------
+# Overloads
+# -----------------------------------------------------------------------------
+
+defaultImpls(WidgetSearch, self, self.units.main)
 
 method setFocus*(self: WidgetSearch) =
-  self.units.input.setFocus() # getDomNode().focus()
+  self.units.input.setFocus()
 
+# -----------------------------------------------------------------------------
+# Private members
+# -----------------------------------------------------------------------------
+
+proc hide(self: WidgetSearch) =
+  self.units.container.getDomNode().Element.classList.add("is-hidden")
+
+proc show(self: WidgetSearch) =
+  self.units.container.getDomNode().Element.classList.remove("is-hidden")
+
+proc resetSuggestions(self: WidgetSearch) =
+  self.state.suggestions.setLen(0)
+  self.state.selectedIndex = -1
+  self.units.container.clear()
+  self.hide()
+
+proc handleSelection(self: WidgetSearch, down: bool) =
+  if self.state.suggestions.len > 0:
+    let selectedIndex = self.state.selectedIndex
+    let oldSelectedIndex = selectedIndex
+    if selectedIndex < 0:
+      if down:
+        self.state.selectedIndex = 0
+      else:
+        self.state.selectedIndex = self.state.suggestions.len - 1
+    else:
+      if down:
+        self.state.selectedIndex += 1
+        while self.state.selectedIndex >= self.state.suggestions.len:
+          self.state.selectedIndex -= self.state.suggestions.len
+      else:
+        self.state.selectedIndex -= 1
+        while self.state.selectedIndex < 0:
+          self.state.selectedIndex += self.state.suggestions.len
+    let children = self.units.container.getChildren()
+    if oldSelectedIndex >= 0:
+      children[oldSelectedIndex].getDomNode().Element.classList.remove("complete-selection")
+    children[self.state.selectedIndex].getDomNode().Element.classList.add("complete-selection")
+    echo oldSelectedIndex, selectedIndex
+
+# -----------------------------------------------------------------------------
+# Public methods
+# -----------------------------------------------------------------------------
+
+method setOnSearch*(self: WidgetSearch, onSearch: SearchCallback) {.base.} =
+  self.state.optOnSearch = some(onSearch)
+
+method setOnSelection*(self: WidgetSearch, onSelection: SelectionCallback) {.base.} =
+  self.state.optOnSelection = some(onSelection)
+
+# -----------------------------------------------------------------------------
+# Constructor
+# -----------------------------------------------------------------------------
 
 proc widgetSearch*(ui: UiContext): WidgetSearch =
 
@@ -59,90 +124,45 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
       ]),
     ]) as units.main
 
-  # Internal state
-  var suggestions = newSeq[Note]()
-  var selectedIndex = -1
-  var optOnSearch = none(SearchCallback)
-  var optOnSelection = none(SelectionCallback)
-
-  let self = WidgetSearch(units: units)
-
-  proc hide() =
-    units.container.getDomNode().Element.classList.add("is-hidden")
-
-  proc show() =
-    units.container.getDomNode().Element.classList.remove("is-hidden")
-
-  proc resetSuggestions() =
-    suggestions.setLen(0)
-    selectedIndex = -1
-    units.container.clear()
-    hide()
-
-  proc handleSelection(down: bool) =
-    if suggestions.len > 0:
-      let oldSelectedIndex = selectedIndex
-      if selectedIndex < 0:
-        if down:
-          selectedIndex = 0
-        else:
-          selectedIndex = suggestions.len - 1
-      else:
-        if down:
-          selectedIndex += 1
-          while selectedIndex >= suggestions.len:
-            selectedIndex -= suggestions.len
-        else:
-          selectedIndex -= 1
-          while selectedIndex < 0:
-            selectedIndex += suggestions.len
-      let children = units.container.getChildren()
-      if oldSelectedIndex >= 0:
-        children[oldSelectedIndex].getDomNode().Element.classList.remove("complete-selection")
-      children[selectedIndex].getDomNode().Element.classList.add("complete-selection")
-      echo oldSelectedIndex, selectedIndex
+  let self = WidgetSearch(
+    units: units,
+    state: State(
+      suggestions: newSeq[Note](),
+      selectedIndex: -1,
+      optOnSearch: none(SearchCallback),
+      optOnSelection: none(SelectionCallback),
+    )
+  )
 
   # Event handler
   units.input.setOnInput() do (newText: cstring):
-    for onSearch in optOnSearch:
-      suggestions = onSearch(newText)
-      if newText.isNil or newText == "" or suggestions.len == 0:
-        units.container.clear()
-        hide()
+    for onSearch in self.state.optOnSearch:
+      self.state.suggestions = onSearch(newText)
+      if newText.isNil or newText == "" or self.state.suggestions.len == 0:
+        self.units.container.clear()
+        self.hide()
       else:
-        units.container.replaceChildren(
-          suggestions.map(note => ui.makeSearchUnit(note).UiUnit)
+        self.units.container.replaceChildren(
+          self.state.suggestions.map(note => ui.makeSearchUnit(note).UiUnit)
         )
-        show()
+        self.show()
 
   units.input.setOnKeydown() do (evt: KeyboardEvent):
     if evt.keyCode == 38:     # up
       evt.preventDefault()
-      handleSelection(down=false)
+      self.handleSelection(down=false)
     elif evt.keyCode == 40:   # down
       evt.preventDefault()
-      handleSelection(down=true)
+      self.handleSelection(down=true)
     elif evt.keyCOde == 27:   # esc
-      resetSuggestions()
+      self.resetSuggestions()
     elif evt.keyCode == 13:   # return
-      if selectedIndex >= 0:
-        for onSelection in optOnSelection:
-          onSelection(suggestions[selectedIndex])
-          resetSuggestions()
+      if self.state.selectedIndex >= 0:
+        for onSelection in self.state.optOnSelection:
+          onSelection(self.state.suggestions[self.state.selectedIndex])
+          self.resetSuggestions()
 
   units.input.setOnBlur() do ():
-    resetSuggestions()
-    #units.container.clear()
-    #hide()
-
-  # Members
-  self.setOnSearch = proc(onSearch: SearchCallback) =
-    optOnSearch = some(onSearch)
-
-  self.setOnSelection = proc(onSelection: SelectionCallback) =
-    optOnSelection = some(onSelection)
-
-  #self.setFocus = proc() =
-  #  input.getDomNode().focus()
+    self.resetSuggestions()
 
   self

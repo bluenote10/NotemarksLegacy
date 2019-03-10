@@ -24,7 +24,7 @@ type
     onSelect: Option[SelectCallback]
 
 
-defaultImpls(WidgetList, unit)
+defaultImpls(WidgetList, self, self.unit)
 
 
 proc setOnSelect*(self: WidgetList, cb: SelectCallback): WidgetList {.discardable.} =

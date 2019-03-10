@@ -24,7 +24,7 @@ type
     unit: UiUnit
     setLabels*: proc(labels: JDict[cstring, int])
 
-defaultImpls(WidgetLabeltree, unit)
+defaultImpls(WidgetLabeltree, self, self.unit)
 
 
 proc widgetLabeltree*(ui: UiContext): WidgetLabeltree =
