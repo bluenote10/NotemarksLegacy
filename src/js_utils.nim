@@ -25,6 +25,8 @@ proc `[]=`*[K, V](d: JDict[K, V], k: K, v: V) {.importcpp: "#[#] = #".}
 
 proc newJDict*[K, V](): JDict[K, V] {.importcpp: "{@}".}
 
+proc len*[K, V](d: JDict[K, V]): int {.importcpp: "Object.keys(#).length".}
+
 proc contains*[K, V](d: JDict[K, V], k: K): bool {.importcpp: "#.hasOwnProperty(#)".}
 
 proc del*[K, V](d: JDict[K, V], k: K) {.importcpp: "delete #[#]".}
@@ -38,10 +40,10 @@ iterator items*[K, V](d: JDict[K, V]): K =
 iterator pairs*[K, V](d: JDict[K, V]): (K, V) =
   var kkk: K
   var vvv: V
-  {.emit: "for (", kkk, " in ", d, ") {".}
+  {.emit: ["for (", kkk, " in ", d, ") {"].}
   {.emit: [vvv, " = ", d[kkk]].}
   yield (kkk, vvv)
-  {.emit: "}".}
+  {.emit: ["}"].}
 
 proc keys*[K, V](d: JDict[K, V]): seq[K] {.importcpp: "Object.keys(#)".}
 
