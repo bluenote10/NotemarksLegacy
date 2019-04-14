@@ -8,3 +8,6 @@ build/renderer.js
 .watchcode.log
 
 /data/
+
+*.pyc
+/.idea/

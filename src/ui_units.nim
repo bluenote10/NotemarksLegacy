@@ -3,7 +3,9 @@ import strformat
 import sugar
 import better_options
 
-import karax/kdom
+import oop_utils/closure_class
+
+import karax/kdom except class  # why does a typed proc class interfere with the macro?
 import dom_utils
 import js_utils
 
@@ -19,13 +21,15 @@ type
     classes: seq[cstring]
     attrs: seq[(cstring, cstring)]
 
+let ui* = UiContext()
+
 proc getId*(ui: UiContext): cstring =
   ui.id
 
 proc getTag*(ui: UiContext): cstring =
   ui.tag
 
-proc getclasses*(ui: UiContext): seq[cstring] =
+proc getClasses*(ui: UiContext): seq[cstring] =
   ui.classes
 
 proc getAttrs*(ui: UiContext): seq[(cstring, cstring)] =
@@ -84,24 +88,92 @@ proc attrs*(ui: UiContext, attrs: varargs[(cstring, cstring)]): UiContext =
 # UiUnit base class
 # -----------------------------------------------------------------------------
 
+class(UiUnit):
+  proc getDomNode*(): Node
+  proc activate*() = discard
+  proc deactivate*() = discard
+  proc setFocus*() = discard
+
+
+# -----------------------------------------------------------------------------
+# Dom Units
+# -----------------------------------------------------------------------------
+
 type
-  UiUnit* = ref object of RootObj
-    #setFocus*: proc()
+  ClickCallback* = proc ()
+  InputCallback* = proc(s: cstring)
+  KeydownCallback* = proc (evt: KeyboardEvent)
+  BlurCallback* = proc ()
 
-method getDomNode*(self: UiUnit): Node {.base.} =
-  doAssert false, "called abstract method 'getDomNode'"
+type
+  EventHandlerBase = ref object of RootObj
 
-method activate*(self: UiUnit) {.base.} =
-  # Default behavior: do nothing
-  discard
+  OnClick = ref object of EventHandlerBase
+    dispatch: ClickCallback
+  OnInput = ref object of EventHandlerBase
+    dispatch: InputCallback
+  OnKeydown = ref object of EventHandlerBase
+    dispatch: KeydownCallback
+  OnBlur = ref object of EventHandlerBase
+    dispatch: BlurCallback
 
-method deactivate*(self: UiUnit) {.base.} =
-  # Default behavior: do nothing
-  discard
 
-method setFocus*(self: UiUnit) {.base.} =
-  # Default behavior: focus main element
-  self.getDomNode().focus()
+class(UiUnitDom of UiUnit):
+  ctor(domElement) proc(el: Element)
+
+  var eventHandlers = newJDict[cstring, EventHandlerBase]()
+  var nativeHandlers = newJDict[cstring, EventHandler]()
+
+  proc getDomNode*(): Node {.override.} = el
+  proc setFocus*() {.override.} = el.focus()
+
+  proc activate*() {.override.} =
+    echo &"activating with {eventHandlers.len} event handlers."
+    for eventHandlerLoop in eventHandlers.values():
+      closureScope:
+        let eventHandler = eventHandlerLoop
+        matchInstance:
+          case eventHandler:
+          of OnClick:
+            proc onClick(e: Event) =
+              eventHandler.dispatch()
+            el.addEventListener("click", onClick)
+            nativeHandlers["click"] = onClick
+          of OnInput:
+            proc onInput(e: Event) =
+              eventHandler.dispatch(e.target.value)
+            el.addEventListener("input", onInput)
+            nativeHandlers["input"] = onInput
+          of OnKeydown:
+            proc onKeydown(e: Event) =
+              eventHandler.dispatch(e.KeyboardEvent)
+            el.addEventListener("keydown", onKeydown)
+            nativeHandlers["keydown"] = onKeydown
+          of OnBlur:
+            proc onBlur(e: Event) =
+              eventHandler.dispatch()
+            el.addEventListener("blur", onBlur)
+            nativeHandlers["blur"] = onBlur
+
+
+  proc deactivate*() {.override.} =
+    for nativeHandlerCode in nativeHandlers.keys():
+      let nativeHandlerCallback = nativeHandlers[nativeHandlerCode]
+      el.removeEventListener(nativeHandlerCode, nativeHandlerCallback)
+    # clear references to old callbacks
+    nativeHandlers = newJDict[cstring, EventHandler]()
+
+  proc onClick*(cb: ClickCallback) =
+    eventHandlers["click"] = OnClick(dispatch: cb)
+
+  proc onInput*(cb: InputCallback) =
+    eventHandlers["input"] = OnInput(dispatch: cb)
+
+  proc onKeydown*(cb: KeydownCallback) =
+    eventHandlers["keydown"] = OnKeydown(dispatch: cb)
+
+  proc onBlur*(cb: BlurCallback) =
+    eventHandlers["blur"] = OnBlur(dispatch: cb)
 
 # -----------------------------------------------------------------------------
 # Helpers
@@ -126,6 +198,7 @@ proc getDomFragment(children: openarray[UiUnit]): Node =
 # TextNode
 # -----------------------------------------------------------------------------
 
+#[
 type
   TextNode* = ref object of UiUnit
     node: Node
@@ -142,11 +215,26 @@ proc textNode*(ui: UiContext, text: cstring): TextNode =
 
 proc setText*(self: TextNode, text: cstring) =
   self.node.nodeValue = text
+]#
+
+class(TextNode of UiUnit):
+  ctor(textNode) proc(text: cstring)
+  base()
+
+  let node = document.createTextNode(text)
+
+  proc getDomNode*(): Node {.override.} = node
+
+  proc setText*(text: cstring) =
+    node.nodeValue = text
+
+
 
 # -----------------------------------------------------------------------------
 # Text
 # -----------------------------------------------------------------------------
 
+#[
 type
   Text* = ref object of UiUnit
     el: Element
@@ -176,6 +264,26 @@ proc setInnerHtml*(self: Text, text: cstring) =
   # and one which offers the generic setInnerHtml? Currently this
   # is only for the element which holds the markdown HTML.
   self.el.innerHTML = text
+]#
+
+class(Text of UiUnitDom):
+  ctor(text) proc(ui: UiContext, text: cstring)
+
+  let el = document.createElement(ui.getTagOrDefault("span"))
+  base(el)
+
+  let textNode = document.createTextNode(text)
+  el.appendChild(textNode)
+  el.addClasses(ui.classes)
+
+  proc getDomNode*(): Node {.override.} = el
+
+  proc setText*(text: cstring) =
+    textNode.nodeValue = text
+
+  proc setInnerHtml*(text: cstring) =
+    el.innerHTML = text
+
 
 # Alternative constructors
 proc tdiv*(ui: UiContext, text: cstring): Text =
@@ -218,6 +326,7 @@ proc p*(ui: UiContext, text: cstring): Text =
 # Button
 # -----------------------------------------------------------------------------
 
+#[
 type
   ButtonCallback* = proc ()
 
@@ -268,11 +377,31 @@ proc button*(ui: UiContext, children: openarray[UiUnit]): Button =
 
 proc setOnClick*(self: Button, cb: ButtonCallback) =
   self.onClickCB = some(cb)
+]#
+
+proc button*(ui: UiContext, text: cstring): UiUnitDom =
+  ## Constructor for simple text button.
+  let el = h(ui.getTagOrDefault("button"),
+    text = text,
+    class = ui.classes,
+    attrs = ui.attrs,
+  )
+  domElement(el)
+
+proc button*(ui: UiContext, children: openarray[UiUnit]): UiUnitDom =
+  ## Constructor for button with nested units.
+  let el = h(ui.getTagOrDefault("button"),
+    class = ui.classes,
+    attrs = ui.attrs,
+  )
+  el.appendChild(getDomFragment(children))
+  domElement(el)
 
 # -----------------------------------------------------------------------------
 # Input
 # -----------------------------------------------------------------------------
 
+#[
 type
   InputCallback* = proc (text: cstring)
   KeydownCallback* = proc (evt: KeyboardEvent)
@@ -355,12 +484,39 @@ proc setValue*(self: Input, value: cstring) =
 
 proc setPlaceholder*(self: Input, placeholder: cstring) =
   self.el.setAttribute("placeholder", placeholder)
+]#
 
+class(Input of UiUnitDom):
+  ctor(newInput) proc(el: Element)
+  base(el)
+
+  proc setValue*(value: cstring) =
+    # setAttribute doesn't seem to work for textarea
+    # self.el.setAttribute("value", value)
+    el.value = value
+
+  proc setPlaceholder*(placeholder: cstring) =
+    el.setAttribute("placeholder", placeholder)
+
+
+proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input =
+  # Merge ui.attrs with explicit parameters
+  var attrs = ui.attrs
+  attrs.add({
+    "value".cstring: text,
+    "placeholder".cstring: placeholder,
+  })
+  let el = h(ui.getTagOrDefault("input"),
+    class = ui.classes,
+    attrs = attrs,
+  )
+  Input.init(el)
 
 # -----------------------------------------------------------------------------
 # Container
 # -----------------------------------------------------------------------------
 
+#[
 type
   Container* = ref object of UiUnit
     el: Element
@@ -500,6 +656,138 @@ iterator items*(self: Container): UiUnit =
 
 iterator pairs*(self: Container): (int, UiUnit) =
   for i, child in self.children:
+    yield (i, child)
+
+]#
+
+
+class(Container of UiUnitDom):
+  ctor(container) proc(ui: UiContext, children: openarray[UiUnit])
+
+  var children = @children
+  let el = h(ui.getTagOrDefault("div"),
+    class = ui.classes,
+    attrs = ui.attrs,
+  )
+  el.appendChild(getDomFragment(children))
+  var isActive = false
+  base(el)
+
+  proc activate*() {.override.} =
+    isActive = true
+    for child in children:
+      child.activate()
+
+  proc deactivate*() {.override.} =
+    isActive = false
+    for child in children:
+      child.deactivate()
+
+  proc insert*(index: int, newChild: UiUnit) =
+    # Activate/Deactivate
+    if isActive:
+      newChild.activate()
+
+    # Update self.children
+    children.insert(newChild, index)
+
+    # Update DOM
+    let newDomNode = newChild.getDomNode()
+    # TODO: need to handle case where there is no elementAfter?
+    let elementAfter =
+      if el.childNodes.len > index:
+        el.childNodes[index]
+      else:
+        nil
+    el.insertBefore(newDomNode, elementAfter)
+
+    doAssert children.len == el.childNodes.len
+
+
+  proc append*(newChild: UiUnit) =
+    # Activate/Deactivate
+    if isActive:
+      newChild.activate()
+
+    # Update self.children
+    children.add(newChild)
+
+    # Update DOM
+    let newDomNode = newChild.getDomNode()
+    el.insertBefore(newDomNode, nil)
+
+    doAssert children.len == el.childNodes.len
+
+
+  proc remove*(index: int) =
+    # TODO: OOB check
+
+    # Activate/Deactivate
+    if isActive:
+      children[index].deactivate()
+
+    # Update self.children
+    children.delete(index)
+
+    # Update DOM
+    let nodeToRemove = el.childNodes[index]
+    el.removeChild(nodeToRemove)
+
+    doAssert children.len == el.childNodes.len
+
+
+  proc clear*() =
+    # Activate/Deactivate
+    if isActive:
+      for child in children:
+        child.deactivate()
+
+    # Update self.children
+    children.setLen(0)
+
+    # Update DOM
+    let oldDisplay = el.style.display
+    el.style.display = "none"
+    el.removeAllChildren()
+    el.style.display = oldDisplay
+
+    doAssert children.len == el.childNodes.len
+
+
+  proc replaceChildren*(newChildren: openarray[UiUnit]) =
+    ## Performs a clear + inserts in an optimized way.
+
+    # Activate/Deactivate
+    if isActive:
+      for child in children:
+        child.deactivate()
+      for child in newChildren:
+        child.activate()
+
+    # Update self.children
+    children = @newChildren
+
+    # Update DOM
+    let oldDisplay = el.style.display
+    el.style.display = "none"
+    el.removeAllChildren()
+    el.appendChild(getDomFragment(newChildren))
+    el.style.display = oldDisplay
+
+    doAssert children.len == el.childNodes.len
+
+
+  proc getChildren*(): seq[UiUnit] =
+    children
+
+
+iterator items*(c: Container): UiUnit =
+  for child in c.getChildren():
+    yield child
+
+
+iterator pairs*(c: Container): (int, UiUnit) =
+  for i, child in c.getChildren():
     yield (i, child)
 
 # -----------------------------------------------------------------------------
