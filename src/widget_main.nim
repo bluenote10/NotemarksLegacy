@@ -28,7 +28,7 @@ type
     List, Editor, Noteview
 
   WidgetMainUnits* = ref object
-    main*: UiUnit
+    main*: Unit
     widgetContainer*: Container
     homeButton*: Button
     newNoteButton*: Button
@@ -44,7 +44,7 @@ type
     mode: ViewState
     optSelectedNote: Option[Note]
 
-  WidgetMain* = ref object of UiUnit
+  WidgetMain* = ref object of Unit
     units: WidgetMainUnits
     state: WidgetMainState
 
@@ -65,7 +65,7 @@ proc switchToList(self: WidgetMain) =
   # Refresh notes
   let notes = self.state.store.getNotes()
   self.units.list.setNotes(notes)
-  self.units.widgetContainer.replaceChildren([self.units.list.UiUnit])
+  self.units.widgetContainer.replaceChildren([self.units.list.Unit])
   self.state.mode = ViewState.List
   let labels = self.state.store.getLabelCounts()
   self.units.labeltree.setLabels(labels)
@@ -74,14 +74,14 @@ proc switchToList(self: WidgetMain) =
 proc switchToEditor(self: WidgetMain) =
   for note in self.state.optSelectedNote:
     self.units.editor.setNote(note)
-    self.units.widgetContainer.replaceChildren([self.units.editor.UiUnit])
+    self.units.widgetContainer.replaceChildren([self.units.editor.Unit])
     self.units.editor.setFocus()
     self.state.mode = ViewState.Editor
 
 proc switchToNoteview(self: WidgetMain) =
   for note in self.state.optSelectedNote:
     self.units.noteview.setMarkdownOutput(note)
-    self.units.widgetContainer.replaceChildren([self.units.noteview.UiUnit])
+    self.units.widgetContainer.replaceChildren([self.units.noteview.Unit])
     self.state.mode = ViewState.Noteview
 
 # -----------------------------------------------------------------------------
@@ -113,7 +113,7 @@ proc widgetMain*(ui: UiContext, store: Store): WidgetMain =
           ui.widgetSearch() as units.search,
         ]),
         ui.classes("ui-navbar-right").tdiv(""),
-      ]).UiUnit,
+      ]).Unit,
       ui.classes("ui-main-container").container([
         ui.classes("column", "ui-column-left", "is-fullheight").container([
           ui.widgetLabeltree() as units.labeltree,

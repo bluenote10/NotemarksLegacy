@@ -21,7 +21,7 @@ import js_utils
 
 type
   WidgetNoteviewUnits* = ref object
-    main: UiUnit
+    main: Unit
     title: Text
     outMarkdown: Text
     outLabels: Container
@@ -29,9 +29,9 @@ type
     outCreatedTime: Text
     outUpdatedDate: Text
     outUpdatedTime: Text
-    renderLabel: proc(name: cstring): UiUnit
+    renderLabel: proc(name: cstring): Unit
 
-  WidgetNoteview* = ref object of UiUnit
+  WidgetNoteview* = ref object of Unit
     units: WidgetNoteviewUnits
 
 # -----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ method setMarkdownOutput*(self: WidgetNoteview, note: Note) {.base.} =
 proc widgetNoteview*(ui: UiContext): WidgetNoteview =
 
   var units = WidgetNoteviewUnits()
-  units.renderLabel = proc(name: cstring): UiUnit =
+  units.renderLabel = proc(name: cstring): Unit =
     uiDefs:
       ui.classes("tag", "is-dark").span(name)
 

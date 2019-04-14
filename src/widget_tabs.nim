@@ -8,15 +8,15 @@ import sugar
 type
   TabContent* = ref object
     name: cstring
-    unit: UiUnit
+    unit: Unit
 
-proc tabContent*(name: cstring, unit: UiUnit): TabContent  =
+proc tabContent*(name: cstring, unit: Unit): TabContent  =
   TabContent(name: name, unit: unit)
 
 
 type
-  WidgetTabs* = ref object of UiUnit
-    unit: UiUnit
+  WidgetTabs* = ref object of Unit
+    unit: Unit
     content: Container
     tabs: seq[TabContent]
 
@@ -35,13 +35,13 @@ proc widgetTabs*(ui: UiContext, tabs: openarray[TabContent]): WidgetTabs =
 
   var header: Container
   var content: Container
-  var unit: UiUnit
+  var unit: Unit
 
   uiDefs: discard
     ui.container([
       ui.classes("tabs", "is-boxed").container([
         ui.tag("ul").container(
-          tabs.map((tab: TabContent) => ui.tag("li").container([ui.tag("a").button(tab.name)]).UiUnit)
+          tabs.map((tab: TabContent) => ui.tag("li").container([ui.tag("a").button(tab.name)]).Unit)
         ) as header,
       ]),
       ui.container([]) as content,

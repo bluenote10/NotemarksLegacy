@@ -5,7 +5,7 @@ import ui_units
 import store
 import widget_main
 
-proc run(unit: UiUnit) =
+proc run(unit: Unit) =
   echo "Mounting main unit"
   unit.activate()
   let node = unit.getDomNode()

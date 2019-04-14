@@ -21,7 +21,7 @@ type
   SelectionCallback* = proc(note: Note)
 
   WigetSearchUnits* = ref object
-    main*: UiUnit
+    main*: Unit
     input*: Input
     container*: Container
 
@@ -31,7 +31,7 @@ type
     optOnSearch: Option[SearchCallback]
     optOnSelection: Option[SelectionCallback]
 
-  WidgetSearch* = ref object of UiUnit
+  WidgetSearch* = ref object of Unit
     units: WigetSearchUnits
     state: State
 
@@ -100,9 +100,9 @@ method setOnSelection*(self: WidgetSearch, onSelection: SelectionCallback) {.bas
 
 proc widgetSearch*(ui: UiContext): WidgetSearch =
 
-  proc makeSearchUnit(ui: UiContext, note: Note): UiUnit =
+  proc makeSearchUnit(ui: UiContext, note: Note): Unit =
     uiDefs:
-      #ui.classes("panel-block").container(children=[ui.tdiv(s).UiUnit])
+      #ui.classes("panel-block").container(children=[ui.tdiv(s).Unit])
       ui.classes("is-size-6", "panel-block").tdiv(note.title)
 
   var units = WigetSearchUnits()
@@ -143,7 +143,7 @@ proc widgetSearch*(ui: UiContext): WidgetSearch =
         self.hide()
       else:
         self.units.container.replaceChildren(
-          self.state.suggestions.map(note => ui.makeSearchUnit(note).UiUnit)
+          self.state.suggestions.map(note => ui.makeSearchUnit(note).Unit)
         )
         self.show()
 

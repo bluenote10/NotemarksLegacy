@@ -3,16 +3,16 @@ import ../ui_units
 import ../ui_dsl
 
 
-proc run(unit: UiUnit) =
+proc run(unit: Unit) =
   echo "Mounting main unit"
   unit.activate()
-  let node = unit.getDomNode()
+  let node = unit.domNode
   let root = document.getElementById("ROOT")
   root.appendChild(node)
   unit.setFocus()
 
 uiDefs:
-  var button: UiUnitDom
+  var button: DomElement
   var input: Input
   let mainUnit = ui.container([
     ui.tag("div").text("Hello world"),

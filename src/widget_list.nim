@@ -20,15 +20,15 @@ type
   SelectCallback* = proc (id: cstring)
 
   WidgetListUnits* = ref object
-    main*: UiUnit
+    main*: Unit
     container*: Container
-    renderNote*: proc(note: Note): tuple[main: UiUnit, button: Button]
+    renderNote*: proc(note: Note): tuple[main: Unit, button: Button]
 
   WidgetListState = ref object
     notes: seq[Note]
     onSelect: Option[SelectCallback]
 
-  WidgetList* = ref object of UiUnit
+  WidgetList* = ref object of Unit
     units: WidgetListUnits
     state: WidgetListState
 
@@ -53,7 +53,7 @@ method setNotes*(self: WidgetList, notes: seq[Note]) {.base.} =
 
   var buttons = newJDict[cstring, Button]()
 
-  let newChildren = self.state.notes.map() do (note: Note) -> UiUnit:
+  let newChildren = self.state.notes.map() do (note: Note) -> Unit:
     let (main, button) = self.units.renderNote(note)
     buttons[note.id] = button
     main
@@ -77,11 +77,11 @@ proc widgetList*(ui: UiContext): WidgetList =
 
   var units = WidgetListUnits()
 
-  proc label(name: cstring): UiUnit =
+  proc label(name: cstring): Unit =
     uiDefs:
       ui.classes("tag", "is-dark").span(name)
 
-  units.renderNote = proc(note: Note): tuple[main: UiUnit, button: Button] =
+  units.renderNote = proc(note: Note): tuple[main: Unit, button: Button] =
     var button: Button
     uiDefs:
       var main = ui.tag("tr").container([
@@ -95,7 +95,7 @@ proc widgetList*(ui: UiContext): WidgetList =
             note.labels.map(l => label(l))
           ),
         ]),
-      ]).UiUnit
+      ]).Unit
     return (main: main, button: button)
 
   uiDefs: discard

@@ -21,9 +21,9 @@ import js_utils
 type
   WidgetLabeltreeUnits* = ref object
     main*: Container
-    renderLabel*: proc(name: cstring, count: int): UiUnit
+    renderLabel*: proc(name: cstring, count: int): Unit
 
-  WidgetLabeltree* = ref object of UiUnit
+  WidgetLabeltree* = ref object of Unit
     units: WidgetLabeltreeUnits
 
 # -----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ proc widgetLabeltree*(ui: UiContext): WidgetLabeltree =
 
   var units = WidgetLabeltreeUnits()
 
-  units.renderLabel = proc(name: cstring, count: int): UiUnit =
+  units.renderLabel = proc(name: cstring, count: int): Unit =
     uiDefs:
       ui.container([
         ui.classes("tag", "is-dark").span(name & " (" & $count & ")")

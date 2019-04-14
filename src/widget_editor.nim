@@ -14,7 +14,7 @@ import js_utils
 
 
 # Bulma helpers
-proc field*(ui: UiContext, units: openarray[UiUnit]): Container =
+proc field*(ui: UiContext, units: openarray[Unit]): Container =
   uiDefs:
     ui.classes("field", "has-margin-top").container(units)
     #ui.classes("field", "has-margin-top", "is-horizontal").container(units)
@@ -23,7 +23,7 @@ proc label*(ui: UiContext, text: cstring): Text =
   uiDefs:
     ui.tag("label").classes("label", "is-small").text(text)
 
-proc control*(ui: UiContext, units: openarray[UiUnit]): Container =
+proc control*(ui: UiContext, units: openarray[Unit]): Container =
   uiDefs:
     ui.classes("control").container(units)
 
@@ -34,7 +34,7 @@ proc fieldLabel*(ui: UiContext, text: cstring): Container =
       ui.tag("label").classes("label").text(text)
     ])
 
-proc fieldBody*(ui: UiContext, units: openarray[UiUnit]): Container =
+proc fieldBody*(ui: UiContext, units: openarray[Unit]): Container =
   uiDefs:
     ui.classes("field-body").container(units)
 
@@ -45,7 +45,7 @@ proc fieldBody*(ui: UiContext, units: openarray[UiUnit]): Container =
 # -----------------------------------------------------------------------------
 
 type
-  FancyInput* = ref object of UiUnit
+  FancyInput* = ref object of Unit
     el: InputElement
     onInputCB: Option[InputCallback]
     onInputHandler: EventHandler
@@ -116,13 +116,13 @@ proc setPlaceholder*(self: FancyInput, placeholder: cstring) =
 
 type
   WidgetAddFileDropdownUnits* = ref object
-    main*: UiUnit
+    main*: Unit
     button*: Button
 
   WidgetAddFileDropdownState = ref object
     isActive: bool
 
-  WidgetAddFieldDropdown* = ref object of UiUnit
+  WidgetAddFieldDropdown* = ref object of Unit
     units: WidgetAddFileDropdownUnits
     state: WidgetAddFileDropdownState
 
@@ -178,7 +178,7 @@ type
   NoteChangeCallback = proc(note: Note)
 
   WidgetEditorUnits* = ref object
-    main*: UiUnit
+    main*: Unit
     inTitle*: Input
     inLabels*: Input
     inMarkdown*: FancyInput
@@ -187,7 +187,7 @@ type
     optNote: Option[Note]
     optOnNoteChange: Option[NoteChangeCallback]
 
-  WidgetEditor* = ref object of UiUnit
+  WidgetEditor* = ref object of Unit
     units: WidgetEditorUnits
     state: WidgetEditorState
 

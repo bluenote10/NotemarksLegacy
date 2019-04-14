@@ -9,7 +9,7 @@ import karax/kdom
 # -----------------------------------------------------------------------------
 
 type
-  MultiNode* = ref object of UiUnit
+  MultiNode* = ref object of Unit
     nodes: seq[Node]
 
 proc multiNode*(numNodes: int): MultiNode =
@@ -29,7 +29,7 @@ suite "ui_elements":
 
   test "container -- basics":
     let c = container([
-      multiNode(1).UiUnit,   # 0 1
+      multiNode(1).Unit,   # 0 1
       multiNode(3),   # 1 4
       multiNode(2),   # 4 6
       multiNode(4),   # 6 10

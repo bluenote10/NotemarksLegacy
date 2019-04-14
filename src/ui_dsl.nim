@@ -8,15 +8,15 @@ import ui_units
 
   type T = object
   let el = T()
-  proc `[]`(el: T, args: varargs[UiUnit, UiUnit]): seq[UiUnit] = @args
+  proc `[]`(el: T, args: varargs[Unit, Unit]): seq[Unit] = @args
   let els = el[t, t, t]
 
 ]#
 
 
 template fixBaseType(x: typed): untyped =
-  when compiles(x.UiUnit):
-    x.UiUnit
+  when compiles(x.Unit):
+    x.Unit
   #elif compiles(x.cstring) and x is not cstring:
   #  x.cstring
   else:
