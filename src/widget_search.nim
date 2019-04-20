@@ -138,14 +138,15 @@ class(WidgetSearch of Widget):
       )
     )
     ]#
-    self.units is WigetSearchUnits = units
-    self.state is State = State(
-      suggestions: newSeq[Note](),
-      selectedIndex: -1,
-      optOnSearch: none(SearchCallback),
-      optOnSelection: none(SelectionCallback),
-    )
-    base(units.main.domElement)
+    self:
+      base(units.main.domElement)
+      units
+      state = State(
+        suggestions: newSeq[Note](),
+        selectedIndex: -1,
+        optOnSearch: none(SearchCallback),
+        optOnSelection: none(SelectionCallback),
+      )
 
     # Event handler
     units.input.onInput() do (newText: cstring):

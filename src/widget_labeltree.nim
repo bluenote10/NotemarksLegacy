@@ -37,18 +37,21 @@ type
 class(WidgetLabeltree of Widget):
 
   ctor(widgetLabelTree) proc (ui: UiContext) =
-    self.units is WidgetLabeltreeUnits = WidgetLabeltreeUnits()
-
-    self.units.renderLabel = proc(name: cstring, count: int): Unit =
+    let units = WidgetLabeltreeUnits()
+    uiDefs: discard
+      ui.container([]) as units.main
+    units.renderLabel = proc(name: cstring, count: int): Unit =
       uiDefs:
         ui.container([
           ui.classes("tag", "is-dark").span(name & " (" & $count & ")")
         ])
 
-    uiDefs: discard
-      ui.container([]) as self.units.main
+    self:
+      base(units.main)
+      units
 
-  method setLabels*(labelsDict: JDict[cstring, int]) =
+
+  method setLabels*(labelsDict: JDict[cstring, int]) {.base.} =
     let labelNames = labelsDict.keys()
     self.units.main.replaceChildren(
       labelsDict.items().map(

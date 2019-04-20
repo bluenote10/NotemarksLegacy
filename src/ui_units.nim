@@ -90,7 +90,9 @@ proc attrs*(ui: UiContext, attrs: varargs[(cstring, cstring)]): UiContext =
 
 class(Unit):
   ctor(newUnit) proc(node: Node) =
-    self.domNode+ is Node = node
+    self:
+      domNode`+` = node
+
   method activate*() {.base.} = discard
   method deactivate*() {.base.} = discard
   method setFocus*() {.base.} = discard
@@ -123,7 +125,8 @@ proc getDomFragment(children: openarray[Unit]): Node =
 class(TextNode of Unit):
   ctor(textNode) proc(text: cstring) =
     let node = document.createTextNode(text)
-    base(node)
+    self:
+      base(node)
 
   method setText*(text: cstring) {.base.} =
     self.domNode.nodeValue = text
@@ -153,9 +156,10 @@ type
 
 class(DomElement of Unit):
   ctor(newDomElement) proc(el: Element) =
-    base(el)
-    self.eventHandlers is JDict[cstring, EventHandlerBase] = newJDict[cstring, EventHandlerBase]()
-    self.nativeHandlers is JDict[cstring, EventHandler] = newJDict[cstring, EventHandler]()
+    self:
+      base(el)
+      eventHandlers = newJDict[cstring, EventHandlerBase]()
+      nativeHandlers = newJDict[cstring, EventHandler]()
 
   template domElement*(): Element =
     # From the constructor we know that self.domNode has to be type Element
@@ -220,9 +224,11 @@ class(DomElement of Unit):
 class(Text of DomElement):
   ctor(text) proc(ui: UiContext, text: cstring) =
     let el = document.createElement(ui.getTagOrDefault("span"))
-    base(el)
 
-    self.textNode is Node = document.createTextNode(text)
+    self:
+      base(el)
+      textNode = document.createTextNode(text)
+
     self.domElement.appendChild(self.textNode)
     self.domElement.addClasses(ui.classes)
 
@@ -306,7 +312,8 @@ proc button*(ui: UiContext, children: openarray[Unit]): Button =
 
 class(Input of DomElement):
   ctor(newInput) proc(el: Element) =
-    base(el)
+    self:
+      base(el)
 
   method setValue*(value: cstring) {.base.} =
     # setAttribute doesn't seem to work for textarea
@@ -336,15 +343,15 @@ proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input
 
 class(Container of DomElement):
   ctor(container) proc(ui: UiContext, children: openarray[Unit]) =
-
-    self.children is seq[Unit] = @children
     let el = h(ui.getTagOrDefault("div"),
       class = ui.classes,
       attrs = ui.attrs,
     )
     el.appendChild(getDomFragment(children))
-    self.isActive is bool = false
-    base(el)
+    self:
+      base(el)
+      children = @children
+      isActive = false
 
   method activate*() =
     self.isActive = true
@@ -465,5 +472,10 @@ iterator pairs*(c: Container): (int, Unit) =
     yield (i, child)
 
 
-type
-  Widget* = DomElement
+#type
+#  Widget* = DomElement
+
+class(Widget of DomElement):
+  ctor(newWidget) proc(domElement: DomElement) =
+    self:
+      base(domElement.domElement)

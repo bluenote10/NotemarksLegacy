@@ -162,10 +162,12 @@ class(WidgetAddFieldDropdown of Widget):
       ]) as units.main
 
     # Internal state
-    self.units is WidgetAddFileDropdownUnits = units
-    self.state is WidgetAddFileDropdownState = WidgetAddFileDropdownState(
-      isActive: false,
-    )
+    self:
+      base(units.main)
+      units
+      state = WidgetAddFileDropdownState(
+        isActive: false,
+      )
     #[
     var self = WidgetAddFieldDropdown(
       units: units,
@@ -213,9 +215,9 @@ type
 
 method setFocus*(self: WidgetEditor) =
   if self.state.optNote.isSome and self.state.optNote.get.title.len == 0:
-    self.units.inTitle.getDomNode().focus()
+    self.units.inTitle.domNode().focus()
   else:
-    self.units.inMarkdown.getDomNode().focus()
+    self.units.inMarkdown.domNode().focus()
 
 # -----------------------------------------------------------------------------
 # Public methods
