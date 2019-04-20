@@ -1,7 +1,9 @@
 import times
 import better_options
 
-import karax/kdom
+import oop_utils/standard_class
+
+import karax/kdom except class
 import ui_units
 import ui_dsl
 
@@ -43,6 +45,10 @@ proc fieldBody*(ui: UiContext, units: openarray[Unit]): Container =
 # -----------------------------------------------------------------------------
 # Fancy input
 # -----------------------------------------------------------------------------
+
+# TODO implement via regular input?
+
+#[
 
 type
   FancyInput* = ref object of Unit
@@ -110,64 +116,72 @@ proc setValue*(self: FancyInput, value: cstring) =
 proc setPlaceholder*(self: FancyInput, placeholder: cstring) =
   self.el.setAttribute("placeholder", placeholder)
 
+]#
+
 # -----------------------------------------------------------------------------
 # AddFieldDropdown
 # -----------------------------------------------------------------------------
 
 type
   WidgetAddFileDropdownUnits* = ref object
-    main*: Unit
+    main*: DomElement
     button*: Button
 
   WidgetAddFileDropdownState = ref object
     isActive: bool
 
+#[
   WidgetAddFieldDropdown* = ref object of Unit
     units: WidgetAddFileDropdownUnits
     state: WidgetAddFileDropdownState
+]#
 
-defaultImpls(WidgetAddFieldDropdown, self, self.units.main)
+class(WidgetAddFieldDropdown of Widget):
 
-proc widgetAddFieldDropdown*(ui: UiContext): WidgetAddFieldDropdown =
+  ctor(widgetAddFieldDropdown) proc(ui: UiContext) =
 
-  var units = WidgetAddFileDropdownUnits()
+    var units = WidgetAddFileDropdownUnits()
 
-  uiDefs: discard
-    ui.classes("dropdown").container([
-      ui.classes("dropdown-trigger").container([
-        ui.tag("button").classes("button", "is-tiny").button([
-          #ui.span("Add..."),
-          ui.tag("span").classes("icon", "is-small").container([
-            ui.classes("fas", "fa-plus").i("") #fa-angle-down
-          ]),
-        ]) as units.button
-      ]),
-      ui.classes("dropdown-menu").container([
-        ui.classes("dropdown-content").container([
-          ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Link"),
-          ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Date"),
-          ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Author"),
+    uiDefs: discard
+      ui.classes("dropdown").container([
+        ui.classes("dropdown-trigger").container([
+          ui.tag("button").classes("button", "is-tiny").button([
+            #ui.span("Add..."),
+            ui.tag("span").classes("icon", "is-small").container([
+              ui.classes("fas", "fa-plus").i("") #fa-angle-down
+            ]),
+          ]) as units.button
         ]),
-      ])
-    ]) as units.main
+        ui.classes("dropdown-menu").container([
+          ui.classes("dropdown-content").container([
+            ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Link"),
+            ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Date"),
+            ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Author"),
+          ]),
+        ])
+      ]) as units.main
 
-  # Internal state
-  var self = WidgetAddFieldDropdown(
-    units: units,
-    state: WidgetAddFileDropdownState(
+    # Internal state
+    self.units is WidgetAddFileDropdownUnits = units
+    self.state is WidgetAddFileDropdownState = WidgetAddFileDropdownState(
       isActive: false,
     )
-  )
+    #[
+    var self = WidgetAddFieldDropdown(
+      units: units,
+      state: WidgetAddFileDropdownState(
+        isActive: false,
+      )
+    )
+    ]#
 
-  self.units.button.setOnClick() do ():
-    if not self.state.isActive:
-      self.units.main.getDomNode().Element.classList.add("is-active")
-      self.state.isActive = true
-    else:
-      self.units.main.getDomNode().Element.classList.remove("is-active")
-      self.state.isActive = false
-
-  self
+    self.units.button.onClick() do ():
+      if not self.state.isActive:
+        self.units.main.getClassList.add("is-active")
+        self.state.isActive = true
+      else:
+        self.units.main.getClassList.remove("is-active")
+        self.state.isActive = false
 
 
 # -----------------------------------------------------------------------------
@@ -181,7 +195,7 @@ type
     main*: Unit
     inTitle*: Input
     inLabels*: Input
-    inMarkdown*: FancyInput
+    inMarkdown*: Input # FancyInput
 
   WidgetEditorState = ref object
     optNote: Option[Note]
@@ -195,7 +209,7 @@ type
 # Overloads
 # -----------------------------------------------------------------------------
 
-defaultImpls(WidgetEditor, self, self.units.main)
+# defaultImpls(WidgetEditor, self, self.units.main)
 
 method setFocus*(self: WidgetEditor) =
   if self.state.optNote.isSome and self.state.optNote.get.title.len == 0:

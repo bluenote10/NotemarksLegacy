@@ -152,12 +152,12 @@ type
 
 
 class(DomElement of Unit):
-  ctor(domElement) proc(el: Element) =
+  ctor(newDomElement) proc(el: Element) =
     base(el)
     self.eventHandlers is JDict[cstring, EventHandlerBase] = newJDict[cstring, EventHandlerBase]()
     self.nativeHandlers is JDict[cstring, EventHandler] = newJDict[cstring, EventHandler]()
 
-  template domElement(): Element =
+  template domElement*(): Element =
     # From the constructor we know that self.domNode has to be type Element
     self.domNode.Element
 
@@ -210,6 +210,8 @@ class(DomElement of Unit):
   proc onBlur*(cb: BlurCallback) =
     self.eventHandlers["blur"] = OnBlur(dispatch: cb)
 
+  proc getClassList*(): ClassList =
+    self.domElement.classList
 
 # -----------------------------------------------------------------------------
 # Text
@@ -278,7 +280,7 @@ proc p*(ui: UiContext, text: cstring): Text =
 # -----------------------------------------------------------------------------
 
 type
-  Button = DomElement
+  Button* = DomElement
 
 proc button*(ui: UiContext, text: cstring): Button =
   ## Constructor for simple text button.
@@ -287,7 +289,7 @@ proc button*(ui: UiContext, text: cstring): Button =
     class = ui.classes,
     attrs = ui.attrs,
   )
-  domElement(el)
+  newDomElement(el)
 
 proc button*(ui: UiContext, children: openarray[Unit]): Button =
   ## Constructor for button with nested units.
@@ -296,7 +298,7 @@ proc button*(ui: UiContext, children: openarray[Unit]): Button =
     attrs = ui.attrs,
   )
   el.appendChild(getDomFragment(children))
-  domElement(el)
+  newDomElement(el)
 
 # -----------------------------------------------------------------------------
 # Input
@@ -461,3 +463,7 @@ iterator items*(c: Container): Unit =
 iterator pairs*(c: Container): (int, Unit) =
   for i, child in c.getChildren():
     yield (i, child)
+
+
+type
+  Widget* = DomElement

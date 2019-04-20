@@ -15,7 +15,8 @@ tasks:
     fileset: default
     commands:
       #- "npm run build_renderer"
-      - "npm run build_renderer_basic"
+      #- "npm run build_renderer_basic"
+      - "nim js -o:./build/renderer.js ./src/app_renderer.nim"
       #- "nim js src/ui_units.nim"
     clear_screen: true
     queue_events: false

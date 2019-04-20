@@ -106,7 +106,7 @@ macro uiDefs*(code: untyped): untyped =
   result = fixAst(injectAssignments(code.copy()))
   echo " * Final code:\n", result.repr
 
-
+#[
 template defaultImpls*(T, selfName, unitExpr) =
 
   method getDomNode*(selfName: T): Node =
@@ -119,3 +119,4 @@ template defaultImpls*(T, selfName, unitExpr) =
   method deactivate*(selfName: T) =
     echo "Deactivating: ", name(T)
     unitExpr.deactivate()
+]#
