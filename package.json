@@ -8,7 +8,7 @@
     "build_renderer": "nim js -o:./build/renderer.js ./src/app_renderer.nim",
     "build_renderer_basic": "nim js -o:./build/renderer.js ./src/sandbox/app_renderer_basic.nim",
     "build_css": "node-sass --omit-source-map-url styles/styles.scss build/styles.css",
-    "start": "npm run build_main && npm run build_renderer_basic && npm run build_css && electron ."
+    "start": "npm run build_main && npm run build_renderer && npm run build_css && electron ."
   },
   "keywords": [
     "Electron",

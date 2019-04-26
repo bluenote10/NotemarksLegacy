@@ -50,6 +50,8 @@ class(WidgetLabeltree of Widget):
       base(units.main)
       units
 
+    debug(cstring"labeltree", self)
+
 
   method setLabels*(labelsDict: JDict[cstring, int]) {.base.} =
     let labelNames = labelsDict.keys()

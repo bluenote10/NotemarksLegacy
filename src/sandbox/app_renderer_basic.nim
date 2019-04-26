@@ -1,4 +1,4 @@
-import karax/kdom
+import karax/kdom except DomEvent, DomKeyboardEvent
 import ../ui_units
 import ../ui_dsl
 
@@ -22,16 +22,16 @@ uiDefs:
     ui.input("Input") as input,
   ])
 
-  button.onClick() do ():
+  button.onClick() do (e: DomEvent):
     echo "clicked"
 
-  input.onInput() do (s: cstring):
+  input.onInput() do (e: DomEvent, s: cstring):
     echo "input:", s
 
   input.onKeydown() do (e: KeyboardEvent):
     echo "keypress"
 
-  input.onBlur() do ():
+  input.onBlur() do (e: DomEvent):
     echo "blur"
 
 run(mainUnit)

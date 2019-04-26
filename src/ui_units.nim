@@ -136,10 +136,13 @@ class(TextNode of Unit):
 # -----------------------------------------------------------------------------
 
 type
-  ClickCallback* = proc ()
-  InputCallback* = proc(s: cstring)
-  KeydownCallback* = proc (evt: KeyboardEvent)
-  BlurCallback* = proc ()
+  DomEvent* = kdom.Event
+  DomKeyboardEvent* = kdom.KeyboardEvent
+
+  ClickCallback* = proc(e: DomEvent)
+  InputCallback* = proc(e: DomEvent, s: cstring)
+  KeydownCallback* = proc(e: DomKeyboardEvent)
+  BlurCallback* = proc(e: DomEvent)
 
 type
   EventHandlerBase = ref object of RootObj
@@ -177,22 +180,22 @@ class(DomElement of Unit):
           case eventHandler:
           of OnClick:
             proc onClick(e: Event) =
-              eventHandler.dispatch()
+              eventHandler.dispatch(e)
             self.domElement.addEventListener("click", onClick)
             self.nativeHandlers["click"] = onClick
           of OnInput:
             proc onInput(e: Event) =
-              eventHandler.dispatch(e.target.value)
+              eventHandler.dispatch(e, e.target.value)
             self.domElement.addEventListener("input", onInput)
             self.nativeHandlers["input"] = onInput
           of OnKeydown:
             proc onKeydown(e: Event) =
-              eventHandler.dispatch(e.KeyboardEvent)
+              eventHandler.dispatch(e.DomKeyboardEvent)
             self.domElement.addEventListener("keydown", onKeydown)
             self.nativeHandlers["keydown"] = onKeydown
           of OnBlur:
             proc onBlur(e: Event) =
-              eventHandler.dispatch()
+              eventHandler.dispatch(e)
             self.domElement.addEventListener("blur", onBlur)
             self.nativeHandlers["blur"] = onBlur
 
@@ -478,4 +481,19 @@ iterator pairs*(c: Container): (int, Unit) =
 class(Widget of DomElement):
   ctor(newWidget) proc(domElement: DomElement) =
     self:
+      # FIXME: we need better naming for DomElement:
+      # - On the one hand, it refers to the (getter of the) native dom element.
+      # - On the other hand the type DomElement is our abstraction/wrapper...
+      # => Maybe best to rename DomElement into Element?
       base(domElement.domElement)
+      element = domElement
+
+  method activate*() =
+    echo "activating widget"
+    debug(self)
+    self.element.activate()
+
+  method deactivate*() =
+    echo "deactivating widget"
+    debug(self)
+    self.element.deactivate()

@@ -3,7 +3,7 @@ import better_options
 
 import oop_utils/standard_class
 
-import karax/kdom except class
+import dom
 import ui_units
 import ui_dsl
 
@@ -177,7 +177,7 @@ class(WidgetAddFieldDropdown of Widget):
     )
     ]#
 
-    self.units.button.onClick() do ():
+    self.units.button.onClick() do (e: DomEvent):
       if not self.state.isActive:
         self.units.main.getClassList.add("is-active")
         self.state.isActive = true
@@ -194,7 +194,7 @@ type
   NoteChangeCallback = proc(note: Note)
 
   WidgetEditorUnits* = ref object
-    main*: Unit
+    main*: DomElement
     inTitle*: Input
     inLabels*: Input
     inMarkdown*: Input # FancyInput
@@ -203,115 +203,116 @@ type
     optNote: Option[Note]
     optOnNoteChange: Option[NoteChangeCallback]
 
-  WidgetEditor* = ref object of Unit
-    units: WidgetEditorUnits
-    state: WidgetEditorState
 
-# -----------------------------------------------------------------------------
-# Overloads
-# -----------------------------------------------------------------------------
+class(WidgetEditor of Widget):
+  ctor(widgetEditor) proc(ui: UiContext) =
 
-# defaultImpls(WidgetEditor, self, self.units.main)
+    var units = WidgetEditorUnits()
 
-method setFocus*(self: WidgetEditor) =
-  if self.state.optNote.isSome and self.state.optNote.get.title.len == 0:
-    self.units.inTitle.domNode().focus()
-  else:
-    self.units.inMarkdown.domNode().focus()
-
-# -----------------------------------------------------------------------------
-# Public methods
-# -----------------------------------------------------------------------------
-
-method setNote*(self: WidgetEditor, note: Note) {.base.} =
-  echo "Switched to note:", note.id
-  self.state.optNote = some(note)
-  # Update dom contents
-  self.units.inTitle.setValue(note.title)
-  self.units.inLabels.setValue(note.labels.join(" "))
-  self.units.inMarkdown.setValue(note.markdown)
-  # TODO not needed here anymore?
-  # self.updateOutMarkdown(self.note, self.note.markdown)
-
-method setOnNoteChange*(self: WidgetEditor, onNoteChangeCB: NoteChangeCallback) {.base.} =
-  self.state.optOnNoteChange = some(onNoteChangeCB)
-
-# -----------------------------------------------------------------------------
-# Constructor
-# -----------------------------------------------------------------------------
-
-proc widgetEditor*(ui: UiContext): WidgetEditor =
-
-  var units = WidgetEditorUnits()
-
-  uiDefs: discard
-    ui.classes("container").container([
-      ui.field([
-        ui.label("Title"),
-        ui.control([
-          ui.classes("input", "is-small")
-            .input(placeholder="Title") as units.inTitle,
-        ])
-        #ui.fieldLabel("Input"),
-        #ui.fieldBody([
-        #  ui.control([
-        #    ui.classes("input")
-        #      .input(placeholder="Title") as inTitle,
-        #  ]),
-        #]),
-      ]),
-      ui.field([
-        ui.label("Labels"),
-        ui.control([
-          ui.classes("input", "is-small")
-            .input(placeholder="Labels") as units.inLabels,
-        ])
-      ]),
-      ui.widgetAddFieldDropdown(),
-      ui.field([
-        ui.label("Notes"),
-        ui.control([
-          ui.tag("textarea")
-            .classes("textarea", "is-small", "font-mono", "ui-text-area")
-            #.attrs({"rows": "40"})
-            .fancyInput(placeholder="placeholder") as units.inMarkdown,
+    uiDefs: discard
+      ui.classes("container").container([
+        ui.field([
+          ui.label("Title"),
+          ui.control([
+            ui.classes("input", "is-small")
+              .input(placeholder="Title") as units.inTitle,
+          ])
+          #ui.fieldLabel("Input"),
+          #ui.fieldBody([
+          #  ui.control([
+          #    ui.classes("input")
+          #      .input(placeholder="Title") as inTitle,
+          #  ]),
+          #]),
         ]),
-      ]),
-    ]) as units.main
+        ui.field([
+          ui.label("Labels"),
+          ui.control([
+            ui.classes("input", "is-small")
+              .input(placeholder="Labels") as units.inLabels,
+          ])
+        ]),
+        ui.widgetAddFieldDropdown(),
+        ui.field([
+          ui.label("Notes"),
+          ui.control([
+            ui.tag("textarea")
+              .classes("textarea", "is-small", "font-mono", "ui-text-area")
+              #.attrs({"rows": "40"})
+              .input(placeholder="placeholder") as units.inMarkdown,
+          ]),
+        ]),
+      ]) as units.main
 
-  var self = WidgetEditor(
-    units: units,
-    state: WidgetEditorState(
-      optNote: none(Note),
-      optOnNoteChange: none(NoteChangeCallback),
-    ),
-  )
+    self:
+      base(units.main)
+      units
+      state = WidgetEditorState(
+        optNote: none(Note),
+        optOnNoteChange: none(NoteChangeCallback),
+      )
 
-  # Event handlers
-  self.units.inTitle.setOnInput() do (newTitle: cstring):
-    for note in self.state.optNote:
-      note.updateTitle(newTitle)
-      for cb in self.state.optOnNoteChange:
-        cb(note)
-      #store.storeYaml(self.note)
-      #self.note.storeYaml()
+    # Event handlers
+    self.units.inTitle.onInput() do (e: DomEvent, newTitle: cstring):
+      for note in self.state.optNote:
+        note.updateTitle(newTitle)
+        for cb in self.state.optOnNoteChange:
+          cb(note)
+        #store.storeYaml(self.note)
+        #self.note.storeYaml()
 
-  self.units.inLabels.setOnInput() do (newLabels: cstring):
-    for note in self.state.optNote:
-      let labels = newLabels.split(" ")
-      note.updateLabels(labels)
-      for cb in self.state.optOnNoteChange:
-        cb(note)
-      #self.note.storeYaml()
-      #store.storeYaml(self.note)
+    self.units.inLabels.onInput() do (e: DomEvent, newLabels: cstring):
+      for note in self.state.optNote:
+        let labels = newLabels.split(" ")
+        note.updateLabels(labels)
+        for cb in self.state.optOnNoteChange:
+          cb(note)
+        #self.note.storeYaml()
+        #store.storeYaml(self.note)
 
-  self.units.inMarkdown.setOnInput() do (newText: cstring):
-    for note in self.state.optNote:
-      note.updateMarkdown(newText)
-      for cb in self.state.optOnNoteChange:
-        cb(note)
-      #self.updateOutMarkdown(n, newText)
-      #self.note.storeMarkdown()
-      #store.storeMarkdown(self.note)
+    self.units.inMarkdown.onInput() do (e: DomEvent, newText: cstring):
+      for note in self.state.optNote:
+        note.updateMarkdown(newText)
+        for cb in self.state.optOnNoteChange:
+          cb(note)
+        #self.updateOutMarkdown(n, newText)
+        #self.note.storeMarkdown()
+        #store.storeMarkdown(self.note)
 
-  self
+    self.units.inMarkdown.onKeydown() do (keyEvt: DomKeyboardEvent):
+      debug(keyEvt)
+      #let keyEvt = e.KeyboardEvent
+      let el = self.units.inMarkdown.domElement.InputElement # FIXME, Input should have a getter like `domInputElement`?
+      let keyCode =  keyEvt.keyCode
+      if keyCode == 9 and not keyEvt.shiftKey:
+        keyEvt.preventDefault()
+        let selStart = el.selectionStart
+        let selEnd = el.selectionEnd
+        echo selStart, selEnd
+        if selStart == selEnd:
+          el.value = el.value.substr(0, selStart) & cstring"  " & el.value.substr(selEnd)
+          el.selectionStart = selStart + 2
+          el.selectionEnd = selEnd + 2
+
+    debug(cstring"editor", self)
+
+
+  method setFocus*() =
+    if self.state.optNote.isSome and self.state.optNote.get.title.len == 0:
+      self.units.inTitle.domNode().focus()
+    else:
+      self.units.inMarkdown.domNode().focus()
+
+
+  method setNote*(note: Note) {.base.} =
+    echo "Switched to note:", note.id
+    self.state.optNote = some(note)
+    # Update dom contents
+    self.units.inTitle.setValue(note.title)
+    self.units.inLabels.setValue(note.labels.join(" "))
+    self.units.inMarkdown.setValue(note.markdown)
+    # TODO not needed here anymore?
+    # self.updateOutMarkdown(self.note, self.note.markdown)
+
+  method setOnNoteChange*(onNoteChangeCB: NoteChangeCallback) {.base.} =
+    self.state.optOnNoteChange = some(onNoteChangeCB)

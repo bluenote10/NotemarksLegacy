@@ -4,8 +4,9 @@ import sugar
 
 import oop_utils/standard_class
 
-import karax / kdom except class
+import dom
 import jstr_utils
+import js_utils
 import sequtils
 import sugar
 
@@ -139,7 +140,7 @@ class(WidgetSearch of Widget):
     )
     ]#
     self:
-      base(units.main.domElement)
+      base(units.main)
       units
       state = State(
         suggestions: newSeq[Note](),
@@ -149,7 +150,7 @@ class(WidgetSearch of Widget):
       )
 
     # Event handler
-    units.input.onInput() do (newText: cstring):
+    units.input.onInput() do (e: DomEvent, newText: cstring):
       for onSearch in self.state.optOnSearch:
         self.state.suggestions = onSearch(newText)
         if newText.isNil or newText == "" or self.state.suggestions.len == 0:
@@ -176,5 +177,7 @@ class(WidgetSearch of Widget):
             onSelection(self.state.suggestions[self.state.selectedIndex])
             self.resetSuggestions()
 
-    units.input.onBlur() do ():
+    units.input.onBlur() do (e: DomEvent):
       self.resetSuggestions()
+
+    debug(cstring"search", self)
