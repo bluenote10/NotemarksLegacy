@@ -30,36 +30,36 @@ type
 
 
 class(WidgetList of Widget):
-  ctor(widgetList) proc(ui: UiContext) =
+  ctor(widgetList) proc() =
 
     var units = WidgetListUnits()
 
     proc label(name: cstring): Unit =
-      uiDefs:
-        ui.classes("tag", "is-dark").span(name)
+      unitDefs:
+        ep.classes("tag", "is-dark").span(name)
 
     # FIXME: There must be a better solution than always returning tuples when
     # creating wrapped units.
     units.renderNote = proc(note: Note): tuple[main: Unit, button: Button] =
       var button: Button
-      uiDefs:
-        var main = ui.tag("tr").container([
-          ui.tag("td").container([
-            ui.tag("a").classes("truncate").button(
+      unitDefs:
+        var main = ep.tag("tr").container([
+          ep.tag("td").container([
+            ep.tag("a").classes("truncate").button(
               if note.title.len > 0: note.title else: "\u2060" # avoid collapsing rows with empty titles => use WORD JOINER char
             ) as button
           ]),
-          ui.tag("td").container([
-            ui.classes("tags", "truncate").container(
+          ep.tag("td").container([
+            ep.classes("tags", "truncate").container(
               note.labels.map(l => label(l))
             ),
           ]),
         ]).Unit
       return (main: main, button: button)
 
-    uiDefs: discard
-      ui.container([
-        ui.tag("table").classes(
+    unitDefs: discard
+      ep.container([
+        ep.tag("table").classes(
           "table", "is-bordered", "is-striped", "is-narrow", "is-hoverable", "is-fullwidth", "table-fixed"
           ).container([]) as units.container
       ]) as units.main

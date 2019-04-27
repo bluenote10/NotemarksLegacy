@@ -35,28 +35,28 @@ type
 
 class(WidgetSearch of Widget):
 
-  ctor(widgetSearch) proc(ui: UiContext) =
+  ctor(widgetSearch) proc() =
 
-    proc makeSearchUnit(ui: UiContext, note: Note): Unit =
-      uiDefs:
-        #ui.classes("panel-block").container(children=[ui.tdiv(s).Unit])
-        ui.classes("is-size-6", "panel-block").tdiv(note.title)
+    proc makeSearchUnit(note: Note): Unit =
+      unitDefs:
+        #ep.classes("panel-block").container(children=[ep.tdiv(s).Unit])
+        ep.classes("is-size-6", "panel-block").tdiv(note.title)
 
     var units = WigetSearchUnits()
 
-    uiDefs: discard
-      ui.classes("container").container([
-        ui.container([
-          ui.classes("field", "has-margin-top").container([
-            ui.classes("control", "has-icons-left").container([
-              ui.classes("input").input(placeholder="Search...") as units.input,
-              ui.tag("span").classes("icon", "is-left").container([
-                ui.classes("fas", "fa-search").i(""),
+    unitDefs: discard
+      ep.classes("container").container([
+        ep.container([
+          ep.classes("field", "has-margin-top").container([
+            ep.classes("control", "has-icons-left").container([
+              ep.classes("input").input(placeholder="Search...") as units.input,
+              ep.tag("span").classes("icon", "is-left").container([
+                ep.classes("fas", "fa-search").i(""),
               ]),
             ]),
           ]),
-          ui.classes("float-wrapper").container([
-            ui.classes("card", "float-box", "is-hidden").container([]) as units.container,
+          ep.classes("float-wrapper").container([
+            ep.classes("card", "float-box", "is-hidden").container([]) as units.container,
           ]),
         ]),
       ]) as units.main
@@ -80,7 +80,7 @@ class(WidgetSearch of Widget):
           self.hide()
         else:
           self.units.container.replaceChildren(
-            self.state.suggestions.map(note => ui.makeSearchUnit(note).Unit)
+            self.state.suggestions.map(note => makeSearchUnit(note).Unit)
           )
           self.show()
 

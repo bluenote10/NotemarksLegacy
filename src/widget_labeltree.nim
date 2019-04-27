@@ -25,14 +25,14 @@ type
 
 class(WidgetLabeltree of Widget):
 
-  ctor(widgetLabelTree) proc (ui: UiContext) =
+  ctor(widgetLabelTree) proc () =
     let units = WidgetLabeltreeUnits()
-    uiDefs: discard
-      ui.container([]) as units.main
+    unitDefs: discard
+      ep.container([]) as units.main
     units.renderLabel = proc(name: cstring, count: int): Unit =
-      uiDefs:
-        ui.container([
-          ui.classes("tag", "is-dark").span(name & " (" & $count & ")")
+      unitDefs:
+        ep.container([
+          ep.classes("tag", "is-dark").span(name & " (" & $count & ")")
         ])
 
     self:

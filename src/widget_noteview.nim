@@ -31,37 +31,37 @@ type
 
 
 class(WidgetNoteview of Widget):
-  ctor(widgetNoteview) proc(ui: UiContext) =
+  ctor(widgetNoteview) proc() =
 
     var units = WidgetNoteviewUnits()
     units.renderLabel = proc(name: cstring): Unit =
-      uiDefs:
-        ui.classes("tag", "is-dark").span(name)
+      unitDefs:
+        ep.classes("tag", "is-dark").span(name)
 
-    uiDefs: discard
-      ui.classes("container").container([
-        ui.classes("title", "has-margin-top").h1("") as units.title,
-        ui.classes("message", "is-info", "has-margin-top").tag("article").container([
-          ui.classes("message-body").container([
-            ui.tag("table").classes("ui-note-header-table").container([
-              ui.tag("tr").container([
-                ui.tag("td").container([ui.tag("b").text("Labels")]),
-                ui.tag("td").classes("tags").container([]) as units.outLabels,
+    unitDefs: discard
+      ep.classes("container").container([
+        ep.classes("title", "has-margin-top").h1("") as units.title,
+        ep.classes("message", "is-info", "has-margin-top").tag("article").container([
+          ep.classes("message-body").container([
+            ep.tag("table").classes("ui-note-header-table").container([
+              ep.tag("tr").container([
+                ep.tag("td").container([ep.tag("b").text("Labels")]),
+                ep.tag("td").classes("tags").container([]) as units.outLabels,
               ]),
-              ui.tag("tr").container([
-                ui.tag("td").container([ui.tag("b").text("Created")]),
-                ui.tag("td").text("") as units.outCreatedDate,
-                ui.tag("td").text("") as units.outCreatedTime,
+              ep.tag("tr").container([
+                ep.tag("td").container([ep.tag("b").text("Created")]),
+                ep.tag("td").text("") as units.outCreatedDate,
+                ep.tag("td").text("") as units.outCreatedTime,
               ]),
-              ui.tag("tr").container([
-                ui.tag("td").container([ui.tag("b").text("Updated")]),
-                ui.tag("td").text("") as units.outUpdatedDate,
-                ui.tag("td").text("") as units.outUpdatedTime,
+              ep.tag("tr").container([
+                ep.tag("td").container([ep.tag("b").text("Updated")]),
+                ep.tag("td").text("") as units.outUpdatedDate,
+                ep.tag("td").text("") as units.outUpdatedTime,
               ]),
             ]),
           ]),
         ]),
-        ui.classes("content").tdiv("") as units.outMarkdown,
+        ep.classes("content").tdiv("") as units.outMarkdown,
       ]) as units.main
 
     self:

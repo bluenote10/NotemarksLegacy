@@ -48,40 +48,40 @@ type
 
 
 class(WidgetMain of Widget):
-  ctor(widgetMain) proc(ui: UiContext, store: Store) =
+  ctor(widgetMain) proc(store: Store) =
 
     var units = WidgetMainUnits()
-    units.editor = ui.widgetEditor()
-    units.noteview = ui.widgetNoteview()
+    units.editor = widgetEditor()
+    units.noteview = widgetNoteview()
 
-    uiDefs: discard
-      ui.container([
-        ui.classes("ui-navbar").container([
-          ui.classes("ui-navbar-left").container([
-            ui.classes("button", "ui-navbar-button").tag("a").button([
-              ui.classes("icon").tag("span").container([
-                ui.classes("fas", "fa-home").i("")
+    unitDefs: discard
+      ep.container([
+        ep.classes("ui-navbar").container([
+          ep.classes("ui-navbar-left").container([
+            ep.classes("button", "ui-navbar-button").tag("a").button([
+              ep.classes("icon").tag("span").container([
+                ep.classes("fas", "fa-home").i("")
               ])
             ]) as units.homeButton,
-            ui.classes("button", "ui-navbar-button").tag("a").button([
-              ui.classes("icon").tag("span").container([
-                ui.classes("fas", "fa-plus").i("")
+            ep.classes("button", "ui-navbar-button").tag("a").button([
+              ep.classes("icon").tag("span").container([
+                ep.classes("fas", "fa-plus").i("")
               ])
             ]) as units.newNoteButton,
           ]),
-          ui.classes("ui-navbar-middle").container([
-            ui.widgetSearch() as units.search,
+          ep.classes("ui-navbar-middle").container([
+            widgetSearch() as units.search,
           ]),
-          ui.classes("ui-navbar-right").tdiv(""),
+          ep.classes("ui-navbar-right").tdiv(""),
         ]).Unit,
-        ui.classes("ui-main-container").container([
-          ui.classes("column", "ui-column-left", "is-fullheight").container([
-            ui.widgetLabeltree() as units.labeltree,
+        ep.classes("ui-main-container").container([
+          ep.classes("column", "ui-column-left", "is-fullheight").container([
+            widgetLabeltree() as units.labeltree,
           ]),
-          ui.classes("column", "ui-column-middle").container([
-            ui.widgetList as units.list,
+          ep.classes("column", "ui-column-middle").container([
+            widgetList() as units.list,
           ]) as units.widgetContainer,
-          ui.classes("column", "ui-column-right", "is-fullheight").tdiv(""),
+          ep.classes("column", "ui-column-right", "is-fullheight").tdiv(""),
         ])
       ]) as units.main
 

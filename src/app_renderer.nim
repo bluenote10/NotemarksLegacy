@@ -15,6 +15,5 @@ proc run(unit: Unit) =
 
 let s = newStore()
 
-let ui = UiContext()
-let mainWidget = ui.widgetMain(s)
+let mainWidget = widgetMain(s)
 run(mainWidget)

@@ -28,25 +28,25 @@ type
 
 class(WidgetAddFieldDropdown of Widget):
 
-  ctor(widgetAddFieldDropdown) proc(ui: UiContext) =
+  ctor(widgetAddFieldDropdown) proc() =
 
     var units = WidgetAddFileDropdownUnits()
 
-    uiDefs: discard
-      ui.classes("dropdown").container([
-        ui.classes("dropdown-trigger").container([
-          ui.tag("button").classes("button", "is-tiny").button([
-            #ui.span("Add..."),
-            ui.tag("span").classes("icon", "is-small").container([
-              ui.classes("fas", "fa-plus").i("") #fa-angle-down
+    unitDefs: discard
+      ep.classes("dropdown").container([
+        ep.classes("dropdown-trigger").container([
+          ep.tag("button").classes("button", "is-tiny").button([
+            #ep.span("Add..."),
+            ep.tag("span").classes("icon", "is-small").container([
+              ep.classes("fas", "fa-plus").i("") #fa-angle-down
             ]),
           ]) as units.button
         ]),
-        ui.classes("dropdown-menu").container([
-          ui.classes("dropdown-content").container([
-            ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Link"),
-            ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Date"),
-            ui.classes("dropdown-item", "ui-compact-dropdown-item").a("Author"),
+        ep.classes("dropdown-menu").container([
+          ep.classes("dropdown-content").container([
+            ep.classes("dropdown-item", "ui-compact-dropdown-item").a("Link"),
+            ep.classes("dropdown-item", "ui-compact-dropdown-item").a("Date"),
+            ep.classes("dropdown-item", "ui-compact-dropdown-item").a("Author"),
           ]),
         ])
       ]) as units.main
@@ -86,38 +86,38 @@ type
 
 
 class(WidgetEditor of Widget):
-  ctor(widgetEditor) proc(ui: UiContext) =
+  ctor(widgetEditor) proc() =
 
     var units = WidgetEditorUnits()
 
-    uiDefs: discard
-      ui.classes("container").container([
-        ui.field([
-          ui.label("Title"),
-          ui.control([
-            ui.classes("input", "is-small")
+    unitDefs: discard
+      ep.classes("container").container([
+        ep.field([
+          ep.label("Title"),
+          ep.control([
+            ep.classes("input", "is-small")
               .input(placeholder="Title") as units.inTitle,
           ])
-          #ui.fieldLabel("Input"),
-          #ui.fieldBody([
-          #  ui.control([
-          #    ui.classes("input")
+          #ep.fieldLabel("Input"),
+          #ep.fieldBody([
+          #  ep.control([
+          #    ep.classes("input")
           #      .input(placeholder="Title") as inTitle,
           #  ]),
           #]),
         ]),
-        ui.field([
-          ui.label("Labels"),
-          ui.control([
-            ui.classes("input", "is-small")
+        ep.field([
+          ep.label("Labels"),
+          ep.control([
+            ep.classes("input", "is-small")
               .input(placeholder="Labels") as units.inLabels,
           ])
         ]),
-        ui.widgetAddFieldDropdown(),
-        ui.field([
-          ui.label("Notes"),
-          ui.control([
-            ui.tag("textarea")
+        widgetAddFieldDropdown(),
+        ep.field([
+          ep.label("Notes"),
+          ep.control([
+            ep.tag("textarea")
               .classes("textarea", "is-small", "font-mono", "ui-text-area")
               #.attrs({"rows": "40"})
               .input(placeholder="placeholder") as units.inMarkdown,
