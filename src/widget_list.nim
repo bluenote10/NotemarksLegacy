@@ -1,17 +1,16 @@
-import better_options
+import vandom/better_options
 import sequtils
 import sugar
 
 import oop_utils/standard_class
 
-import dom
-import ui_units
-import ui_dsl
+import vandom
+import vandom/dom
+import vandom/jsmod_markdown
+import vandom/js_utils
 
 import store
 
-import jsmod_markdown
-import js_utils
 
 # -----------------------------------------------------------------------------
 # Types

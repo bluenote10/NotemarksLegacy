@@ -1,6 +1,6 @@
 import karax/kdom
-import dom_utils
-import ui_units
+import vandom
+import vandom/dom_utils
 
 import store
 import widget_main

@@ -1,13 +1,13 @@
-import ui_units
-import ui_dsl
-import js_utils
 
 import oop_utils/standard_class
 
-import dom
+import vandom
+import vandom/js_utils
+import vandom/dom
+
 import sequtils
 import sugar
-import better_options
+import vandom/better_options
 
 import store
 
@@ -17,7 +17,7 @@ import widget_editor
 import widget_noteview
 import widget_list
 
-import jsmod_mousetrap
+import vandom/jsmod_mousetrap
 
 {.experimental: "notnil".}
 

@@ -1,6 +1,6 @@
 import jsffi except `&`
 import sugar
-import js_utils
+import vandom/js_utils
 
 {.emit: """
 const electron = require('electron')

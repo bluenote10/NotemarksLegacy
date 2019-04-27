@@ -2,12 +2,12 @@ import random
 import strformat
 import times
 
-import jsmod_yaml
-import jsmod_fs
-import jsmod_path
-import jsmod_glob
+import vandom/jsmod_yaml
+import vandom/jsmod_fs
+import vandom/jsmod_path
+import vandom/jsmod_glob
+import vandom/js_utils
 import jsffi except `&`
-import js_utils
 
 randomize()
 

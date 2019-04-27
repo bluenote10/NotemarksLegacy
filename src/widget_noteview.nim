@@ -1,20 +1,17 @@
 import times
 import sequtils
 import sugar
-import better_options
+import vandom/better_options
 
 import oop_utils/standard_class
 
-import dom
-import ui_units
-import ui_dsl
+import vandom
+import vandom/dom
+import vandom/dom_utils
+import vandom/jsmod_markdown
+import vandom/js_utils
 
 import store
-
-import dom_utils
-import jsmod_markdown
-import js_utils
-
 
 # -----------------------------------------------------------------------------
 # Widget
