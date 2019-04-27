@@ -20,7 +20,7 @@ import js_utils
 
 type
   WidgetAddFileDropdownUnits* = ref object
-    main*: DomElement
+    main*: Element
     button*: Button
 
   WidgetAddFileDropdownState = ref object
@@ -76,7 +76,7 @@ type
   NoteChangeCallback = proc(note: Note)
 
   WidgetEditorUnits* = ref object
-    main*: DomElement
+    main*: Element
     inTitle*: Input
     inLabels*: Input
     inMarkdown*: Input

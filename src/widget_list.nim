@@ -21,7 +21,7 @@ type
   SelectCallback* = proc (id: cstring)
 
   WidgetListUnits* = ref object
-    main*: DomElement
+    main*: Element
     container*: Container
     renderNote*: proc(note: Note): tuple[main: Unit, button: Button]
 

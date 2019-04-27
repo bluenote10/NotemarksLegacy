@@ -22,7 +22,7 @@ import js_utils
 
 type
   WidgetNoteviewUnits* = ref object
-    main: DomElement
+    main: Element
     title: Text
     outMarkdown: Text
     outLabels: Container

@@ -30,7 +30,7 @@ type
     List, Editor, Noteview
 
   WidgetMainUnits* = ref object
-    main*: DomElement
+    main*: Element
     widgetContainer*: Container
     homeButton*: Button
     newNoteButton*: Button

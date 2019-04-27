@@ -23,7 +23,7 @@ type
   SelectionCallback* = proc(note: Note)
 
   WigetSearchUnits* = ref object
-    main*: DomElement
+    main*: Element
     input*: Input
     container*: Container
 
@@ -146,8 +146,8 @@ class(WidgetSearch of Widget):
       # used predominantely anyway?
       let children = self.units.container.getChildren()
       if oldSelectedIndex >= 0:
-        children[oldSelectedIndex].DomElement.getClassList.remove("complete-selection")
-      children[self.state.selectedIndex].DomElement.getClassList.add("complete-selection")
+        children[oldSelectedIndex].Element.getClassList.remove("complete-selection")
+      children[self.state.selectedIndex].Element.getClassList.add("complete-selection")
       echo oldSelectedIndex, selectedIndex
 
   # -----------------------------------------------------------------------------

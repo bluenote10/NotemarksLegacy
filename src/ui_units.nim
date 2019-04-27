@@ -6,7 +6,7 @@ import better_options
 
 import oop_utils/standard_class
 
-import karax/kdom except class  # why does a typed proc class interfere with the macro?
+import dom
 import dom_utils
 import js_utils
 
@@ -90,7 +90,7 @@ proc attrs*(ui: UiContext, attrs: varargs[(cstring, cstring)]): UiContext =
 # -----------------------------------------------------------------------------
 
 class(Unit):
-  ctor(newUnit) proc(node: Node) =
+  ctor(newUnit) proc(node: DomNode) =
     self:
       domNode`+` = node
 
@@ -103,15 +103,15 @@ class(Unit):
 # Helpers
 # -----------------------------------------------------------------------------
 
-proc getDomNodes*(children: openarray[Unit]): seq[Node] =
-  result = newSeq[Node](children.len)
+proc getDomNodes*(children: openarray[Unit]): seq[DomNode] =
+  result = newSeq[DomNode](children.len)
   for i in 0 ..< children.len:
     result[i] = children[i].domNode
 
 # Missing in kdom?
-proc createDocumentFragment*(d: Document): Node {.importcpp.}
+proc createDocumentFragment*(d: Document): DomNode {.importcpp.}
 
-proc getDomFragment(children: openarray[Unit]): Node =
+proc getDomFragment(children: openarray[Unit]): DomNode =
   # https://coderwall.com/p/o9ws2g/why-you-should-always-append-dom-elements-using-documentfragments
   let fragment = document.createDocumentFragment()
   for child in children:
@@ -137,8 +137,8 @@ class(TextNode of Unit):
 # -----------------------------------------------------------------------------
 
 type
-  DomEvent* = kdom.Event
-  DomKeyboardEvent* = kdom.KeyboardEvent
+  DomEvent* = dom.Event
+  DomKeyboardEvent* = dom.KeyboardEvent
 
   ClickCallback* = proc(e: DomEvent)
   InputCallback* = proc(e: DomEvent, s: cstring)
@@ -158,16 +158,16 @@ type
     dispatch: BlurCallback
 
 
-class(DomElement of Unit):
-  ctor(newDomElement) proc(el: Element) =
+class(Element of Unit):
+  ctor(newElement) proc(el: DomElement) =
     self:
       base(el)
       eventHandlers = newJDict[cstring, EventHandlerBase]()
       nativeHandlers = newJDict[cstring, EventHandler]()
 
-  template domElement*(): Element =
+  template domElement*(): DomElement =
     # From the constructor we know that self.domNode has to be type Element
-    self.domNode.Element
+    self.domNode.DomElement
 
   method setFocus*() =
     self.domElement.focus()
@@ -225,13 +225,13 @@ class(DomElement of Unit):
 # Text
 # -----------------------------------------------------------------------------
 
-class(Text of DomElement):
+class(Text of Element):
   ctor(text) proc(ui: UiContext, text: cstring) =
     let el = document.createElement(ui.getTagOrDefault("span"))
 
     self:
       base(el)
-      textNode = document.createTextNode(text)
+      textNode = document.createTextNode(text).DomNode
 
     self.domElement.appendChild(self.textNode)
     self.domElement.addClasses(ui.classes)
@@ -290,7 +290,7 @@ proc p*(ui: UiContext, text: cstring): Text =
 # -----------------------------------------------------------------------------
 
 type
-  Button* = DomElement
+  Button* = Element
 
 proc button*(ui: UiContext, text: cstring): Button =
   ## Constructor for simple text button.
@@ -299,7 +299,7 @@ proc button*(ui: UiContext, text: cstring): Button =
     class = ui.classes,
     attrs = ui.attrs,
   )
-  newDomElement(el)
+  newElement(el)
 
 proc button*(ui: UiContext, children: openarray[Unit]): Button =
   ## Constructor for button with nested units.
@@ -308,13 +308,13 @@ proc button*(ui: UiContext, children: openarray[Unit]): Button =
     attrs = ui.attrs,
   )
   el.appendChild(getDomFragment(children))
-  newDomElement(el)
+  newElement(el)
 
 # -----------------------------------------------------------------------------
 # Input
 # -----------------------------------------------------------------------------
 
-class(Input of DomElement):
+class(Input of Element):
   ctor(newInput) proc(el: InputElement) =
     self:
       base(el)
@@ -353,7 +353,7 @@ proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input
 # Container
 # -----------------------------------------------------------------------------
 
-class(Container of DomElement):
+class(Container of Element):
   ctor(container) proc(ui: UiContext, children: openarray[Unit]) =
     let el = h(ui.getTagOrDefault("div"),
       class = ui.classes,
@@ -484,15 +484,11 @@ iterator pairs*(c: Container): (int, Unit) =
     yield (i, child)
 
 
-class(Widget of DomElement):
-  ctor(newWidget) proc(domElement: DomElement) =
+class(Widget of Element):
+  ctor(newWidget) proc(element: Element) =
     self:
-      # FIXME: we need better naming for DomElement:
-      # - On the one hand, it refers to the (getter of the) native dom element.
-      # - On the other hand the type DomElement is our abstraction/wrapper...
-      # => Maybe best to rename DomElement into Element?
-      base(domElement.domElement)
-      element = domElement
+      base(element.domElement)
+      element
 
   method activate*() =
     echo &"activating widget: {name(type(self))}"
