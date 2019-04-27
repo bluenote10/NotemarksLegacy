@@ -13,7 +13,6 @@ import store
 
 import dom_utils
 import js_markdown
-import jstr_utils
 import js_utils
 
 

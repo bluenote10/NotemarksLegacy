@@ -12,7 +12,6 @@ import store
 
 import dom_utils
 import js_markdown
-import jstr_utils
 import js_utils
 
 # -----------------------------------------------------------------------------
@@ -165,7 +164,7 @@ class(WidgetEditor of Widget):
     self.units.inMarkdown.onKeydown() do (keyEvt: DomKeyboardEvent):
       debug(keyEvt)
       #let keyEvt = e.KeyboardEvent
-      let el = self.units.inMarkdown.domElement.InputElement # FIXME, Input should have a getter like `domInputElement`?
+      let el = self.units.inMarkdown.domInputElement
       let keyCode =  keyEvt.keyCode
       if keyCode == 9 and not keyEvt.shiftKey:
         keyEvt.preventDefault()

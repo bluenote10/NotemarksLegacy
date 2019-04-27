@@ -1,6 +1,6 @@
 import jsffi except `&`
 import sugar
-import jstr_utils
+import js_utils
 
 {.emit: """
 const electron = require('electron')

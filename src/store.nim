@@ -7,7 +7,6 @@ import js_fs
 import js_path
 import js_glob
 import jsffi except `&`
-import jstr_utils
 import js_utils
 
 randomize()

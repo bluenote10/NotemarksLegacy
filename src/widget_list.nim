@@ -12,7 +12,6 @@ import store
 
 import js_markdown
 import js_utils
-import jstr_utils
 
 # -----------------------------------------------------------------------------
 # Types

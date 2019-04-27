@@ -5,7 +5,6 @@ import sugar
 import oop_utils/standard_class
 
 import dom
-import jstr_utils
 import js_utils
 import sequtils
 import sugar
@@ -141,6 +140,10 @@ class(WidgetSearch of Widget):
           self.state.selectedIndex -= 1
           while self.state.selectedIndex < 0:
             self.state.selectedIndex += self.state.suggestions.len
+
+      # FIXME: Retrieving the children of a container returns base types.
+      # Should we make container generic, or return elements, because they are
+      # used predominantely anyway?
       let children = self.units.container.getChildren()
       if oldSelectedIndex >= 0:
         children[oldSelectedIndex].DomElement.getClassList.remove("complete-selection")

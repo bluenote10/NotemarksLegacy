@@ -1,6 +1,7 @@
 
 import strformat
 import sugar
+import typetraits
 import better_options
 
 import oop_utils/standard_class
@@ -314,9 +315,17 @@ proc button*(ui: UiContext, children: openarray[Unit]): Button =
 # -----------------------------------------------------------------------------
 
 class(Input of DomElement):
-  ctor(newInput) proc(el: Element) =
+  ctor(newInput) proc(el: InputElement) =
     self:
       base(el)
+
+  template domInputElement*(): InputElement =
+    # From the constructor we know that self.domNode has to be type InputElement
+    # FIXME to clarify: There there differences between:
+    # - https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement
+    # - https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement
+    # Maybe we should differentiate, but TextAreaElement is not in kdom...
+    self.domNode.InputElement
 
   method setValue*(value: cstring) {.base.} =
     # setAttribute doesn't seem to work for textarea
@@ -337,7 +346,7 @@ proc input*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): Input
   let el = h(ui.getTagOrDefault("input"),
     class = ui.classes,
     attrs = attrs,
-  )
+  ).InputElement
   Input.init(el)
 
 # -----------------------------------------------------------------------------
@@ -475,9 +484,6 @@ iterator pairs*(c: Container): (int, Unit) =
     yield (i, child)
 
 
-#type
-#  Widget* = DomElement
-
 class(Widget of DomElement):
   ctor(newWidget) proc(domElement: DomElement) =
     self:
@@ -489,11 +495,9 @@ class(Widget of DomElement):
       element = domElement
 
   method activate*() =
-    echo "activating widget"
-    debug(self)
+    echo &"activating widget: {name(type(self))}"
     self.element.activate()
 
   method deactivate*() =
-    echo "deactivating widget"
-    debug(self)
+    echo &"deactivating widget {name(type(self))}"
     self.element.deactivate()
