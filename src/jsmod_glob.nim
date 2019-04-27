@@ -1,7 +1,7 @@
 import jsffi
 import js_utils
 
-import js_fs
+import jsmod_fs
 
 type
   Glob* = JsObject

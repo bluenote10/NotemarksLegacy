@@ -4,6 +4,15 @@
 #
 # -----------------------------------------------------------------------------
 
+#[
+Note for browser support: Should we use staticRead on something like
+
+    node -e 'console.log(require.resolve("mousetrap"))'
+
+to resolve node module paths at compile time and embed them into the
+resulting JS file?
+]#
+
 proc require*(lib: cstring, T: typedesc): T {.importcpp: """require(#)""".}
 
 proc debug*[T](x: T) {.importc: "console.log", varargs.}

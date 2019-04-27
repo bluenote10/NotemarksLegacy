@@ -2,10 +2,10 @@ import random
 import strformat
 import times
 
-import js_yaml
-import js_fs
-import js_path
-import js_glob
+import jsmod_yaml
+import jsmod_fs
+import jsmod_path
+import jsmod_glob
 import jsffi except `&`
 import js_utils
 

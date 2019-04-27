@@ -12,7 +12,7 @@ import ui_dsl
 import store
 
 import dom_utils
-import js_markdown
+import jsmod_markdown
 import js_utils
 
 # -----------------------------------------------------------------------------

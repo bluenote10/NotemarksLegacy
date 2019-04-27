@@ -11,7 +11,7 @@ import bulma_utils
 import store
 
 import dom_utils
-import js_markdown
+import jsmod_markdown
 import js_utils
 
 # -----------------------------------------------------------------------------
@@ -79,7 +79,7 @@ type
     main*: DomElement
     inTitle*: Input
     inLabels*: Input
-    inMarkdown*: Input # FancyInput
+    inMarkdown*: Input
 
   WidgetEditorState = ref object
     optNote: Option[Note]

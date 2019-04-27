@@ -10,7 +10,7 @@ import ui_dsl
 
 import store
 
-import js_markdown
+import jsmod_markdown
 import js_utils
 
 # -----------------------------------------------------------------------------
@@ -39,6 +39,8 @@ class(WidgetList of Widget):
       uiDefs:
         ui.classes("tag", "is-dark").span(name)
 
+    # FIXME: There must be a better solution than always returning tuples when
+    # creating wrapped units.
     units.renderNote = proc(note: Note): tuple[main: Unit, button: Button] =
       var button: Button
       uiDefs:
