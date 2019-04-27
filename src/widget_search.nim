@@ -34,19 +34,78 @@ type
     optOnSearch: Option[SearchCallback]
     optOnSelection: Option[SelectionCallback]
 
-#[
-  WidgetSearch* = ref object of Unit
-    units: WigetSearchUnits
-    state: State
-]#
-
-# -----------------------------------------------------------------------------
-# Overloads
-# -----------------------------------------------------------------------------
 
 class(WidgetSearch of Widget):
-  method setFocus*() =
-    self.units.input.setFocus()
+
+  ctor(widgetSearch) proc(ui: UiContext) =
+
+    proc makeSearchUnit(ui: UiContext, note: Note): Unit =
+      uiDefs:
+        #ui.classes("panel-block").container(children=[ui.tdiv(s).Unit])
+        ui.classes("is-size-6", "panel-block").tdiv(note.title)
+
+    var units = WigetSearchUnits()
+
+    uiDefs: discard
+      ui.classes("container").container([
+        ui.container([
+          ui.classes("field", "has-margin-top").container([
+            ui.classes("control", "has-icons-left").container([
+              ui.classes("input").input(placeholder="Search...") as units.input,
+              ui.tag("span").classes("icon", "is-left").container([
+                ui.classes("fas", "fa-search").i(""),
+              ]),
+            ]),
+          ]),
+          ui.classes("float-wrapper").container([
+            ui.classes("card", "float-box", "is-hidden").container([]) as units.container,
+          ]),
+        ]),
+      ]) as units.main
+
+    self:
+      base(units.main)
+      units
+      state = State(
+        suggestions: newSeq[Note](),
+        selectedIndex: -1,
+        optOnSearch: none(SearchCallback),
+        optOnSelection: none(SelectionCallback),
+      )
+
+    # Event handler
+    units.input.onInput() do (e: DomEvent, newText: cstring):
+      for onSearch in self.state.optOnSearch:
+        self.state.suggestions = onSearch(newText)
+        if newText.isNil or newText == "" or self.state.suggestions.len == 0:
+          self.units.container.clear()
+          self.hide()
+        else:
+          self.units.container.replaceChildren(
+            self.state.suggestions.map(note => ui.makeSearchUnit(note).Unit)
+          )
+          self.show()
+
+    units.input.onKeydown() do (evt: KeyboardEvent):
+      if evt.keyCode == 38:     # up
+        evt.preventDefault()
+        self.handleSelection(down=false)
+      elif evt.keyCode == 40:   # down
+        evt.preventDefault()
+        self.handleSelection(down=true)
+      elif evt.keyCOde == 27:   # esc
+        self.resetSuggestions()
+      elif evt.keyCode == 13:   # return
+        if self.state.selectedIndex >= 0:
+          for onSelection in self.state.optOnSelection:
+            onSelection(self.state.suggestions[self.state.selectedIndex])
+            self.resetSuggestions()
+
+    units.input.onBlur() do (e: DomEvent):
+      self.resetSuggestions()
+
+    debug(cstring"search", self)
+
 
   # -----------------------------------------------------------------------------
   # Private members
@@ -92,92 +151,12 @@ class(WidgetSearch of Widget):
   # Public methods
   # -----------------------------------------------------------------------------
 
-  method setOnSearch*(onSearch: SearchCallback) {.base.} =
+  method setFocus*() =
+    self.units.input.setFocus()
+
+  method onSearch*(onSearch: SearchCallback) {.base.} =
     self.state.optOnSearch = some(onSearch)
 
-  method setOnSelection*(onSelection: SelectionCallback) {.base.} =
+  method onSelection*(onSelection: SelectionCallback) {.base.} =
     self.state.optOnSelection = some(onSelection)
 
-  # -----------------------------------------------------------------------------
-  # Constructor
-  # -----------------------------------------------------------------------------
-
-  ctor(widgetSearch) proc(ui: UiContext) =
-
-    proc makeSearchUnit(ui: UiContext, note: Note): Unit =
-      uiDefs:
-        #ui.classes("panel-block").container(children=[ui.tdiv(s).Unit])
-        ui.classes("is-size-6", "panel-block").tdiv(note.title)
-
-    var units = WigetSearchUnits()
-
-    uiDefs: discard
-      ui.classes("container").container([
-        ui.container([
-          ui.classes("field", "has-margin-top").container([
-            ui.classes("control", "has-icons-left").container([
-              ui.classes("input").input(placeholder="Search...") as units.input,
-              ui.tag("span").classes("icon", "is-left").container([
-                ui.classes("fas", "fa-search").i(""),
-              ]),
-            ]),
-          ]),
-          ui.classes("float-wrapper").container([
-            ui.classes("card", "float-box", "is-hidden").container([]) as units.container,
-          ]),
-        ]),
-      ]) as units.main
-
-    #[
-    let self = WidgetSearch(
-      units: units,
-      state: State(
-        suggestions: newSeq[Note](),
-        selectedIndex: -1,
-        optOnSearch: none(SearchCallback),
-        optOnSelection: none(SelectionCallback),
-      )
-    )
-    ]#
-    self:
-      base(units.main)
-      units
-      state = State(
-        suggestions: newSeq[Note](),
-        selectedIndex: -1,
-        optOnSearch: none(SearchCallback),
-        optOnSelection: none(SelectionCallback),
-      )
-
-    # Event handler
-    units.input.onInput() do (e: DomEvent, newText: cstring):
-      for onSearch in self.state.optOnSearch:
-        self.state.suggestions = onSearch(newText)
-        if newText.isNil or newText == "" or self.state.suggestions.len == 0:
-          self.units.container.clear()
-          self.hide()
-        else:
-          self.units.container.replaceChildren(
-            self.state.suggestions.map(note => ui.makeSearchUnit(note).Unit)
-          )
-          self.show()
-
-    units.input.onKeydown() do (evt: KeyboardEvent):
-      if evt.keyCode == 38:     # up
-        evt.preventDefault()
-        self.handleSelection(down=false)
-      elif evt.keyCode == 40:   # down
-        evt.preventDefault()
-        self.handleSelection(down=true)
-      elif evt.keyCOde == 27:   # esc
-        self.resetSuggestions()
-      elif evt.keyCode == 13:   # return
-        if self.state.selectedIndex >= 0:
-          for onSelection in self.state.optOnSelection:
-            onSelection(self.state.suggestions[self.state.selectedIndex])
-            self.resetSuggestions()
-
-    units.input.onBlur() do (e: DomEvent):
-      self.resetSuggestions()
-
-    debug(cstring"search", self)

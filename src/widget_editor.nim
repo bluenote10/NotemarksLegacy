@@ -6,6 +6,7 @@ import oop_utils/standard_class
 import dom
 import ui_units
 import ui_dsl
+import bulma_utils
 
 import store
 
@@ -13,110 +14,6 @@ import dom_utils
 import js_markdown
 import jstr_utils
 import js_utils
-
-
-# Bulma helpers
-proc field*(ui: UiContext, units: openarray[Unit]): Container =
-  uiDefs:
-    ui.classes("field", "has-margin-top").container(units)
-    #ui.classes("field", "has-margin-top", "is-horizontal").container(units)
-
-proc label*(ui: UiContext, text: cstring): Text =
-  uiDefs:
-    ui.tag("label").classes("label", "is-small").text(text)
-
-proc control*(ui: UiContext, units: openarray[Unit]): Container =
-  uiDefs:
-    ui.classes("control").container(units)
-
-#[
-proc fieldLabel*(ui: UiContext, text: cstring): Container =
-  uiDefs:
-    ui.classes("field-label").container([
-      ui.tag("label").classes("label").text(text)
-    ])
-
-proc fieldBody*(ui: UiContext, units: openarray[Unit]): Container =
-  uiDefs:
-    ui.classes("field-body").container(units)
-
-]#
-
-# -----------------------------------------------------------------------------
-# Fancy input
-# -----------------------------------------------------------------------------
-
-# TODO implement via regular input?
-
-#[
-
-type
-  FancyInput* = ref object of Unit
-    el: InputElement
-    onInputCB: Option[InputCallback]
-    onInputHandler: EventHandler
-    onKeydownHandler: EventHandler
-
-method getDomNode*(self: FancyInput): Node =
-  self.el
-
-method activate*(self: FancyInput) =
-  proc onInput(e: Event) =
-    for cb in self.onInputCB:
-      cb(e.target.value)
-  self.el.addEventListener("input", onInput)
-  self.onInputHandler = onInput
-
-  proc onKeydown(e: Event) =
-    debug(e)
-    let keyEvt = e.KeyboardEvent
-    let keyCode =  keyEvt.keyCode
-    if keyCode == 9 and not keyEvt.shiftKey:
-      e.preventDefault()
-      let selStart = self.el.selectionStart
-      let selEnd = self.el.selectionEnd
-      echo selStart, selEnd
-      if selStart == selEnd:
-        self.el.value = self.el.value.substr(0, selStart) & cstring"  " & self.el.value.substr(selEnd)
-        self.el.selectionStart = selStart + 2
-        self.el.selectionEnd = selEnd + 2
-
-  self.el.addEventListener("keydown", onKeydown)
-  self.onKeydownHandler = onKeydown
-
-method deactivate*(self: FancyInput) =
-  self.el.removeEventListener("input", self.onInputHandler)
-  self.onInputHandler = nil
-
-proc fancyInput*(ui: UiContext, placeholder: cstring = "", text: cstring = ""): FancyInput =
-  # Merge ui.attrs with explicit parameters
-  var attrs = ui.getAttrs()
-  attrs.add({
-    "value".cstring: text,
-    "placeholder".cstring: placeholder,
-  })
-  let el = h(ui.getTagOrDefault("input"),
-    class = ui.getClasses,
-    attrs = attrs,
-  )
-  FancyInput(
-    el: el.InputElement,
-    onInputHandler: nil,
-    onInputCB: none(InputCallback),
-  )
-
-proc setOnInput*(self: FancyInput, cb: InputCallback) =
-  self.onInputCB = some(cb)
-
-proc setValue*(self: FancyInput, value: cstring) =
-  # setAttribute doesn't seem to work for textarea
-  # self.el.setAttribute("value", value)
-  self.el.value = value
-
-proc setPlaceholder*(self: FancyInput, placeholder: cstring) =
-  self.el.setAttribute("placeholder", placeholder)
-
-]#
 
 # -----------------------------------------------------------------------------
 # AddFieldDropdown
@@ -130,11 +27,6 @@ type
   WidgetAddFileDropdownState = ref object
     isActive: bool
 
-#[
-  WidgetAddFieldDropdown* = ref object of Unit
-    units: WidgetAddFileDropdownUnits
-    state: WidgetAddFileDropdownState
-]#
 
 class(WidgetAddFieldDropdown of Widget):
 
@@ -161,21 +53,12 @@ class(WidgetAddFieldDropdown of Widget):
         ])
       ]) as units.main
 
-    # Internal state
     self:
       base(units.main)
       units
       state = WidgetAddFileDropdownState(
         isActive: false,
       )
-    #[
-    var self = WidgetAddFieldDropdown(
-      units: units,
-      state: WidgetAddFileDropdownState(
-        isActive: false,
-      )
-    )
-    ]#
 
     self.units.button.onClick() do (e: DomEvent):
       if not self.state.isActive:
@@ -187,7 +70,7 @@ class(WidgetAddFieldDropdown of Widget):
 
 
 # -----------------------------------------------------------------------------
-# Widget
+# Editor
 # -----------------------------------------------------------------------------
 
 type
@@ -314,5 +197,5 @@ class(WidgetEditor of Widget):
     # TODO not needed here anymore?
     # self.updateOutMarkdown(self.note, self.note.markdown)
 
-  method setOnNoteChange*(onNoteChangeCB: NoteChangeCallback) {.base.} =
+  method onNoteChange*(onNoteChangeCB: NoteChangeCallback) {.base.} =
     self.state.optOnNoteChange = some(onNoteChangeCB)

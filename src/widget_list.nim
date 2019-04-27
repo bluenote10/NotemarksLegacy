@@ -74,7 +74,7 @@ class(WidgetList of Widget):
     debug(cstring"list", self)
 
 
-  method setOnSelect*(cb: SelectCallback) {.base.} =
+  method onSelect*(cb: SelectCallback) {.base.} =
     self.state.onSelect = some(cb)
 
 

@@ -48,11 +48,6 @@ type
     optSelectedNote: Option[Note]
 
 
-
-# -----------------------------------------------------------------------------
-# Constructor
-# -----------------------------------------------------------------------------
-
 class(WidgetMain of Widget):
   ctor(widgetMain) proc(ui: UiContext, store: Store) =
 
@@ -110,24 +105,24 @@ class(WidgetMain of Widget):
       self.state.optSelectedNote = some(note)
       self.switchToEditor()
 
-    self.units.list.setOnSelect() do (id: cstring):
+    self.units.list.onSelect() do (id: cstring):
       let note = self.state.store.getNote(id)
       self.state.optSelectedNote = some(note)
       self.switchToNoteview()
 
-    self.units.editor.setOnNoteChange() do (note: Note):
+    self.units.editor.onNoteChange() do (note: Note):
       self.state.optSelectedNote = some(note)
       self.state.store.storeYaml(note)
       self.state.store.storeMarkdown(note)
 
-    self.units.search.setOnSearch() do (text: cstring) -> seq[Note]:
+    self.units.search.onSearch() do (text: cstring) -> seq[Note]:
       var suggestions = newSeq[Note]()
       for note in self.state.store.getNotes():
         if note.title.toLowerCase().contains(text.toLowerCase()):
           suggestions.add(note)
       suggestions
 
-    self.units.search.setOnSelection() do (note: Note):
+    self.units.search.onSelection() do (note: Note):
       self.state.optSelectedNote = some(note)
       self.switchToNoteview()
 

@@ -25,14 +25,6 @@ type
     main*: Container
     renderLabel*: proc(name: cstring, count: int): Unit
 
-#[
-  WidgetLabeltree* = ref object of Unit
-    units: WidgetLabeltreeUnits
-]#
-
-# -----------------------------------------------------------------------------
-# Public methods
-# -----------------------------------------------------------------------------
 
 class(WidgetLabeltree of Widget):
 
