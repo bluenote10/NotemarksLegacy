@@ -1,6 +1,6 @@
 import { createState, createEffect, onCleanup } from 'solid-js';
 
-import { Store } from "./store"
+import { Store, Note } from "./store"
 
 import { Search } from "./Search"
 import { LabelTree } from "./LabelTree"
@@ -21,6 +21,12 @@ export function App() {
 
   const [state, setState] = createState({
     view: MODE_LIST,
+    notes: [] as Note[],
+  })
+
+  // init
+  setState({
+    notes: store.getNotes()
   })
 
   function switchToList() {
@@ -68,7 +74,7 @@ export function App() {
         </div>
         <div class="column ui-column-middle">
           <$ when={(state.view == MODE_LIST)}>
-            <List/>
+            <List notes={(state.notes as any as Note[])}/>
           </$>
           <$ when={(state.view == MODE_NOTE)}>
             <NoteView/>
