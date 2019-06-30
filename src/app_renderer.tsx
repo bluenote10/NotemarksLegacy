@@ -20,15 +20,7 @@ import { TableHandler } from "./TableHandler"
 import { PlotHandler } from "./PlotHandler"
 */
 
-function App() {
-
-  return (
-    <div class="container">
-      Hello World
-    </div>
-  )
-}
-
+import { App } from "./App"
 
 let el = document.getElementById('ROOT')!;
 createRoot(() => el.appendChild(<App/>));

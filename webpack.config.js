@@ -14,6 +14,8 @@ module.exports = {
     filename: 'renderer.js',
     path: path.resolve(__dirname, 'build')
   },
+  // https://stackoverflow.com/a/48476887/1804173
+  target: 'electron-renderer',
   module: {
     rules: [
       //{test: /\.tsx?$/, loader: 'ts-loader' }
