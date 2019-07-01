@@ -3,6 +3,8 @@ import * as glob from "glob"
 import * as fs from "fs"
 import * as path from "path"
 
+import * as fn from "./fn"
+
 
 function randHash(length = 8): string {
   var result           = '';
@@ -72,8 +74,14 @@ export class Note {
 // Store
 // -----------------------------------------------------------------------------
 
-type Notes = { [s: string]: Note }
-type LabelCounts = { [s: string]: number }
+export type Notes = { [s: string]: Note }
+
+export type LabelCount = {
+  name: string,
+  count: number,
+}
+export type LabelCounts = LabelCount[]
+
 
 export function loadNotes(path: string): Notes {
   let notes: Notes = {}
@@ -183,13 +191,20 @@ export class Store {
   }
 
   getLabelCounts(): LabelCounts {
-    let counts: LabelCounts = {}
+    let counts: {[index: string]: number} = {}
     for (let note of Object.values(this.notes)) {
       for (let label of note.labels) {
         counts[label] = (counts[label] || 0) + 1;
       }
     }
-    return counts
+
+    let labelCounts = fn.mapEntries(counts, (k: string, v: number) => ({
+      name: k,
+      count: v,
+    }))
+    labelCounts = labelCounts.sort()
+
+    return labelCounts
   }
 
 }
