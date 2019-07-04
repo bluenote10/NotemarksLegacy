@@ -4,13 +4,13 @@ import { Note } from "./store";
 
 export interface ListProps {
   notes: Note[],
+  onSelect: (index: number) => void,
 }
 
 // https://spectrum.chat/solid-js/general/solid-js-watercooler~a36894a2-2ea2-4b1e-9e56-03ed0b3aef13?m=MTU1OTIyNzQ5MDYzMw==
 // https://www.barbarianmeetscoding.com/blog/2016/05/13/argument-destructuring-and-type-annotations-in-typescript
 
 function Label({name}: {name: string}) {
-  console.log("label: ", name)
   return <span class="tag is-dark">{name}</span>
 }
 
@@ -19,10 +19,13 @@ export function List(props: ListProps) {
     <div>
       <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth table-fixed">
         <$ each={(props.notes)}>{
-          (note: Note) =>
+          (note: Note, index: number) =>
             <tr>
               <td>
-                <a class="truncate">
+                <a
+                  class="truncate"
+                  onclick={(event) => props.onSelect(index)}
+                >
                   {(note.title.length > 0 ? note.title : "\u2060")}
                 </a>
               </td>

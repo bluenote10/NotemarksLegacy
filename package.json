@@ -6,6 +6,7 @@
   "scripts": {
     "build-css": "node-sass --omit-source-map-url css/styles.scss dist/styles.css",
     "build": "webpack",
+    "watch": "webpack --watch",
     "start": "electron .",
     "check-types": "tsc"
   },
@@ -28,7 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^1.11.0",
     "@typescript-eslint/parser": "^1.11.0",
     "babel-loader": "^8.0.6",
-    "babel-plugin-jsx-dom-expressions": "^0.10.1",
+    "babel-plugin-jsx-dom-expressions": "^0.10.2",
     "bulma": "^0.7.5",
     "electron": "^4.2.5",
     "eslint": "^6.0.1",

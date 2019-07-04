@@ -10,11 +10,11 @@ export interface LabelTreeProps {
 // https://www.barbarianmeetscoding.com/blog/2016/05/13/argument-destructuring-and-type-annotations-in-typescript
 
 function Label({name}: {name: string}) {
-  console.log("label: ", name)
   return <span class="tag is-dark">{name}</span>
 }
 
 export function LabelTree(props: LabelTreeProps) {
+  console.log("rendering labeltree")
   return (
     <div>
       <$ each={(props.labels)}>{

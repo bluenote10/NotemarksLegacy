@@ -21,13 +21,14 @@ export function App() {
 
   const [state, setState] = createState({
     view: MODE_LIST,
-    notes: [] as Note[],
+    activeNote: undefined as Note | undefined,
+    selectedNotes: [] as Note[],
     labelCounts: [] as LabelCounts,
   })
 
   // init
   setState({
-    notes: store.getNotes(),
+    selectedNotes: store.getNotes(),
     labelCounts: store.getLabelCounts(),
   })
 
@@ -37,8 +38,9 @@ export function App() {
     })
   }
 
-  function switchToNote() {
+  function switchToNote(note: Note) {
     setState({
+      activeNote: note,
       view: MODE_NOTE,
     })
   }
@@ -53,7 +55,10 @@ export function App() {
     <div>
       <div class="ui-navbar">
         <div class="ui-navbar-left">
-          <a class="button ui-navbar-button">
+          <a
+            class="button ui-navbar-button"
+            onclick={(event) => switchToList()}
+          >
             <span class="icon">
               <i class="fas fa-home"></i>
             </span>
@@ -76,10 +81,13 @@ export function App() {
         </div>
         <div class="column ui-column-middle">
           <$ when={(state.view == MODE_LIST)}>
-            <List notes={(state.notes as any as Note[])}/>
+            <List
+              notes={(state.selectedNotes as any as Note[])}
+              onSelect={(index: number) => switchToNote(state.selectedNotes[index] as any as Note)}
+            />
           </$>
-          <$ when={(state.view == MODE_NOTE)}>
-            <NoteView/>
+          <$ when={(state.view == MODE_NOTE && state.activeNote != null)}>
+            <NoteView note={(state.activeNote!)}/>
           </$>
           <$ when={(state.view == MODE_EDIT)}>
             <Editor/>
