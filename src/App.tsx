@@ -51,6 +51,30 @@ export function App() {
     })
   }
 
+  mousetrap.bind(["command+e", "ctrl+e"], () => {
+    switch (state.view) {
+      case MODE_EDIT: {
+        console.log("switching to noteview");
+        setState({view: MODE_NOTE});
+        break;
+      }
+      case MODE_NOTE: {
+        console.log("switching to edit");
+        setState({view: MODE_EDIT});
+        break;
+      }
+      case MODE_LIST: {
+        console.log("switching note possible");
+        break;
+      }
+    }
+    /*
+    if (state.view == MODE_EDIT) {
+      setState({view: MODE_NOTE});
+    } elif (state.view)
+    */
+  });
+
   return (
     <div>
       <div class="ui-navbar">
@@ -90,7 +114,7 @@ export function App() {
             <NoteView note={(state.activeNote!)}/>
           </$>
           <$ when={(state.view == MODE_EDIT)}>
-            <Editor/>
+            <Editor note={(state.activeNote!)}/>
           </$>
         </div>
         <div class="column ui-column-right is-fullheight">

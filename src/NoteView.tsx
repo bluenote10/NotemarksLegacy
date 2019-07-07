@@ -1,4 +1,5 @@
 import { createState, createEffect, onCleanup } from 'solid-js';
+import * as showdown from "showdown"
 
 import { Note } from "./store";
 
@@ -12,7 +13,7 @@ function Label({name}: {name: string}) {
 
 export function NoteView(props: NoteViewProps) {
   return (
-    <div>
+    <div class="container">
       <h1 class="title has-margin-top">{(props.note.title)}</h1>
       <article class="message is-info has-margin-top">
         <div class="message-body">
@@ -36,6 +37,19 @@ export function NoteView(props: NoteViewProps) {
           </table>
         </div>
       </article>
+      <$ when={true}
+        afterRender={(firstEl, nextSibling) => {(firstEl as HTMLElement).innerHTML = convertMarkdown(props.note.markdown)}}
+      >
+        <div class="content"></div>
+      </$>
     </div>
   )
+}
+
+function convertMarkdown(markdown: string): string {
+  const converter = new showdown.Converter({
+    ghCodeBlocks: true,
+    tasklists: true,
+  })
+  return converter.makeHtml(markdown);
 }
