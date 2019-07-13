@@ -3,6 +3,14 @@ import * as showdown from "showdown"
 
 import { Note } from "./store";
 
+declare global {
+  namespace JSX {
+    interface HTMLAttributes<T> {
+      $markdown?: string
+    }
+  }
+}
+
 export interface NoteViewProps {
   note: Note,
 }
@@ -12,6 +20,12 @@ function Label({name}: {name: string}) {
 }
 
 export function NoteView(props: NoteViewProps) {
+
+  const markdown = (el: HTMLElement, accessor: () => string) => el.innerHTML = convertMarkdown(accessor());
+
+  // For now: use directives instead of afterRender
+  // - https://github.com/ryansolid/babel-plugin-jsx-dom-expressions/issues/14
+  // - https://spectrum.chat/solid-js/general/solid-js-watercooler~a36894a2-2ea2-4b1e-9e56-03ed0b3aef13?m=MTU2MTc5NDc0MDMwMw==
   return (
     <div class="container">
       <h1 class="title has-margin-top">{(props.note.title)}</h1>
@@ -37,11 +51,7 @@ export function NoteView(props: NoteViewProps) {
           </table>
         </div>
       </article>
-      <$ when={true}
-        afterRender={(firstEl, nextSibling) => {(firstEl as HTMLElement).innerHTML = convertMarkdown(props.note.markdown)}}
-      >
-        <div class="content"></div>
-      </$>
+      <div class="markdown-wrapper" $markdown={props.note.markdown}/>
     </div>
   )
 }
