@@ -75,6 +75,18 @@ export function App() {
     */
   });
 
+  function onChangeTitle(s: string) {
+    console.log("New title:", s);
+  }
+
+  function onChangeLabels(s: string) {
+    console.log("New labels:", s);
+  }
+
+  function onChangeMarkdown(s: string) {
+    console.log("New markdown:", s);
+  }
+
   return (
     <div>
       <div class="ui-navbar">
@@ -114,7 +126,12 @@ export function App() {
             <NoteView note={(state.activeNote!)}/>
           </$>
           <$ when={(state.view == MODE_EDIT)}>
-            <Editor note={(state.activeNote!)}/>
+            <Editor
+              note={(state.activeNote!)}
+              onChangeTitle={onChangeTitle}
+              onChangeLabels={onChangeLabels}
+              onChangeMarkdown={onChangeMarkdown}
+            />
           </$>
         </div>
         <div class="column ui-column-right is-fullheight">
