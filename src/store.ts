@@ -167,14 +167,24 @@ export class Store {
     }
   }
 
-  storeYaml(n: Note) {  // refactor to updateNote?
+  storeYaml(n: Note) {
+    // TODO: refactor to updateNote?
+    // Basically we could diff the n vs this.notes[n.id] and depending
+    // on which fields have changed, we trigger persistence...
+    // Or alternatively instead of letting the client update the Note on
+    // their own, they call updateTitle(id, newTitle), updateLabels(id, ...)
+    // and so on. Maybe with a dict to be generic?
+    // Problem: How does the client modify the "active note" instance then?
+    // Maybe the modify function could just return the modified Note to
+    // be used by the client...
     console.log("storing to:", this.fileNameYaml(n))
     this.notes[n.id] = n
     this.ensureDirExists(n)
     fs.writeFileSync(this.fileNameYaml(n), noteToYamlData(n))
   }
 
-  storeMarkdown(n: Note) {  // refactor to updateNote?
+  storeMarkdown(n: Note) {
+    // TODO: refactor to updateNote?
     console.log("storing to:", this.fileNameMarkdown(n))
     this.notes[n.id] = n
     this.ensureDirExists(n)
@@ -199,6 +209,8 @@ export class Store {
   }
 
   getNotes(): Note[] {
+    // TODO: This function gets called frequently, we should make
+    // this.notes a sorted array instead?
     const compare = (a: Note, b: Note): number => {
       let aLower = a.title.toLowerCase()
       let bLower = b.title.toLowerCase()

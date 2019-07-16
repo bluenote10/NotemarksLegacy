@@ -10,6 +10,11 @@ import { List } from "./List"
 
 import * as mousetrap from "mousetrap"
 
+Mousetrap.prototype.stopCallback = function () {
+  return false;
+}
+
+
 const MODE_LIST = "list"
 const MODE_NOTE = "note"
 const MODE_EDIT = "edit"
@@ -19,16 +24,14 @@ export function App() {
   const store = new Store();
   console.log(store)
 
+  // init state
   const [state, setState] = createState({
     view: MODE_LIST,
     activeNote: undefined as Note | undefined,
-    selectedNotes: [] as Note[],
-    labelCounts: [] as LabelCounts,
-  })
 
-  // init
-  setState({
     selectedNotes: store.getNotes(),
+    allNotes: store.getNotes(),
+
     labelCounts: store.getLabelCounts(),
   })
 
@@ -73,23 +76,22 @@ export function App() {
 
   function onAddNewNote() {
     const newNote = store.newNote();
-    console.log("Adding new note:", newNote);
-
-    store.storeYaml(newNote);
-    store.storeMarkdown(newNote);
-
     setState({
       activeNote: newNote,
+      allNotes: store.getNotes(),
       selectedNotes: store.getNotes(),
       view: MODE_EDIT,
     });
   }
 
   function onChangeTitle(s: string) {
-    console.log("New title:", s);
     let nModified = modifiedNote(state.activeNote!, {title: s})
     store.storeYaml(nModified)
-    setState({activeNote: nModified})
+    setState({
+      activeNote: nModified,
+      allNotes: store.getNotes(),
+      selectedNotes: store.getNotes(),
+    })
   }
 
   function onChangeLabels(s: string) {
@@ -97,10 +99,13 @@ export function App() {
   }
 
   function onChangeMarkdown(s: string) {
-    console.log("New markdown:", s);
     let nModified = modifiedNote(state.activeNote!, {markdown: s})
     store.storeMarkdown(nModified)
-    setState({activeNote: nModified})
+    setState({
+      activeNote: nModified,
+      allNotes: store.getNotes(),
+      selectedNotes: store.getNotes(),
+    })
   }
 
   return (
