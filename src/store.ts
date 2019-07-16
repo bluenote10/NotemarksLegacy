@@ -20,7 +20,6 @@ function randHash(length = 8): string {
 // Note
 // -----------------------------------------------------------------------------
 
-/*
 export interface Note {
   id: string,
   title: string,
@@ -29,8 +28,32 @@ export interface Note {
   timeCreated: Date,
   timeUpdated: Date,
 }
-*/
+export interface NoteUpdate {
+  id?: string,
+  title?: string,
+  labels?: string[],
+  markdown?: string,
+  timeCreated?: Date,
+  timeUpdated?: Date,
+}
 
+
+export function noteToYamlData(n: Note): string {
+  let js = {
+    id: n.id,
+    title: n.title,
+    labels: n.labels,
+    timeCreated: n.timeCreated, // TODO: conversions required here?
+    timeUpdated: n.timeUpdated, // TODO: conversions required here?
+  }
+  return yaml.safeDump(js)
+}
+
+export function modifiedNote(n: Note, update: NoteUpdate): Note {
+  return {...n, ...update, timeUpdated: new Date()};
+}
+
+/*
 export class Note {
 
   constructor(
@@ -68,7 +91,7 @@ export class Note {
     this.markdown = markdown;
   }
 }
-
+*/
 
 // -----------------------------------------------------------------------------
 // Store
@@ -88,21 +111,26 @@ export function loadNotes(path: string): Notes {
   const yamlFiles = glob.sync(path + "/*/note.yaml")
   for (let yamlFile of yamlFiles) {
     const mdFile = yamlFile.replace(".yaml", ".md")
-    const dataYaml = yaml.safeLoad(fs.readFileSync(yamlFile, "utf8"))
-    // TODO try/catch here + data validation
-    let dataMd = fs.readFileSync(mdFile, "utf8")
-    notes[dataYaml.id] = new Note(
-      dataYaml.id,
-      dataYaml.title,
-      dataYaml.labels,
-      dataMd,
-      dataYaml.timeCreated,
-      dataYaml.timeUpdated,
-    )
+    try {
+      // TODO narrower try/catch here + data validation
+      const dataYaml = yaml.safeLoad(fs.readFileSync(yamlFile, "utf8"))
+      let dataMd = fs.readFileSync(mdFile, "utf8")
+      notes[dataYaml.id] = {
+        id: dataYaml.id,
+        title: dataYaml.title,
+        labels: dataYaml.labels,
+        markdown: dataMd,
+        timeCreated: dataYaml.timeCreated,
+        timeUpdated: dataYaml.timeUpdated,
+      }
+    } catch {
+      console.log("Failed to read:", yamlFile, mdFile)
+    }
   }
   console.log(yamlFiles)
   return notes
 }
+
 
 export class Store {
   private path: string
@@ -118,7 +146,7 @@ export class Store {
       const id = randHash()
       let file = path.join(this.path, id)
       if (!fs.existsSync(file)) {
-        return file;
+        return id;
       }
     }
   }
@@ -143,7 +171,7 @@ export class Store {
     console.log("storing to:", this.fileNameYaml(n))
     this.notes[n.id] = n
     this.ensureDirExists(n)
-    fs.writeFileSync(this.fileNameYaml(n), n.yamlData)
+    fs.writeFileSync(this.fileNameYaml(n), noteToYamlData(n))
   }
 
   storeMarkdown(n: Note) {  // refactor to updateNote?
@@ -156,14 +184,14 @@ export class Store {
   newNote(): Note {
     const id = this.randId()
     const time = new Date()
-    const note = new Note(
-      id,
-      "",
-      [],
-      "",
-      time,
-      time,
-    )
+    const note: Note = {
+      id: id,
+      title: "",
+      labels: [],
+      markdown: "",
+      timeCreated: time,
+      timeUpdated: time,
+    }
     this.notes[id] = note
     this.storeYaml(note)
     this.storeMarkdown(note)

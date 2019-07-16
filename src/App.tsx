@@ -1,6 +1,6 @@
 import { createState, createEffect, onCleanup } from 'solid-js';
 
-import { Store, Note, LabelCounts } from "./store"
+import { Store, Note, LabelCounts, modifiedNote } from "./store"
 
 import { Search } from "./Search"
 import { LabelTree } from "./LabelTree"
@@ -52,6 +52,7 @@ export function App() {
   }
 
   mousetrap.bind(["command+e", "ctrl+e"], () => {
+    console.log("keyboard toggle")
     switch (state.view) {
       case MODE_EDIT: {
         console.log("switching to noteview");
@@ -64,19 +65,31 @@ export function App() {
         break;
       }
       case MODE_LIST: {
-        console.log("switching note possible");
+        console.log("switching not possible");
         break;
       }
     }
-    /*
-    if (state.view == MODE_EDIT) {
-      setState({view: MODE_NOTE});
-    } elif (state.view)
-    */
   });
+
+  function onAddNewNote() {
+    const newNote = store.newNote();
+    console.log("Adding new note:", newNote);
+
+    store.storeYaml(newNote);
+    store.storeMarkdown(newNote);
+
+    setState({
+      activeNote: newNote,
+      selectedNotes: store.getNotes(),
+      view: MODE_EDIT,
+    });
+  }
 
   function onChangeTitle(s: string) {
     console.log("New title:", s);
+    let nModified = modifiedNote(state.activeNote!, {title: s})
+    store.storeYaml(nModified)
+    setState({activeNote: nModified})
   }
 
   function onChangeLabels(s: string) {
@@ -85,6 +98,9 @@ export function App() {
 
   function onChangeMarkdown(s: string) {
     console.log("New markdown:", s);
+    let nModified = modifiedNote(state.activeNote!, {markdown: s})
+    store.storeMarkdown(nModified)
+    setState({activeNote: nModified})
   }
 
   return (
@@ -99,7 +115,10 @@ export function App() {
               <i class="fas fa-home"></i>
             </span>
           </a>
-          <a class="button ui-navbar-button">
+          <a
+            class="button ui-navbar-button"
+            onclick={(event) => onAddNewNote()}
+          >
             <span class="icon">
               <i class="fas fa-plus"></i>
             </span>

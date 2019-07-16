@@ -20,7 +20,10 @@ export function Editor(props: EditorProps) {
             class="input is-small"
             placeholder="Title"
             value={(props.note.title)}
-            oninput={(evt) => props.onChangeTitle((evt.target as HTMLInputElement).value)}
+            onInput={(evt) => {
+              evt.preventDefault();
+              props.onChangeTitle((evt.target as HTMLInputElement).value)
+            }}
           />
         </div>
       </div>
