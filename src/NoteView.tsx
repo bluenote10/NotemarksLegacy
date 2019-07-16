@@ -19,6 +19,20 @@ function Label({name}: {name: string}) {
   return <span class="tag is-dark">{name}</span>
 }
 
+function formatDate(d: Date): string {
+  function pad(n: number): string {
+    return n < 10 ? "0" + n : n.toString()
+  }
+  return (
+    d.getUTCFullYear() + '-'
+    + pad(d.getUTCMonth()+1) + '-'
+    + pad(d.getUTCDate()) + '  @  '
+    + pad(d.getUTCHours()) + ':'
+    + pad(d.getUTCMinutes()) + ':'
+    + pad(d.getUTCSeconds())
+  )
+}
+
 export function NoteView(props: NoteViewProps) {
 
   const markdown = (el: HTMLElement, accessor: () => string) => el.innerHTML = convertMarkdown(accessor());
@@ -41,11 +55,11 @@ export function NoteView(props: NoteViewProps) {
               </tr>
               <tr>
                 <td><b>Created</b></td>
-                <td>{(props.note.timeCreated.toString())}</td>
+                <td>{(formatDate(props.note.timeCreated))}</td>
               </tr>
               <tr>
                 <td><b>Updated</b></td>
-                <td>{(props.note.timeUpdated.toString())}</td>
+                <td>{(formatDate(props.note.timeUpdated))}</td>
               </tr>
             </tbody>
           </table>

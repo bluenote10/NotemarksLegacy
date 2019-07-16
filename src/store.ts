@@ -43,8 +43,8 @@ export function noteToYamlData(n: Note): string {
     id: n.id,
     title: n.title,
     labels: n.labels,
-    timeCreated: n.timeCreated, // TODO: conversions required here?
-    timeUpdated: n.timeUpdated, // TODO: conversions required here?
+    timeCreated: Math.floor(n.timeCreated.getTime() / 1000),
+    timeUpdated: Math.floor(n.timeUpdated.getTime() / 1000),
   }
   return yaml.safeDump(js)
 }
@@ -120,8 +120,8 @@ export function loadNotes(path: string): Notes {
         title: dataYaml.title,
         labels: dataYaml.labels,
         markdown: dataMd,
-        timeCreated: dataYaml.timeCreated,
-        timeUpdated: dataYaml.timeUpdated,
+        timeCreated: new Date(dataYaml.timeCreated * 1000),
+        timeUpdated: new Date(dataYaml.timeUpdated * 1000),
       }
     } catch {
       console.log("Failed to read:", yamlFile, mdFile)
