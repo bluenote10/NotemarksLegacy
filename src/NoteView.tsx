@@ -67,7 +67,7 @@ export function NoteView(props: NoteViewProps) {
           </table>
         </div>
       </article>
-      <div class="markdown-wrapper" $markdown={props.note.markdown}/>
+      <div class="content" $markdown={props.note.markdown}/>
     </div>
   )
 }
