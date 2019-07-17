@@ -33,6 +33,8 @@ export function App() {
     allNotes: store.getNotes(),
 
     labelCounts: store.getLabelCounts(),
+
+    searchMatchingNotes: [] as Note[],
   })
 
   function switchToList() {
@@ -114,6 +116,19 @@ export function App() {
     })
   }
 
+  function onSearch(s: string) {
+    if (s.length === 0) {
+      setState({
+        searchMatchingNotes: []
+      })
+    } else {
+      const matchingNotes = state.allNotes.filter(n => n.title.toLowerCase().includes(s))
+      setState({
+        searchMatchingNotes: matchingNotes
+      })
+    }
+  }
+
   return (
     <div>
       <div class="ui-navbar">
@@ -136,7 +151,7 @@ export function App() {
           </a>
         </div>
         <div class="ui-navbar-middle">
-          <Search/>
+          <Search matches={(state.searchMatchingNotes as any as Note[])} onSearch={onSearch}/>
         </div>
         <div class="ui-navbar-right">
         </div>
