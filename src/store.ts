@@ -141,7 +141,7 @@ export class Store {
     this.notes = loadNotes(path)
   }
 
-  randId(): string {
+  private randId(): string {
     while (true) {
       const id = randHash()
       let file = path.join(this.path, id)
@@ -151,15 +151,15 @@ export class Store {
     }
   }
 
-  fileNameYaml(n: Note): string {
+  private fileNameMeta(n: Note): string {
     return path.join(this.path, n.id, "note.yaml")
   }
 
-  fileNameMarkdown(n: Note): string {
+  private fileNameMkdn(n: Note): string {
     return path.join(this.path, n.id, "note.md")
   }
 
-  ensureDirExists(n: Note) {
+  private ensureDirExists(n: Note) {
     const dir = path.join(this.path, n.id)
     if (!fs.existsSync(dir)) {
       // https://github.com/nodejs/node/issues/24698
@@ -167,28 +167,34 @@ export class Store {
     }
   }
 
-  storeYaml(n: Note) {
-    // TODO: refactor to updateNote?
-    // Basically we could diff the n vs this.notes[n.id] and depending
-    // on which fields have changed, we trigger persistence...
-    // Or alternatively instead of letting the client update the Note on
-    // their own, they call updateTitle(id, newTitle), updateLabels(id, ...)
-    // and so on. Maybe with a dict to be generic?
-    // Problem: How does the client modify the "active note" instance then?
-    // Maybe the modify function could just return the modified Note to
-    // be used by the client...
-    console.log("storing to:", this.fileNameYaml(n))
+  private updateNote(n: Note, updateMeta = false, updateMkdn = false) {
+    console.log("updating note:", n.id, updateMeta, updateMkdn)
     this.notes[n.id] = n
     this.ensureDirExists(n)
-    fs.writeFileSync(this.fileNameYaml(n), noteToYamlData(n))
+    if (updateMeta) {
+      fs.writeFileSync(this.fileNameMeta(n), noteToYamlData(n))
+    }
+    if (updateMkdn) {
+      fs.writeFileSync(this.fileNameMkdn(n), n.markdown)
+    }
   }
 
-  storeMarkdown(n: Note) {
-    // TODO: refactor to updateNote?
-    console.log("storing to:", this.fileNameMarkdown(n))
-    this.notes[n.id] = n
-    this.ensureDirExists(n)
-    fs.writeFileSync(this.fileNameMarkdown(n), n.markdown)
+  updateNoteTitle(n: Note, title: string): Note {
+    let nMod = modifiedNote(n, {title: title})
+    this.updateNote(nMod, true, false)
+    return nMod;
+  }
+
+  updateNoteLabels(n: Note, labels: string[]): Note {
+    let nMod = modifiedNote(n, {labels: labels})
+    this.updateNote(nMod, true, false)
+    return nMod;
+  }
+
+  updateNoteMarkdown(n: Note, markdown: string): Note {
+    let nMod = modifiedNote(n, {markdown: markdown})
+    this.updateNote(nMod, false, true)
+    return nMod;
   }
 
   newNote(): Note {
@@ -202,9 +208,7 @@ export class Store {
       timeCreated: time,
       timeUpdated: time,
     }
-    this.notes[id] = note
-    this.storeYaml(note)
-    this.storeMarkdown(note)
+    this.updateNote(note, true, true);
     return note;
   }
 
@@ -226,9 +230,13 @@ export class Store {
     return notes.sort(compare);
   }
 
+  /*
+  // In the Nim implementation we needed this in the main onSelect handler,
+  // but probably we can just use the Note on the corresponding index instead.
   getNote(id: string): Note|undefined {
     return this.notes[id]
   }
+  */
 
   getLabelCounts(): LabelCounts {
     let counts: {[index: string]: number} = {}

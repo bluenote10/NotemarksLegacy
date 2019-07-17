@@ -10,6 +10,11 @@ export interface EditorProps {
 }
 
 export function Editor(props: EditorProps) {
+
+  let textAreaRef: HTMLTextAreaElement = null!
+
+  setTimeout(() => textAreaRef.focus(), 0)
+
   return (
     <div class="container">
 
@@ -34,7 +39,7 @@ export function Editor(props: EditorProps) {
           <input
             class="input is-small"
             placeholder="Labels"
-            value={(props.note.labels.toString())}
+            value={props.note.labels.join(" ")}
             oninput={(evt) => props.onChangeLabels((evt.target as HTMLInputElement).value)}
           />
         </div>
@@ -48,6 +53,7 @@ export function Editor(props: EditorProps) {
             placeholder="Notes..."
             value={(props.note.markdown)}
             oninput={(evt) => props.onChangeMarkdown((evt.target as HTMLInputElement).value)}
+            ref={textAreaRef}
           />
         </div>
       </div>

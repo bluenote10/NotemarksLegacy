@@ -85,8 +85,7 @@ export function App() {
   }
 
   function onChangeTitle(s: string) {
-    let nModified = modifiedNote(state.activeNote!, {title: s})
-    store.storeYaml(nModified)
+    let nModified = store.updateNoteTitle(state.activeNote!, s)
     setState({
       activeNote: nModified,
       allNotes: store.getNotes(),
@@ -95,12 +94,19 @@ export function App() {
   }
 
   function onChangeLabels(s: string) {
-    console.log("New labels:", s);
+    // https://stackoverflow.com/a/14912552/1804173
+    let labels = s.match(/\S+/g) || []
+    let nModified = store.updateNoteLabels(state.activeNote!, labels)
+    setState({
+      activeNote: nModified,
+      allNotes: store.getNotes(),
+      selectedNotes: store.getNotes(),
+      labelCounts: store.getLabelCounts(),
+    })
   }
 
   function onChangeMarkdown(s: string) {
-    let nModified = modifiedNote(state.activeNote!, {markdown: s})
-    store.storeMarkdown(nModified)
+    let nModified = store.updateNoteMarkdown(state.activeNote!, s)
     setState({
       activeNote: nModified,
       allNotes: store.getNotes(),

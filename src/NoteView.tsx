@@ -24,18 +24,20 @@ function formatDate(d: Date): string {
     return n < 10 ? "0" + n : n.toString()
   }
   return (
-    d.getUTCFullYear() + '-'
-    + pad(d.getUTCMonth()+1) + '-'
-    + pad(d.getUTCDate()) + '  @  '
-    + pad(d.getUTCHours()) + ':'
-    + pad(d.getUTCMinutes()) + ':'
-    + pad(d.getUTCSeconds())
+    d.getFullYear() + '-'
+    + pad(d.getMonth()+1) + '-'
+    + pad(d.getDate()) + '  @  '
+    + pad(d.getHours()) + ':'
+    + pad(d.getMinutes()) + ':'
+    + pad(d.getSeconds())
   )
 }
 
 export function NoteView(props: NoteViewProps) {
 
-  const markdown = (el: HTMLElement, accessor: () => string) => el.innerHTML = convertMarkdown(accessor());
+  const markdown = (el: HTMLElement, accessor: () => string) => {
+    el.innerHTML = convertMarkdown(accessor());
+  };
 
   // For now: use directives instead of afterRender
   // - https://github.com/ryansolid/babel-plugin-jsx-dom-expressions/issues/14
