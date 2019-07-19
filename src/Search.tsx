@@ -1,4 +1,4 @@
-import { createState, createEffect, onCleanup } from 'solid-js';
+import { createState, createEffect, onCleanup, sample } from 'solid-js';
 
 import { Note } from "./store";
 import { IconSearch } from "./Icons";
@@ -9,11 +9,24 @@ export interface SearchProps {
   onSearch: (s: string) => void;
 }
 
+function computeSelectedIndex(listLength: number, current: number, delta: number): number {
+  if (listLength <= 0) {
+    return -1;
+  } else if (current === -1) {
+    return delta > 0 ? 0 : listLength-1
+  } else {
+    let newValue = current + delta;
+    while (newValue >= listLength) newValue -= listLength;
+    while (newValue < 0) newValue += listLength;
+    return newValue;
+  }
+}
 
 export function Search(props: SearchProps) {
 
   const [state, setState] = createState({
     active: false,
+    selectedIndex: -1,
   })
 
   function onSearch(evt: Event) {
@@ -31,12 +44,52 @@ export function Search(props: SearchProps) {
     }
   }
 
+  function onKeydown(evt: KeyboardEvent) {
+    switch (evt.keyCode) {
+      case 38: // up
+        evt.preventDefault()
+        setState({
+          selectedIndex: computeSelectedIndex(props.matches.length, state.selectedIndex, -1)
+        })
+        break;
+      case 40: // down
+        evt.preventDefault()
+        setState({
+          selectedIndex: computeSelectedIndex(props.matches.length, state.selectedIndex, +1)
+        })
+        break;
+      case 27: // esc
+        setState({
+          active: false,
+          selectedIndex: -1,
+        })
+        break;
+      case 13: // enter
+        break;
+    }
+  }
+
+  createEffect(() =>
+    console.log(state.selectedIndex)
+  )
+
+  createEffect(() => {
+    let newMatches = props.matches;
+    let oldSlectedIndex = sample(() => state.selectedIndex);
+    console.log("updated matches of length:", newMatches.length);
+    if (oldSlectedIndex != -1) {
+      setState({
+        selectedIndex: computeSelectedIndex(newMatches.length, oldSlectedIndex, 0)
+      })
+    }
+})
+
   return (
     <div class="container">
       <div>
         <div class="field has-margin-top">
           <div class="control has-icons-left">
-            <input class="input" placeholder="Search..." oninput={onSearch}/>
+            <input class="input" placeholder="Search..." oninput={onSearch} onkeydown={onKeydown}/>
             <span class="icon is-left">
               <IconSearch/>
             </span>
@@ -45,8 +98,8 @@ export function Search(props: SearchProps) {
         <div class="float-wrapper">
           <div class={("card float-box " + (state.active ? "" : "is-hidden"))}>
             <$ each={props.matches}>{
-              (n: Note) =>
-              <div class="is-size-6 panel-block">
+              (n: Note, i: number) =>
+              <div class={("is-size-6 panel-block " + (i === state.selectedIndex ? "complete-selection" : ""))}>
                 {n.title}
               </div>
             }</$>
