@@ -2,9 +2,8 @@ nimcache/
 node_modules/
 
 package-lock.json
-build/main.js
-build/renderer*.js
-build/renderer*.js.map
+build/*.js
+build/*.js.map
 build/styles.css
 
 .watchcode.log

@@ -3,6 +3,7 @@ const path = require('path');
 // const webpack = require('webpack');
 // const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const CleanWebpackPlugin = require('clean-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -41,6 +42,10 @@ module.exports = {
           loader: 'babel-loader',
         },
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
     ]
   },
   resolve: {
@@ -53,6 +58,7 @@ module.exports = {
     //   title: 'Hot Module Replacement'
     // }),
     // new webpack.HotModuleReplacementPlugin()
+    new MonacoWebpackPlugin()
   ],
   optimization: {
     minimize: false
