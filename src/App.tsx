@@ -129,6 +129,14 @@ export function App() {
     }
   }
 
+  function onSelect(i: number) {
+    setState({
+      activeNote: state.searchMatchingNotes[i],
+      view: MODE_NOTE,
+      searchMatchingNotes: [],
+    })
+  }
+
   return (
     <div>
       <div class="ui-navbar">
@@ -151,7 +159,11 @@ export function App() {
           </a>
         </div>
         <div class="ui-navbar-middle">
-          <Search matches={(state.searchMatchingNotes as any as Note[])} onSearch={onSearch}/>
+          <Search
+            matches={(state.searchMatchingNotes as any as Note[])}
+            onSearch={onSearch}
+            onSelect={onSelect}
+          />
         </div>
         <div class="ui-navbar-right">
         </div>

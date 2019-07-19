@@ -7,6 +7,7 @@ import { IconSearch } from "./Icons";
 export interface SearchProps {
   matches: Note[];
   onSearch: (s: string) => void;
+  onSelect: (i: number) => void;
 }
 
 function computeSelectedIndex(listLength: number, current: number, delta: number): number {
@@ -24,7 +25,10 @@ function computeSelectedIndex(listLength: number, current: number, delta: number
 
 export function Search(props: SearchProps) {
 
+  let refInput: HTMLInputElement = null!
+
   const [state, setState] = createState({
+    value: "",
     active: false,
     selectedIndex: -1,
   })
@@ -35,11 +39,13 @@ export function Search(props: SearchProps) {
     props.onSearch(value);
     if (value.length === 0) {
       setState({
-        active: false
+        active: false,
+        value: value,
       })
     } else {
       setState({
-        active: true
+        active: true,
+        value: value,
       })
     }
   }
@@ -62,9 +68,20 @@ export function Search(props: SearchProps) {
         setState({
           active: false,
           selectedIndex: -1,
+          value: "",
         })
+        refInput.blur()
         break;
       case 13: // enter
+        if (state.selectedIndex != -1) {
+          props.onSelect(state.selectedIndex);
+          setState({
+            active: false,
+            selectedIndex: -1,
+            value: "",
+          })
+        }
+        refInput.blur()
         break;
     }
   }
@@ -89,7 +106,14 @@ export function Search(props: SearchProps) {
       <div>
         <div class="field has-margin-top">
           <div class="control has-icons-left">
-            <input class="input" placeholder="Search..." oninput={onSearch} onkeydown={onKeydown}/>
+            <input
+              class="input"
+              placeholder="Search..."
+              oninput={onSearch}
+              onkeydown={onKeydown}
+              value={(state.value)}
+              forwardRef={((el: HTMLInputElement) => refInput = el) as any /* FIXME, ref produces babel compiler error... */}
+            />
             <span class="icon is-left">
               <IconSearch/>
             </span>
