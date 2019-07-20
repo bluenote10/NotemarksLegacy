@@ -1,5 +1,6 @@
 import { createState, createEffect, onCleanup } from 'solid-js';
 
+import { Monaco } from "./Monaco"
 import { Note } from "./store";
 
 export interface EditorProps {
@@ -48,12 +49,9 @@ export function Editor(props: EditorProps) {
       <div class="field has-margin-top">
         <label class="label is-small">Notes</label>
         <div class="control">
-          <textarea
-            class="textarea is-small font-mono ui-text-area"
-            placeholder="Notes..."
+          <Monaco
             value={(props.note.markdown)}
-            oninput={(evt) => props.onChangeMarkdown((evt.target as HTMLInputElement).value)}
-            ref={textAreaRef}
+            onInput={(s: string) => props.onChangeMarkdown(s)}
           />
         </div>
       </div>

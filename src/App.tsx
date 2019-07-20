@@ -7,7 +7,6 @@ import { LabelTree } from "./LabelTree"
 import { Editor } from "./Editor"
 import { NoteView } from "./NoteView"
 import { List } from "./List"
-import { Monaco } from "./Monaco"
 
 import * as mousetrap from "mousetrap"
 
@@ -140,7 +139,6 @@ export function App() {
 
   return (
     <div>
-      <Monaco/>
       <div class="ui-navbar">
         <div class="ui-navbar-left">
           <a
