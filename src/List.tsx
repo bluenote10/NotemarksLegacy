@@ -1,6 +1,7 @@
-import { createState, createEffect, onCleanup } from 'solid-js';
 
 import { Note } from "./store";
+import { For } from 'solid-js/types/dom';
+import { ForIndexed } from "./ForIndexed"
 
 export interface ListProps {
   notes: Note[],
@@ -18,7 +19,7 @@ export function List(props: ListProps) {
   return (
     <div>
       <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth table-fixed">
-        <$ each={(props.notes)}>{
+        <ForIndexed each={(props.notes)}>{
           (note: Note, index: number) =>
             <tr>
               <td>
@@ -36,7 +37,7 @@ export function List(props: ListProps) {
               </td>
             </tr>
         }
-        </$>
+        </ForIndexed>
       </table>
     </div>
   )

@@ -12,9 +12,8 @@ export interface EditorProps {
 
 export function Editor(props: EditorProps) {
 
-  let textAreaRef: HTMLTextAreaElement = null!
-
-  setTimeout(() => textAreaRef.focus(), 0)
+  // let textAreaRef: HTMLTextAreaElement = null!
+  // setTimeout(() => textAreaRef.focus(), 0)
 
   return (
     <div class="container">

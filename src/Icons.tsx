@@ -8,15 +8,15 @@ library.add(faSearch)
 
 const iSearch = icon({ prefix: 'fas', iconName: 'search' })
 
-function convert(icon: Icon) {
+function convert(icon: Icon): JSX.Element {
   // Note: icon.node is an HTMLCollection https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection
-  let fragment = <></>
+  let fragment = []
   for (let node of Array.from(icon.node)) {
-    fragment.append(node);
+    fragment.push(node);
   }
-  return fragment;
+  return fragment as JSX.Element;
 }
 
-export function IconSearch() {
+export function IconSearch(): JSX.Element {
   return convert(iSearch);
 }

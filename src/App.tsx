@@ -9,6 +9,7 @@ import { NoteView } from "./NoteView"
 import { List } from "./List"
 
 import * as mousetrap from "mousetrap"
+import { Switch, Match } from 'solid-js/dom';
 
 Mousetrap.prototype.stopCallback = function () {
   return false;
@@ -173,23 +174,25 @@ export function App() {
           <LabelTree labels={(state.labelCounts)}/>
         </div>
         <div class="column ui-column-middle">
-          <$ when={(state.view == MODE_LIST)}>
-            <List
-              notes={(state.selectedNotes as any as Note[])}
-              onSelect={(index: number) => switchToNote(state.selectedNotes[index] as any as Note)}
-            />
-          </$>
-          <$ when={(state.view == MODE_NOTE && state.activeNote != null)}>
-            <NoteView note={(state.activeNote!)}/>
-          </$>
-          <$ when={(state.view == MODE_EDIT)}>
-            <Editor
-              note={(state.activeNote!)}
-              onChangeTitle={onChangeTitle}
-              onChangeLabels={onChangeLabels}
-              onChangeMarkdown={onChangeMarkdown}
-            />
-          </$>
+          <Switch>
+            <Match when={(state.view == MODE_LIST)}>
+              <List
+                notes={(state.selectedNotes as any as Note[])}
+                onSelect={(index: number) => switchToNote(state.selectedNotes[index] as any as Note)}
+              />
+            </Match>
+            <Match when={(state.view == MODE_NOTE && state.activeNote != null)}>
+              <NoteView note={(state.activeNote!)}/>
+            </Match>
+            <Match when={(state.view == MODE_EDIT)}>
+              <Editor
+                note={(state.activeNote!)}
+                onChangeTitle={onChangeTitle}
+                onChangeLabels={onChangeLabels}
+                onChangeMarkdown={onChangeMarkdown}
+              />
+            </Match>
+          </Switch>
         </div>
         <div class="column ui-column-right is-fullheight">
         </div>

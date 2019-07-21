@@ -2,6 +2,8 @@ import { createState, createEffect, onCleanup, sample } from 'solid-js';
 
 import { Note } from "./store";
 import { IconSearch } from "./Icons";
+import { For } from 'solid-js/dom';
+import { ForIndexed } from './ForIndexed';
 
 
 export interface SearchProps {
@@ -93,7 +95,7 @@ export function Search(props: SearchProps) {
   createEffect(() => {
     let newMatches = props.matches;
     let oldSlectedIndex = sample(() => state.selectedIndex);
-    console.log("updated matches of length:", newMatches.length);
+    console.log("updated matches of length:", newMatches.length, newMatches);
     if (oldSlectedIndex != -1) {
       setState({
         selectedIndex: computeSelectedIndex(newMatches.length, oldSlectedIndex, 0)
@@ -121,12 +123,12 @@ export function Search(props: SearchProps) {
         </div>
         <div class="float-wrapper">
           <div class={("card float-box " + (state.active ? "" : "is-hidden"))}>
-            <$ each={props.matches}>{
-              (n: Note, i: number) =>
-              <div class={("is-size-6 panel-block " + (i === state.selectedIndex ? "complete-selection" : ""))}>
-                {n.title}
-              </div>
-            }</$>
+            <For each={props.matches}>{
+              (n: Note /*, i: number*/) =>
+                <div class={("is-size-6 panel-block " /*+ (i === state.selectedIndex ? "complete-selection" : "")*/)}>
+                  {n.title}
+                </div>
+            }</For>
           </div>
         </div>
       </div>

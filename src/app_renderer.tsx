@@ -1,7 +1,7 @@
-import { createRoot, createState, createEffect, onCleanup } from 'solid-js';
+import { render } from "solid-js/dom";
+
 // import './dom_lifecycle';
 
 import { App } from "./App"
 
-let el = document.getElementById('ROOT')!;
-createRoot(() => el.appendChild(<App/>));
+render(App, document.getElementById("ROOT")!);

@@ -3,6 +3,7 @@ import * as showdown from "showdown"
 
 import { Note } from "./store";
 
+/*
 declare global {
   namespace JSX {
     interface HTMLAttributes<T> {
@@ -10,6 +11,7 @@ declare global {
     }
   }
 }
+*/
 
 export interface NoteViewProps {
   note: Note,
@@ -67,7 +69,7 @@ export function NoteView(props: NoteViewProps) {
           </table>
         </div>
       </article>
-      <div class="content" $markdown={props.note.markdown}/>
+      <div class="content" forwardRef={(el: HTMLElement) => el.innerHTML = convertMarkdown(props.note.markdown)}/>
     </div>
   )
 }

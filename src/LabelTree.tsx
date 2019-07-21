@@ -1,6 +1,7 @@
 import { createState, createEffect, onCleanup } from 'solid-js';
 
 import { LabelCount, LabelCounts } from "./store"
+import { For } from 'solid-js/dom';
 
 export interface LabelTreeProps {
   labels: LabelCounts,
@@ -17,13 +18,12 @@ export function LabelTree(props: LabelTreeProps) {
   console.log("rendering labeltree")
   return (
     <div>
-      <$ each={(props.labels)}>{
+      <For each={(props.labels)}>{
         (label: LabelCount) =>
           <div>
             <Label name={(`${label.name} (${label.count})`)}/>
           </div>
-      }
-      </$>
+      }</For>
     </div>
   )
 }
