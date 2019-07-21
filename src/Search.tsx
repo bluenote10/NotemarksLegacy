@@ -123,12 +123,12 @@ export function Search(props: SearchProps) {
         </div>
         <div class="float-wrapper">
           <div class={("card float-box " + (state.active ? "" : "is-hidden"))}>
-            <For each={props.matches}>{
-              (n: Note /*, i: number*/) =>
-                <div class={("is-size-6 panel-block " /*+ (i === state.selectedIndex ? "complete-selection" : "")*/)}>
+            <ForIndexed each={(props.matches)}>{
+              (n: Note, i: number) =>
+                <div class={("is-size-6 panel-block " + (i === state.selectedIndex ? "complete-selection" : ""))}>
                   {n.title}
                 </div>
-            }</For>
+            }</ForIndexed>
           </div>
         </div>
       </div>
