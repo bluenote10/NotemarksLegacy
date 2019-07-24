@@ -50,7 +50,18 @@ export function noteToYamlData(n: Note): string {
 }
 
 export function modifiedNote(n: Note, update: NoteUpdate): Note {
-  return {...n, ...update, timeUpdated: new Date()};
+  // There seems to be a really strange bug using the spread notation:
+  // For some reason this expression doesn't always work. Sometimes the
+  // result is missing the fields of `n`. Note: The spread operator
+  // doesn't get polyfilled, so it is the question of it is properly
+  // supported in chrome. Maybe the problem is also related to
+  // the Note being wrapped in a Proxy. For now, use a work-around:
+  // return {...n, ...update, timeUpdated: new Date()};
+  let nMod = {}
+  nMod = {...nMod, ...n}
+  nMod = {...nMod, ...update}
+  nMod = {...nMod, timeUpdated: new Date()}
+  return nMod as Note;
 }
 
 /*
