@@ -30,17 +30,17 @@
     "@types/mousetrap": "^1.6.3",
     "@types/node": "^12.6.8",
     "@types/showdown": "^1.9.3",
-    "@typescript-eslint/eslint-plugin": "^1.12.0",
-    "@typescript-eslint/parser": "^1.12.0",
+    "@typescript-eslint/eslint-plugin": "^1.13.0",
+    "@typescript-eslint/parser": "^1.13.0",
     "babel-loader": "^8.0.6",
-    "babel-plugin-jsx-dom-expressions": "^0.11.1",
+    "babel-plugin-jsx-dom-expressions": "^0.11.2",
     "bulma": "^0.7.5",
-    "electron": "^5.0.7",
-    "eslint": "^6.0.1",
+    "electron": "^5.0.8",
+    "eslint": "^6.1.0",
     "node-sass": "^4.12.0",
     "showdown": "^1.9.0",
     "typescript": "^3.5.3",
-    "webpack": "^4.36.1",
+    "webpack": "^4.38.0",
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.7.2"
   },
@@ -53,7 +53,7 @@
     "monaco-editor": "^0.17.1",
     "monaco-editor-webpack-plugin": "^1.7.0",
     "mousetrap": "^1.6.3",
-    "solid-js": "^0.9.1",
+    "solid-js": "^0.9.3",
     "style-loader": "^0.23.1"
   }
 }
