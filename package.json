@@ -4,7 +4,7 @@
   "description": "Simple note taking app.",
   "main": "src/app_main.js",
   "scripts": {
-    "build-css": "node-sass --omit-source-map-url styles/styles.scss dist/styles.css",
+    "build-css": "node-sass --omit-source-map-url styles/styles.scss build/styles.css",
     "watch-css": "npm run build-css && npm run build-css -- -w",
     "build": "webpack",
     "watch": "webpack --watch",

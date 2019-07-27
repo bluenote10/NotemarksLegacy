@@ -46,30 +46,32 @@ export function NoteView(props: NoteViewProps) {
   // - https://spectrum.chat/solid-js/general/solid-js-watercooler~a36894a2-2ea2-4b1e-9e56-03ed0b3aef13?m=MTU2MTc5NDc0MDMwMw==
   return (
     <div class="container">
-      <h1 class="title has-margin-top">{(props.note.title)}</h1>
-      <article class="message is-info has-margin-top">
-        <div class="message-body">
-          <table class="ui-note-header-table">
-            <tbody>
-              <tr>
-                <td><b>Labels</b></td>
-                <td class="tags">
-                  {(props.note.labels.map(label => <Label name={(label)}/>))}
-                </td>
-              </tr>
-              <tr>
-                <td><b>Created</b></td>
-                <td>{(formatDate(props.note.timeCreated))}</td>
-              </tr>
-              <tr>
-                <td><b>Updated</b></td>
-                <td>{(formatDate(props.note.timeUpdated))}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </article>
-      <div class="content" forwardRef={(el: HTMLElement) => el.innerHTML = convertMarkdown(props.note.markdown)}/>
+      <div class="noteview">
+        <div class="noteview-title has-margin-top">{(props.note.title)}</div>
+        <article class="message is-info has-margin-top">
+          <div class="message-body">
+            <table class="ui-note-header-table">
+              <tbody>
+                <tr>
+                  <td><b>Labels</b></td>
+                  <td class="tags">
+                    {(props.note.labels.map(label => <Label name={(label)}/>))}
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>Created</b></td>
+                  <td>{(formatDate(props.note.timeCreated))}</td>
+                </tr>
+                <tr>
+                  <td><b>Updated</b></td>
+                  <td>{(formatDate(props.note.timeUpdated))}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+        <div forwardRef={(el: HTMLElement) => el.innerHTML = convertMarkdown(props.note.markdown)}/>
+      </div>
     </div>
   )
 }
