@@ -12,3 +12,5 @@ build/styles.css
 
 *.pyc
 /.idea/
+
+/styles/screenshots
