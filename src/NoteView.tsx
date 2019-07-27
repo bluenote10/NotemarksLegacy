@@ -48,28 +48,26 @@ export function NoteView(props: NoteViewProps) {
     <div class="container">
       <div class="noteview">
         <div class="noteview-title has-margin-top">{(props.note.title)}</div>
-        <article class="message is-info has-margin-top">
-          <div class="message-body">
-            <table class="ui-note-header-table">
-              <tbody>
-                <tr>
-                  <td><b>Labels</b></td>
-                  <td class="tags">
-                    {(props.note.labels.map(label => <Label name={(label)}/>))}
-                  </td>
-                </tr>
-                <tr>
-                  <td><b>Created</b></td>
-                  <td>{(formatDate(props.note.timeCreated))}</td>
-                </tr>
-                <tr>
-                  <td><b>Updated</b></td>
-                  <td>{(formatDate(props.note.timeUpdated))}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
+        <div class="note-view-header">
+          <table class="ui-note-header-table">
+            <tbody>
+              <tr>
+                <td><b>Labels</b></td>
+                <td>
+                  {(props.note.labels.map(label => <Label name={(label)}/>))}
+                </td>
+              </tr>
+              <tr>
+                <td><b>Created</b></td>
+                <td>{(formatDate(props.note.timeCreated))}</td>
+              </tr>
+              <tr>
+                <td><b>Updated</b></td>
+                <td>{(formatDate(props.note.timeUpdated))}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <div forwardRef={(el: HTMLElement) => el.innerHTML = convertMarkdown(props.note.markdown)}/>
       </div>
     </div>
