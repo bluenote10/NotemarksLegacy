@@ -3,7 +3,7 @@ import { createState, createEffect, onCleanup, sample } from 'solid-js';
 import { Note } from "./store";
 import { IconSearch } from "./Icons";
 import { For } from 'solid-js/dom';
-import { ForIndexed } from './ForIndexed';
+import { ForIndex } from './ForIndex';
 
 
 export interface SearchProps {
@@ -123,12 +123,12 @@ export function Search(props: SearchProps) {
         </div>
         <div class="float-wrapper">
           <div class={("card float-box " + (state.active ? "" : "is-hidden"))}>
-            <ForIndexed each={(props.matches)}>{
-              (n: Note, i: number) =>
-                <div class={("is-size-6 panel-block " + (i === state.selectedIndex ? "complete-selection" : ""))}>
+            <ForIndex each={(props.matches)}>{
+              (n: Note, i: () => number) =>
+                <div class={("is-size-6 panel-block " + (i() === state.selectedIndex ? "complete-selection" : ""))}>
                   {n.title}
                 </div>
-            }</ForIndexed>
+            }</ForIndex>
           </div>
         </div>
       </div>
