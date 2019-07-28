@@ -1,7 +1,7 @@
 
 import { Note } from "./store";
 import { For } from 'solid-js/types/dom';
-import { ForIndexed } from "./ForIndexed"
+import { ForIndexed } from "./ForIndex"
 
 export interface ListProps {
   notes: Note[],

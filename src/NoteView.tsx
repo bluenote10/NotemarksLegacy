@@ -1,7 +1,55 @@
 import { createState, createEffect, onCleanup } from 'solid-js';
 import * as showdown from "showdown"
+import * as highlightjs from "highlight.js"
+import "highlight.js/styles/monokai-sublime.css"
 
 import { Note } from "./store";
+
+// Taken from (for lack of configurability):
+// https://github.com/unional/showdown-highlightjs-extension/blob/master/src/index.ts
+showdown.extension('highlightjs', function () {
+  function htmlunencode(text: string) {
+    return (
+      text
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+    );
+  }
+  function replacement(_wholeMatch: string, match: string, left: string, right: string) {
+    // unescape match to prevent double escaping
+    match = htmlunencode(match);
+    // console.log(left)
+    // console.log(match)
+    // We need to add the hljs class to the <pre> tag to properly set e.g. background color.
+    left = "<pre class=\"hljs\"><code>"
+    // TODO: The tags created from showdown from a ```xxx ``` block are actually <pre><code class="xxx language-xxx".
+    // It would be better here to use that information and forward the user specified language instead of relying
+    // on autodetection.
+    return left + highlightjs.highlightAuto(match).value + right;
+  };
+
+  const left = '<pre><code\\b[^>]*>'
+  const right = '</code></pre>'
+  const flags = 'g'
+  return [
+    {
+      type: 'output',
+      filter: function (text, _converter, _options) {
+        return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
+      }
+    }
+  ];
+});
+
+function convertMarkdown(markdown: string): string {
+  const converter = new showdown.Converter({
+    ghCodeBlocks: true,
+    tasklists: true,
+    extensions: ["highlightjs"],
+  })
+  return converter.makeHtml(markdown);
+}
 
 /*
 declare global {
@@ -72,12 +120,4 @@ export function NoteView(props: NoteViewProps) {
       </div>
     </div>
   )
-}
-
-function convertMarkdown(markdown: string): string {
-  const converter = new showdown.Converter({
-    ghCodeBlocks: true,
-    tasklists: true,
-  })
-  return converter.makeHtml(markdown);
 }

@@ -31,8 +31,11 @@ export function ForIndex<T, U>(props: {
       return s;
     })(list)
   );
-  createEffect(() =>
-    indices().forEach((index, i) => index.set(i))
-  );
+  //console.log(indices)
+  //console.log(indices())
+  createEffect(() => {
+    //console.log("here", indices())
+    return indices().forEach((index, i) => index.set(i))
+  });
   return map((v: T, i: number) => fn(v, sample(indices)[i]))(list);
 }
