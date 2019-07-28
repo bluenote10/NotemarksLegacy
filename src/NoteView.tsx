@@ -9,24 +9,30 @@ import { Note } from "./store";
 // https://github.com/unional/showdown-highlightjs-extension/blob/master/src/index.ts
 showdown.extension('highlightjs', function () {
   function htmlunencode(text: string) {
+    // Note: It is important to unescape &amp; last. Otherwise the string "&lt;" gets
+    // incorrectly unescaped: The escaped form of "&lt;" is "&amp;lt;". If we first
+    // replace "&amp;" -> "&" and then "&lt;" -> "<", we get "<" instead of "&lt;".
     return (
       text
-        .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
     );
   }
   function replacement(_wholeMatch: string, match: string, left: string, right: string) {
     // unescape match to prevent double escaping
+    // console.log("escaped:", match)
     match = htmlunencode(match);
     // console.log(left)
-    // console.log(match)
+    // console.log("unescaped:", match)
     // We need to add the hljs class to the <pre> tag to properly set e.g. background color.
     left = "<pre class=\"hljs\"><code>"
     // TODO: The tags created from showdown from a ```xxx ``` block are actually <pre><code class="xxx language-xxx".
     // It would be better here to use that information and forward the user specified language instead of relying
     // on autodetection.
-    return left + highlightjs.highlightAuto(match).value + right;
+    const highlighted = highlightjs.highlightAuto(match).value    // highlightjs applies escaping internally.
+    // console.log("highlighted and escaped:", highlighted);
+    return left + highlighted + right;
   };
 
   const left = '<pre><code\\b[^>]*>'
