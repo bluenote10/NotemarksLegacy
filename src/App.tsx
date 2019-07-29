@@ -25,6 +25,8 @@ export function App() {
   const store = new Store();
   console.log(store)
 
+  let searchInputRef: HTMLInputElement | undefined = undefined;
+
   // init state
   const [state, setState] = createState({
     view: MODE_LIST,
@@ -77,7 +79,9 @@ export function App() {
     }
   });
   mousetrap.bind(["command+p", "ctrl+p"], () => {
-
+    if (searchInputRef != undefined) {
+      searchInputRef!.focus()
+    }
   })
 
   function onAddNewNote() {
@@ -167,6 +171,7 @@ export function App() {
             matches={(state.searchMatchingNotes)}
             onSearch={onSearch}
             onSelect={onSelect}
+            forwardInputRef={el => searchInputRef = el}
           />
         </div>
         <div class="ui-navbar-right">

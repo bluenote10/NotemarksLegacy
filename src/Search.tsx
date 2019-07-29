@@ -25,7 +25,12 @@ function computeSelectedIndex(listLength: number, current: number, delta: number
   }
 }
 
-export function Search(props: SearchProps) {
+export function Search(props: {
+    matches: Note[];
+    onSearch: (s: string) => void;
+    onSelect: (i: number) => void;
+    forwardInputRef: (e: HTMLInputElement) => void;
+  }) {
 
   let refInput: HTMLInputElement = null!
 
@@ -114,7 +119,10 @@ export function Search(props: SearchProps) {
               oninput={onSearch}
               onkeydown={onKeydown}
               value={(state.value)}
-              forwardRef={((el: HTMLInputElement) => refInput = el) /* FIXME, ref produces babel compiler error... */}
+              forwardRef={((el: HTMLInputElement) => {
+                refInput = el;
+                props.forwardInputRef(el)
+              })}
             />
             <span class="icon is-left">
               <IconSearch/>
