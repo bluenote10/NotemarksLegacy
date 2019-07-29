@@ -114,7 +114,7 @@ export function Search(props: SearchProps) {
               oninput={onSearch}
               onkeydown={onKeydown}
               value={(state.value)}
-              forwardRef={((el: HTMLInputElement) => refInput = el) as any /* FIXME, ref produces babel compiler error... */}
+              forwardRef={((el: HTMLInputElement) => refInput = el) /* FIXME, ref produces babel compiler error... */}
             />
             <span class="icon is-left">
               <IconSearch/>

@@ -76,6 +76,9 @@ export function App() {
       }
     }
   });
+  mousetrap.bind(["command+p", "ctrl+p"], () => {
+
+  })
 
   function onAddNewNote() {
     const newNote = store.newNote();
@@ -161,7 +164,7 @@ export function App() {
         </div>
         <div class="ui-navbar-middle">
           <Search
-            matches={(state.searchMatchingNotes as any as Note[])}
+            matches={(state.searchMatchingNotes)}
             onSearch={onSearch}
             onSelect={onSelect}
           />
@@ -177,8 +180,8 @@ export function App() {
           <Switch>
             <Match when={(state.view == MODE_LIST)}>
               <List
-                notes={(state.selectedNotes as any as Note[])}
-                onSelect={(index: number) => switchToNote(state.selectedNotes[index] as any as Note)}
+                notes={(state.selectedNotes)}
+                onSelect={(index: number) => switchToNote(state.selectedNotes[index])}
               />
             </Match>
             <Match when={(state.view == MODE_NOTE && state.activeNote != null)}>
