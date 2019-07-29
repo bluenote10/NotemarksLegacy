@@ -1,7 +1,7 @@
 
 import { Note } from "./store";
 import { For } from 'solid-js/types/dom';
-import { ForIndex } from "./ForIndex"
+import { ForIndexed } from "./ForIndex"
 
 export interface ListProps {
   notes: Note[],
@@ -19,13 +19,13 @@ export function List(props: ListProps) {
   return (
     <div>
       <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth table-fixed">
-        <ForIndex each={(props.notes)}>{
-          (note: Note, index: () => number) =>
+        <ForIndexed each={(props.notes)}>{
+          (note: Note, index: number) =>
             <tr>
               <td>
                 <a
                   class="truncate"
-                  onclick={(event) => props.onSelect(index())}
+                  onclick={(event) => props.onSelect(index)}
                 >
                   {(note.title.length > 0 ? note.title : "\u2060")}
                 </a>
@@ -37,7 +37,7 @@ export function List(props: ListProps) {
               </td>
             </tr>
         }
-        </ForIndex>
+        </ForIndexed>
       </table>
     </div>
   )
