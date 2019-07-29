@@ -29,12 +29,15 @@ export function ForIndex<T, U>(props: {
       const [s, set] = createSignal(i, (a, b) => a === b) as [MergedGetterSetter<number>, (i: number) => void];
       s.set = set;
       return s;
-    })(list)
+    })(list),
+    []  // workaround as per https://github.com/ryansolid/solid/issues/51
   );
-  //console.log(indices)
-  //console.log(indices())
+  //console.log("list 1", list)
+  //console.log("list 2", list())
+  //console.log("indices 1:", indices)
+  //console.log("indices 2:", indices())
   createEffect(() => {
-    //console.log("here", indices())
+    //console.log("indices effect", indices())
     return indices().forEach((index, i) => index.set(i))
   });
   return map((v: T, i: number) => fn(v, sample(indices)[i]))(list);
