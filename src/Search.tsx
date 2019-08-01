@@ -40,6 +40,16 @@ export function Search(props: {
     selectedIndex: -1,
   })
 
+  function selectIndex(i: number) {
+    props.onSelect(i);
+    setState({
+      active: false,
+      selectedIndex: -1,
+      value: "",
+    })
+    refInput.blur()
+  }
+
   function onSearch(evt: Event) {
     const value = (evt.target as HTMLInputElement).value.trim();
     props.onSearch(value);
@@ -80,14 +90,8 @@ export function Search(props: {
         break;
       case 13: // enter
         if (state.selectedIndex != -1) {
-          props.onSelect(state.selectedIndex);
-          setState({
-            active: false,
-            selectedIndex: -1,
-            value: "",
-          })
+          selectIndex(state.selectedIndex);
         }
-        refInput.blur()
         break;
     }
   }
@@ -103,6 +107,11 @@ export function Search(props: {
     if (oldSlectedIndex != -1) {
       setState({
         selectedIndex: computeSelectedIndex(newMatches.length, oldSlectedIndex, 0)
+      })
+    }
+    if (newMatches.length === 0) {
+      setState({
+        active: false
       })
     }
   })
@@ -132,9 +141,12 @@ export function Search(props: {
           <div class={("card float-box " + (state.active ? "" : "is-hidden"))}>
             <ForIndex each={(props.matches)}>{
               (n: Note, i: () => number) =>
-                <div class={("is-size-6 panel-block " + (i() === state.selectedIndex ? "complete-selection" : ""))} onclick={() => props.onSelect(i())}>
+                <a
+                  class={("is-size-6 panel-block " + (i() === state.selectedIndex ? "complete-selection" : ""))}
+                  onclick={() => selectIndex(i())}
+                >
                   {n.title}
-                </div>
+                </a>
             }</ForIndex>
           </div>
         </div>

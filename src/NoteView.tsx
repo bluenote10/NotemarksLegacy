@@ -120,7 +120,7 @@ export function NoteView(props: NoteViewProps) {
         </div>
         <div forwardRef={(el: HTMLElement) => {
           createEffect(() => {
-            console.log("Detected markdown update", el);
+            console.log("Detected markdown update");
             el.innerHTML = convertMarkdown(props.note.markdown)
           })
         }}/>
