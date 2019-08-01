@@ -138,7 +138,6 @@ export function loadNotes(path: string): Notes {
       console.log("Failed to read:", yamlFile, mdFile)
     }
   }
-  console.log(yamlFiles)
   return notes
 }
 

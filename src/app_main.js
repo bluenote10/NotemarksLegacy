@@ -19,6 +19,14 @@ function makeHttpAddress(url) {
 
 
 function createWindow() {
+  // Let's get rid of the annying security warning. Yes, we are using
+  // nodeIntegration, but we are not allowing remote content anyway.
+  // The documentation is totally unclear, why the warning appears
+  // for local + nodeIntegration. Some links:
+  // - https://electronjs.org/docs/tutorial/security#2-do-not-enable-nodejs-integration-for-remote-content
+  // - https://stackoverflow.com/questions/48854265/why-do-i-see-an-electron-security-warning-after-updating-my-electron-project-t
+  // - https://stackoverflow.com/questions/51969512/define-csp-http-header-in-electron-app
+  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
 
   // As per https://github.com/electron/electron/issues/16521
   // calling this before creating the browser window is a work-around
@@ -54,17 +62,9 @@ function createWindow() {
   // mainWindow.setAutoHideMenuBar(true);
 
   mainWindow.maximize()
-  // mainWindow.ELECTRON_DISABLE_SECURITY_WARNINGS = true
-  // mainWindow["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true"
 
-  /*
-  mainWindow.loadURL(url.format(JsObject{
-    pathname: dirname.to(cstring) & "/index.html",
-    protocol: "file".cstring,
-    slashes: true
-  }))
-  */
-  mainWindow.loadFile(__dirname + "/../build/index.html")
+  //mainWindow.loadFile(__dirname + "/../build/index.html")
+  mainWindow.loadFile("./build/index.html")
 
   mainWindow.on("closed", () => mainWindow = null)
 

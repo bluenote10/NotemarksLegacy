@@ -42,7 +42,6 @@ export function Search(props: {
 
   function onSearch(evt: Event) {
     const value = (evt.target as HTMLInputElement).value.trim();
-    console.log(value);
     props.onSearch(value);
     if (value.length === 0) {
       setState({
@@ -94,19 +93,19 @@ export function Search(props: {
   }
 
   createEffect(() =>
-    console.log(state.selectedIndex)
+    console.log("Selected index:", state.selectedIndex)
   )
 
   createEffect(() => {
     let newMatches = props.matches;
     let oldSlectedIndex = sample(() => state.selectedIndex);
-    console.log("updated matches of length:", newMatches.length, newMatches);
+    console.log("Updated matches of length:", newMatches.length);
     if (oldSlectedIndex != -1) {
       setState({
         selectedIndex: computeSelectedIndex(newMatches.length, oldSlectedIndex, 0)
       })
     }
-})
+  })
 
   return (
     <div class="container">
@@ -133,7 +132,7 @@ export function Search(props: {
           <div class={("card float-box " + (state.active ? "" : "is-hidden"))}>
             <ForIndex each={(props.matches)}>{
               (n: Note, i: () => number) =>
-                <div class={("is-size-6 panel-block " + (i() === state.selectedIndex ? "complete-selection" : ""))}>
+                <div class={("is-size-6 panel-block " + (i() === state.selectedIndex ? "complete-selection" : ""))} onclick={() => props.onSelect(i())}>
                   {n.title}
                 </div>
             }</ForIndex>

@@ -91,10 +91,6 @@ function formatDate(d: Date): string {
 
 export function NoteView(props: NoteViewProps) {
 
-  const markdown = (el: HTMLElement, accessor: () => string) => {
-    el.innerHTML = convertMarkdown(accessor());
-  };
-
   // For now: use directives instead of afterRender
   // - https://github.com/ryansolid/babel-plugin-jsx-dom-expressions/issues/14
   // - https://spectrum.chat/solid-js/general/solid-js-watercooler~a36894a2-2ea2-4b1e-9e56-03ed0b3aef13?m=MTU2MTc5NDc0MDMwMw==
@@ -122,7 +118,12 @@ export function NoteView(props: NoteViewProps) {
             </tbody>
           </table>
         </div>
-        <div forwardRef={(el: HTMLElement) => el.innerHTML = convertMarkdown(props.note.markdown)}/>
+        <div forwardRef={(el: HTMLElement) => {
+          createEffect(() => {
+            console.log("Detected markdown update", el);
+            el.innerHTML = convertMarkdown(props.note.markdown)
+          })
+        }}/>
       </div>
     </div>
   )

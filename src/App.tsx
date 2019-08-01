@@ -60,7 +60,6 @@ export function App() {
   }
 
   mousetrap.bind(["command+e", "ctrl+e"], () => {
-    console.log("keyboard toggle")
     switch (state.view) {
       case MODE_EDIT: {
         console.log("switching to noteview");
