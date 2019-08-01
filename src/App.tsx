@@ -149,7 +149,7 @@ export function App() {
       <div class="ui-navbar">
         <div class="ui-navbar-left">
           <a
-            class="button ui-navbar-button"
+            class="ui-navbar-button"
             onclick={(event) => switchToList()}
           >
             <span class="icon">
@@ -157,7 +157,7 @@ export function App() {
             </span>
           </a>
           <a
-            class="button ui-navbar-button"
+            class="ui-navbar-button"
             onclick={(event) => onAddNewNote()}
           >
             <span class="icon">
