@@ -45,6 +45,7 @@ export interface Note {
   markdown: string,
   timeCreated: Date,
   timeUpdated: Date,
+  link?: string,
 }
 export interface NoteUpdate {
   id?: string,
@@ -53,18 +54,35 @@ export interface NoteUpdate {
   markdown?: string,
   timeCreated?: Date,
   timeUpdated?: Date,
+  link?: string,
 }
 
 
-export function noteToYamlData(n: Note): string {
-  let js = {
+function noteToYamlData(n: Note): string {
+  let js: any = {
     id: n.id,
     title: n.title,
     labels: n.labels,
     timeCreated: Math.floor(n.timeCreated.getTime() / 1000),
     timeUpdated: Math.floor(n.timeUpdated.getTime() / 1000),
   }
+  // https://github.com/nodeca/js-yaml/issues/325
+  if (n.link != undefined) {
+    js["link"] = n.link;
+  }
   return yaml.safeDump(js)
+}
+
+function yamlDataToNote(dataYaml: any, dataMd: string): Note {
+  return {
+    id: dataYaml.id,
+    title: dataYaml.title,
+    labels: dataYaml.labels,
+    markdown: dataMd,
+    timeCreated: new Date(dataYaml.timeCreated * 1000),
+    timeUpdated: new Date(dataYaml.timeUpdated * 1000),
+    link: dataYaml.link,
+  }
 }
 
 export function modifiedNote(n: Note, update: NoteUpdate): Note {
@@ -144,14 +162,7 @@ export function loadNotes(path: string): Notes {
       // TODO narrower try/catch here + data validation
       const dataYaml = yaml.safeLoad(fs.readFileSync(yamlFile, "utf8"))
       let dataMd = fs.readFileSync(mdFile, "utf8")
-      notes[dataYaml.id] = {
-        id: dataYaml.id,
-        title: dataYaml.title,
-        labels: dataYaml.labels,
-        markdown: dataMd,
-        timeCreated: new Date(dataYaml.timeCreated * 1000),
-        timeUpdated: new Date(dataYaml.timeUpdated * 1000),
-      }
+      notes[dataYaml.id] = yamlDataToNote(dataYaml, dataMd)
     } catch {
       console.log("Failed to read:", yamlFile, mdFile)
     }
@@ -219,6 +230,12 @@ export class Store {
 
   updateNoteLabels(n: Note, labels: string[]): Note {
     let nMod = modifiedNote(n, {labels: labels})
+    this.updateNote(nMod, true, false)
+    return nMod;
+  }
+
+  updateNoteLink(n: Note, link: string): Note {
+    let nMod = modifiedNote(n, {link: link})
     this.updateNote(nMod, true, false)
     return nMod;
   }

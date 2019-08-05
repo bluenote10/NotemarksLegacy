@@ -127,6 +127,15 @@ export function App() {
     })
   }
 
+  function onChangeLink(s: string) {
+    let nModified = store.updateNoteLink(state.activeNote!, s)
+    setState({
+      activeNote: nModified,
+      allNotes: store.getNotes(),
+      selectedNotes: store.getNotes(),
+    })
+  }
+
   function onChangeMarkdown(s: string) {
     let nModified = store.updateNoteMarkdown(state.activeNote!, s)
     setState({
@@ -212,6 +221,7 @@ export function App() {
                 onChangeTitle={onChangeTitle}
                 onChangeLabels={onChangeLabels}
                 onChangeMarkdown={onChangeMarkdown}
+                onChangeLink={onChangeLink}
               />
             </Match>
           </Switch>

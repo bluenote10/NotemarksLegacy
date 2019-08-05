@@ -3,14 +3,14 @@ import { createState, createEffect, onCleanup } from 'solid-js';
 import { Monaco } from "./Monaco"
 import { Note } from "./store";
 
-export interface EditorProps {
-  note: Note,
-  onChangeTitle: (s: string) => void,
-  onChangeLabels: (s: string) => void,
-  onChangeMarkdown: (s: string) => void,
-}
 
-export function Editor(props: EditorProps) {
+export function Editor(props: {
+    note: Note,
+    onChangeTitle: (s: string) => void,
+    onChangeLabels: (s: string) => void,
+    onChangeMarkdown: (s: string) => void,
+    onChangeLink: (s: string) => void,
+  }) {
 
   // let textAreaRef: HTMLTextAreaElement = null!
   // setTimeout(() => textAreaRef.focus(), 0)
@@ -41,6 +41,21 @@ export function Editor(props: EditorProps) {
             placeholder="Labels"
             value={props.note.labels.join(" ")}
             oninput={(evt) => props.onChangeLabels((evt.target as HTMLInputElement).value)}
+          />
+        </div>
+      </div>
+
+      <div class="field has-margin-top">
+        <label class="label is-small">Link</label>
+        <div class="control">
+          <input
+            class="input is-small"
+            placeholder="Link"
+            value={(props.note.link != undefined ? props.note.link : "")}
+            oninput={(evt) => {
+              evt.preventDefault();
+              props.onChangeLink((evt.target as HTMLInputElement).value)
+            }}
           />
         </div>
       </div>
