@@ -49,11 +49,16 @@ showdown.extension('highlightjs', function () {
 });
 
 function convertMarkdown(markdown: string): string {
+  // https://github.com/showdownjs/showdown#valid-options
   const converter = new showdown.Converter({
     ghCodeBlocks: true,
-    tasklists: true,
     extensions: ["highlightjs"],
+    simplifiedAutoLink: true,
+    strikethrough: true,
+    tables: true,
+    tasklists: true,
   })
+  converter.setFlavor('github');
   return converter.makeHtml(markdown);
 }
 
