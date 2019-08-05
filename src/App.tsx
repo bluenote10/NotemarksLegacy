@@ -82,6 +82,19 @@ export function App() {
       searchInputRef!.focus()
     }
   })
+  mousetrap.bind(["del"], () => {
+    if (state.view === MODE_NOTE) {
+      store.deleteNote(state.activeNote!)
+      setState({
+        activeNote: undefined,
+        allNotes: store.getNotes(),
+        selectedNotes: store.getNotes(),
+        view: MODE_LIST,
+        labelCounts: store.getLabelCounts(),
+      });
+    }
+  })
+
 
   function onAddNewNote() {
     const newNote = store.newNote();
@@ -149,6 +162,7 @@ export function App() {
       <div class="ui-navbar">
         <div class="ui-navbar-left">
           <a
+            title="See all notes"
             class="ui-navbar-button"
             onclick={(event) => switchToList()}
           >
@@ -157,6 +171,7 @@ export function App() {
             </span>
           </a>
           <a
+            title="Add new note"
             class="ui-navbar-button"
             onclick={(event) => onAddNewNote()}
           >
@@ -182,16 +197,16 @@ export function App() {
         </div>
         <div class="column ui-column-middle">
           <Switch>
-            <Match when={(state.view == MODE_LIST)}>
+            <Match when={(state.view === MODE_LIST)}>
               <List
                 notes={(state.selectedNotes)}
                 onSelect={(index: number) => switchToNote(state.selectedNotes[index])}
               />
             </Match>
-            <Match when={(state.view == MODE_NOTE && state.activeNote != null)}>
+            <Match when={(state.view === MODE_NOTE && state.activeNote != undefined)}>
               <NoteView note={(state.activeNote!)}/>
             </Match>
-            <Match when={(state.view == MODE_EDIT)}>
+            <Match when={(state.view === MODE_EDIT && state.activeNote != undefined)}>
               <Editor
                 note={(state.activeNote!)}
                 onChangeTitle={onChangeTitle}

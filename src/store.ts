@@ -16,6 +16,24 @@ function randHash(length = 8): string {
   return result;
 }
 
+function deleteFolderRecursive(p: string) {
+  // TODO: could be made async
+  if (p == "" || p == "/") {
+    return;
+  }
+  if (fs.existsSync(p)) {
+    fs.readdirSync(p).forEach(function(file, index){
+      var curPath = path.join(p, file)
+      if (!fs.lstatSync(curPath).isDirectory()) {
+        fs.unlinkSync(curPath);
+      } else {
+        deleteFolderRecursive(curPath);
+      }
+    });
+    fs.rmdirSync(p);
+  }
+};
+
 // -----------------------------------------------------------------------------
 // Note
 // -----------------------------------------------------------------------------
@@ -161,6 +179,10 @@ export class Store {
     }
   }
 
+  private folderName(n: Note): string {
+    return path.join(this.path, n.id)
+  }
+
   private fileNameMeta(n: Note): string {
     return path.join(this.path, n.id, "note.yaml")
   }
@@ -264,5 +286,11 @@ export class Store {
 
     return labelCounts
   }
+
+  deleteNote(n: Note) {
+    delete this.notes[n.id];
+    deleteFolderRecursive(this.folderName(n));
+  }
+
 
 }
