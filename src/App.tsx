@@ -11,10 +11,11 @@ import { List } from "./List"
 import * as mousetrap from "mousetrap"
 import { Switch, Match } from 'solid-js/dom';
 
+const electron = require('electron');
+
 Mousetrap.prototype.stopCallback = function () {
   return false;
 }
-
 
 const MODE_LIST = "list"
 const MODE_NOTE = "note"
@@ -92,6 +93,14 @@ export function App() {
         view: MODE_LIST,
         labelCounts: store.getLabelCounts(),
       });
+    }
+  })
+  mousetrap.bind(["enter"], () => {
+    if (state.view === MODE_NOTE) {
+      // TODO: need to check for search not active
+      if (state.activeNote && state.activeNote.link) {
+        electron.shell.openExternal(state.activeNote!.link!);
+      }
     }
   })
 
