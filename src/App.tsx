@@ -1,6 +1,7 @@
 import { createState, createEffect, onCleanup } from 'solid-js';
 
 import { Store, Note, LabelCounts, modifiedNote } from "./store"
+import { getTitle } from "./web_utils"
 
 import { Search } from "./Search"
 import { LabelTree } from "./LabelTree"
@@ -106,13 +107,28 @@ export function App() {
 
 
   function onAddNewNote() {
-    const newNote = store.newNote();
-    setState({
-      activeNote: newNote,
-      allNotes: store.getNotes(),
-      selectedNotes: store.getNotes(),
-      view: MODE_EDIT,
-    });
+    let clipboardText = electron.clipboard.readText()
+    console.log("clipboard text:", clipboardText)
+    if (clipboardText.startsWith("http")) {
+      let link = clipboardText;
+      getTitle(link).then(title => {
+        const newNote = store.newNote(title, link);
+        setState({
+          activeNote: newNote,
+          allNotes: store.getNotes(),
+          selectedNotes: store.getNotes(),
+          view: MODE_EDIT,
+        });
+      })
+    } else {
+      const newNote = store.newNote();
+      setState({
+        activeNote: newNote,
+        allNotes: store.getNotes(),
+        selectedNotes: store.getNotes(),
+        view: MODE_EDIT,
+      });
+    }
   }
 
   function onChangeTitle(s: string) {
