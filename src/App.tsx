@@ -14,8 +14,16 @@ import { Switch, Match } from 'solid-js/dom';
 
 const electron = require('electron');
 
-Mousetrap.prototype.stopCallback = function () {
-  return false;
+Mousetrap.prototype.stopCallback = function(e: KeyboardEvent, element: HTMLElement, combo: string) {
+  // https://craig.is/killing/mice
+  // console.log("stopCallback", e, element, combo);
+  if (element.tagName == 'INPUT' && e.key === "Enter") {
+    // don't fire mousetrap events for ENTER on input elements
+    return true;
+  } else {
+    // fire in all other cases
+    return false;
+  }
 }
 
 const MODE_LIST = "list"
@@ -98,8 +106,9 @@ export function App() {
   })
   mousetrap.bind(["enter"], () => {
     if (state.view === MODE_NOTE) {
+      let isSearchFocused = (searchInputRef === document.activeElement);
       // TODO: need to check for search not active
-      if (state.activeNote && state.activeNote.link) {
+      if (state.activeNote && state.activeNote.link && !isSearchFocused) {
         electron.shell.openExternal(state.activeNote!.link!);
       }
     }
