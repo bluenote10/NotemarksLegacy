@@ -1,4 +1,6 @@
 import { createState, createEffect, onCleanup } from 'solid-js';
+import { Show } from 'solid-js/dom';
+
 import * as showdown from "showdown"
 import * as highlightjs from "highlight.js"
 import "highlight.js/styles/monokai-sublime.css"
@@ -120,6 +122,14 @@ export function NoteView(props: NoteViewProps) {
                 <td><b>Updated</b></td>
                 <td>{(formatDate(props.note.timeUpdated))}</td>
               </tr>
+              <Show when={(props.note.link != undefined)}>
+                <tr>
+                  <td><b>Link</b></td>
+                  <td>
+                    <a href={(props.note.link!)}>{(props.note.link!)}</a>
+                  </td>
+                </tr>
+              </Show>
             </tbody>
           </table>
         </div>
