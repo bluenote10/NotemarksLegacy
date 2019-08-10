@@ -20,6 +20,10 @@ $family-sans-serif: "Roboto", sans-serif;
 // General style
 // -------------------------------------------------------------------------
 
+html {
+  overflow-y: auto; // to avoid margin for scrollbar
+}
+
 .font-mono {
   font-family: "monospace";
 }
@@ -161,8 +165,13 @@ table.ui-note-header-table .tag + .tag {
 // -------------------------------------------------------------------------
 
 $ui-navbar-height: 3.25rem;
-$ui-width-col-left: 12%;
-$ui-width-col-right: 3.25rem;
+
+// using pixels here, because fractional widths only seem to work for normal
+// divs but not tables, which leaves a gap in the middle column to the inner
+// table.
+// https://stackoverflow.com/questions/35283189/css-displaytable-with-fractional-pixel-width
+$ui-width-col-left: 220px;
+$ui-width-col-right: 10px;
 
 .ui-navbar {
   height: $ui-navbar-height;
@@ -260,12 +269,14 @@ $ui-width-col-right: 3.25rem;
   border-left: 1px solid #DADADA;
 
   overflow: auto;
+  padding: 0px;
 }
 
 .ui-column-middle {
   padding: 0;
   //margin-top: 0.75rem;
-  overflow: scroll;
+  overflow-x: auto;
+  overflow-y: auto;
   border-top: 1px solid #DADADA;
 
   min-height: 100%;
@@ -275,9 +286,14 @@ $ui-width-col-right: 3.25rem;
 // Table stuff
 // -------------------------------------------------------------------------
 
-/* For cell truncation / avoiding line breaks */
+// For cell truncation / avoiding line breaks
 .table-fixed {
   table-layout: fixed; /* https://stackoverflow.com/questions/5932018/fluid-table-with-td-nowrap-text-overflow */
+  font-size: 0.8rem;
+}
+.table-fixed td {
+  height: 2rem; // min-height semantics being a table...
+  vertical-align: middle;
 }
 
 .truncate {
@@ -294,10 +310,13 @@ $ui-width-col-right: 3.25rem;
 }
 
 // -------------------------------------------------------------------------
-// Input helpers
+// Search helpers
 // -------------------------------------------------------------------------
 
-.complete-selection {
+.ui-panel-block {
+  font-size: 0.8rem;
+}
+.ui-complete-selection {
   background: rgb(196, 227, 255);
 }
 

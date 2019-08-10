@@ -142,7 +142,7 @@ export function Search(props: {
             <ForIndex each={(props.matches)}>{
               (n: Note, i: () => number) =>
                 <a
-                  class={("is-size-6 panel-block " + (i() === state.selectedIndex ? "complete-selection" : ""))}
+                  class={("ui-panel-block panel-block " + (i() === state.selectedIndex ? "ui-complete-selection" : ""))}
                   onclick={() => selectIndex(i())}
                 >
                   {n.title}
