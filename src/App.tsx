@@ -246,10 +246,10 @@ export function App() {
                 onSelect={(index: number) => switchToNote(state.selectedNotes[index])}
               />
             </Match>
-            <Match when={(state.view === MODE_NOTE && state.activeNote != undefined)}>
+            <Match when={(state.view === MODE_NOTE)}>
               <NoteView note={(state.activeNote!)}/>
             </Match>
-            <Match when={(state.view === MODE_EDIT && state.activeNote != undefined)}>
+            <Match when={(state.view === MODE_EDIT)}>
               <Editor
                 note={(state.activeNote!)}
                 onChangeTitle={onChangeTitle}
