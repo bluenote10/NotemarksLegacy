@@ -300,7 +300,9 @@ export class Store {
       name: k,
       count: v,
     }))
-    labelCounts = labelCounts.sort()
+    labelCounts = labelCounts.sort((a, b) => {
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    })
 
     return labelCounts
   }
