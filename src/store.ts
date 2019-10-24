@@ -246,12 +246,12 @@ export class Store {
     return nMod;
   }
 
-  newNote(title?: string, link?: string): Note {
+  newNote(title: string, link?: string): Note {
     const id = this.randId()
     const time = new Date()
     const note: Note = {
       id: id,
-      title: (title != undefined ? title : ""),
+      title: title,
       labels: [],
       markdown: "",
       timeCreated: time,

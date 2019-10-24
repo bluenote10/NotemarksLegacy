@@ -1,5 +1,5 @@
 {
-  "name": "Notemarks",
+  "name": "notemarks",
   "version": "0.1.0",
   "description": "Simple note taking app.",
   "main": "src/app_main.js",
@@ -14,7 +14,6 @@
   },
   "keywords": [
     "Electron",
-    "Nim",
     "Note taking"
   ],
   "author": "Fabian Keller",

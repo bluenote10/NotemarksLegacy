@@ -121,16 +121,18 @@ export function App() {
     if (clipboardText.startsWith("http")) {
       let link = clipboardText;
       getTitle(link).then(title => {
-        const newNote = store.newNote(title, link);
-        setState({
-          activeNote: newNote,
-          allNotes: store.getNotes(),
-          selectedNotes: store.getNotes(),
-          view: MODE_EDIT,
-        });
+        if (title != undefined) {
+          const newNote = store.newNote(title, link);
+          setState({
+            activeNote: newNote,
+            allNotes: store.getNotes(),
+            selectedNotes: store.getNotes(),
+            view: MODE_EDIT,
+          });
+        }
       })
     } else {
-      const newNote = store.newNote();
+      const newNote = store.newNote("");
       setState({
         activeNote: newNote,
         allNotes: store.getNotes(),
