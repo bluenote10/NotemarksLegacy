@@ -86,12 +86,20 @@ export function Monaco(props: MonacoProps) {
         }
       });
 
-      editor.getModel()!.onDidChangeContent((event) => {
-        var value = editor.getValue();
-        props.onInput(value)
-      });
+      let model = editor.getModel();
 
-    }, 100)
+      if (model != null) {
+        model.updateOptions({
+          tabSize: 2
+        })
+
+        model.onDidChangeContent((event) => {
+          var value = editor.getValue();
+          props.onInput(value)
+        });
+      }
+
+    }, 0);
   }
 
 

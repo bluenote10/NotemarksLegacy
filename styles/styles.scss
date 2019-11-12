@@ -48,19 +48,56 @@ $noteview-box-margin: 1rem;
   margin-right: $noteview-box-margin;
 }
 
-.noteview ul, ol {
+.noteview ul {
   padding-left: 1rem;
-  list-style-type: circle;
   list-style-position: outside;
+  list-style-type: circle;
+}
+.noteview ol {
+  padding-left: 1.5rem;
+  list-style-position: outside;
+  list-style-type: none;
+  counter-reset: section;
 }
 
-.noteview p + p {
+ol li {
+  // this seems to be needed so that the ::before elements can be floated via "absolte" positioning:
+  // https://stackoverflow.com/questions/41911657/align-before-pseudo-element-with-list-item-contents
+  position:relative;
+}
+
+ol li::before {
+  counter-increment: section;
+  content: counter(section);
+  font-size: 80%;
+  background-color: rgb(19, 32, 32);
+  color: white;
+  font-weight: bold;
+  padding: 3px 7px 1px 7px;
+  border-radius: 3px;
+  margin-right: 0.2rem;
+  // needed to float:
+  position: absolute;
+  left: -1.5rem;
+}
+
+
+// The "div >" allows to make these rules only at top level, because showdown generates
+// a top level div -- and there shouldn't be nested lists.
+.noteview div > p + p {
   margin-top: 0.4rem;
 }
-.noteview ul + p {
+.noteview div > ul + p {
   margin-top: 0.4rem;
 }
-.noteview ol + p {
+.noteview div > ol + p {
+  margin-top: 0.4rem;
+}
+
+.noteview div > ul > li > p:first-child {
+  margin-top: 0.4rem;
+}
+.noteview div > ol > li > p:first-child {
   margin-top: 0.4rem;
 }
 
@@ -155,9 +192,19 @@ table.ui-note-header-table .tag + .tag {
 }
 
 .noteview pre {
+  font-family: "Ubuntu mono, monospace";
   padding: 0.5rem 0.7rem;
   font-size: 0.75rem; // 12 px
   margin: 0.4rem 0;
+}
+
+.noteview :not(pre) > code {
+  background-color: whitesmoke;
+  color: #ff3860;
+  font-size: 0.875em;
+  font-weight: normal;
+  padding: 0.15em 0.4em 0.15em;
+  border: 1px solid #e0e0e0;
 }
 
 // -------------------------------------------------------------------------

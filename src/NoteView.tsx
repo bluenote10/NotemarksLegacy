@@ -60,7 +60,13 @@ function convertMarkdown(markdown: string): string {
     tables: true,
     tasklists: true,
   })
-  converter.setFlavor('github');
+
+  // Apparently 'github' flavor leads to treating every line break as a visible
+  // line break in the output, which is not necessarily desired if line breaks
+  // are placed in the markdown source mainly for making the source look nice,
+  // but a full paragraph is desired in the output. Disable for now.
+  // converter.setFlavor('github');
+
   return converter.makeHtml(markdown);
 }
 
