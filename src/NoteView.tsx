@@ -111,7 +111,7 @@ export function NoteView(props: NoteViewProps) {
     <div class="container">
       <div class="noteview">
         <div class="noteview-title has-margin-top">{(props.note.title)}</div>
-        <div class="note-view-header">
+        <div class="noteview-header">
           <table class="ui-note-header-table">
             <tbody>
               <tr>
@@ -146,6 +146,7 @@ export function NoteView(props: NoteViewProps) {
           })
         }}/>
       </div>
+      <div class="vertical-fill"/>
     </div>
   )
 }

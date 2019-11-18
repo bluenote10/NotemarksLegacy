@@ -37,177 +37,6 @@ html {
 }
 
 // -------------------------------------------------------------------------
-// Note view styling
-// -------------------------------------------------------------------------
-
-$noteview-box-margin: 1rem;
-
-.noteview {
-  font-size: 0.875rem; // 14 px
-  margin-left: $noteview-box-margin;
-  margin-right: $noteview-box-margin;
-}
-
-.noteview ul {
-  padding-left: 1rem;
-  list-style-position: outside;
-  list-style-type: circle;
-}
-.noteview ol {
-  padding-left: 1.5rem;
-  list-style-position: outside;
-  list-style-type: none;
-  counter-reset: section;
-}
-
-ol li {
-  // this seems to be needed so that the ::before elements can be floated via "absolte" positioning:
-  // https://stackoverflow.com/questions/41911657/align-before-pseudo-element-with-list-item-contents
-  position:relative;
-}
-
-ol li::before {
-  counter-increment: section;
-  content: counter(section);
-  font-size: 80%;
-  background-color: rgb(19, 32, 32);
-  color: white;
-  font-weight: bold;
-  padding: 3px 7px 1px 7px;
-  border-radius: 3px;
-  margin-right: 0.2rem;
-  // needed to float:
-  position: absolute;
-  left: -1.5rem;
-}
-
-
-// The "div >" allows to make these rules only at top level, because showdown generates
-// a top level div -- and there shouldn't be nested lists.
-.noteview div > p + p {
-  margin-top: 0.4rem;
-}
-.noteview div > ul + p {
-  margin-top: 0.4rem;
-}
-.noteview div > ol + p {
-  margin-top: 0.4rem;
-}
-
-.noteview div > ul > li > p:first-child {
-  margin-top: 0.4rem;
-}
-.noteview div > ol > li > p:first-child {
-  margin-top: 0.4rem;
-}
-
-/*
-.noteview li {
-  //margin-left: 10px;
-  list-style-type: circle;
-  list-style-position: inside;
-}
-*/
-
-.noteview-title {
-  font-family: "Open Sans Condensed";
-  font-size: 2rem; // 1.75rem; // 28 px
-  font-weight: 700;
-}
-
-.note-view-header {
-  color: #12537e;
-  background-color: #f6fbfe;
-
-  border-color: #209cee;
-  border-radius: 4px;
-  border-style: solid;
-  border-width: 0px 0px 0px 4px;
-  box-shadow: 0 0 0 1px #a4dbff;
-
-  margin-top: 0.4rem;
-  margin-bottom: 0.8rem;
-  margin-left: -$noteview-box-margin;
-  margin-right: -$noteview-box-margin;
-  padding: .5em calc(1rem - 4px);   // left/right must equal negative margin subtracted by the border width
-
-  font-size: 0.75rem; // 12 px
-}
-table.ui-note-header-table td {
-  padding-right: 15px;
-  height: 1.5rem;
-  vertical-align: middle;
-}
-table.ui-note-header-table .tag + .tag {
-  margin-left: 0.2rem;
-}
-
-.noteview h1 {
-  font-size: 1.125rem; // 18 px
-  font-weight: 700;
-
-  background: #F5F5F5;
-  border: 1px solid #D8D8D8;
-  border-radius: 3px;
-
-  line-height: 1.25rem;
-
-  margin-top: 1.2rem;
-  margin-bottom: 0.8rem;
-  margin-left: -$noteview-box-margin;
-  margin-right: -$noteview-box-margin;
-  padding: .5em calc(1rem - 1px);   // left/right must equal negative margin subtracted by the border width
-
-  overflow: hidden;
-}
-.noteview h2 {
-  font-size: 1.125rem; // 18 px
-  font-weight: 600;
-  margin-top: 0.8rem;
-  margin-bottom: 0.4rem;
-}
-.noteview h3 {
-  font-size: 1rem; // 16 px
-  font-weight: 700;
-  margin-top: 0.8rem;
-  margin-bottom: 0.4rem;
-}
-.noteview h4 {
-  font-size: 0.875rem; // 14 px
-  font-weight: 700;
-  margin-top: 0.8rem;
-  margin-bottom: 0.4rem;
-}
-.noteview h5 {
-  font-size: 0.875rem; // 14 px
-  font-weight: 700;
-  margin-top: 0.8rem;
-  margin-bottom: 0.4rem;
-}
-.noteview h6 {
-  font-size: 0.875rem; // 14 px
-  font-weight: 700;
-  margin-top: 0.8rem;
-  margin-bottom: 0.4rem;
-}
-
-.noteview pre {
-  font-family: "Ubuntu mono, monospace";
-  padding: 0.5rem 0.7rem;
-  font-size: 0.75rem; // 12 px
-  margin: 0.4rem 0;
-}
-
-.noteview :not(pre) > code {
-  background-color: whitesmoke;
-  color: #ff3860;
-  font-size: 0.875em;
-  font-weight: normal;
-  padding: 0.15em 0.4em 0.15em;
-  border: 1px solid #e0e0e0;
-}
-
-// -------------------------------------------------------------------------
 // Navbar
 // -------------------------------------------------------------------------
 
@@ -414,6 +243,182 @@ $ui-width-col-right: 10px;
   /* display: inline-block; */
   /* position: absolute; */
   /* float: left; */
+}
+
+
+// -------------------------------------------------------------------------
+// Note view styling
+// -------------------------------------------------------------------------
+
+$noteview-box-margin: 0.5rem;
+
+.noteview {
+  font-size: 0.875rem; // 14 px
+  margin-left: $noteview-box-margin * 2;
+  margin-right: $noteview-box-margin * 2;
+}
+
+.noteview ul {
+  padding-left: 1rem;
+  list-style-position: outside;
+  list-style-type: circle;
+}
+.noteview ol {
+  padding-left: 1.5rem;
+  list-style-position: outside;
+  list-style-type: none;
+  counter-reset: section;
+}
+
+ol li {
+  // this seems to be needed so that the ::before elements can be floated via "absolte" positioning:
+  // https://stackoverflow.com/questions/41911657/align-before-pseudo-element-with-list-item-contents
+  position:relative;
+}
+
+ol li::before {
+  counter-increment: section;
+  content: counter(section);
+  font-size: 80%;
+  background-color: rgb(19, 32, 32);
+  color: white;
+  font-weight: bold;
+  padding: 3px 7px 1px 7px;
+  border-radius: 3px;
+  margin-right: 0.2rem;
+  // needed to float:
+  position: absolute;
+  left: -1.5rem;
+}
+
+
+// The "div >" allows to make these rules only at top level, because showdown generates
+// a top level div -- and there shouldn't be nested lists.
+.noteview div > p + p {
+  margin-top: 0.4rem;
+}
+.noteview div > ul + p {
+  margin-top: 0.4rem;
+}
+.noteview div > ol + p {
+  margin-top: 0.4rem;
+}
+
+.noteview div > ul > li > p:first-child {
+  margin-top: 0.4rem;
+}
+.noteview div > ol > li > p:first-child {
+  margin-top: 0.4rem;
+}
+
+/*
+.noteview li {
+  //margin-left: 10px;
+  list-style-type: circle;
+  list-style-position: inside;
+}
+*/
+
+.noteview-title {
+  font-family: "Open Sans Condensed";
+  font-size: 2rem; // 1.75rem; // 28 px
+  font-weight: 700;
+}
+
+.noteview-header {
+  color: #12537e;
+  background-color: #f6fbfe;
+
+  border-color: #209cee;
+  border-radius: 4px;
+  border-style: solid;
+  border-width: 0px 0px 0px 4px;
+  box-shadow: 0 0 0 1px #a4dbff;
+
+  margin-top: 0.4rem;
+  margin-bottom: 0.8rem;
+  margin-left: -$noteview-box-margin;
+  margin-right: -$noteview-box-margin;
+  padding: .5em calc(1rem - 4px);   // left/right must equal negative margin subtracted by the border width
+
+  font-size: 0.75rem; // 12 px
+}
+table.ui-note-header-table td {
+  padding-right: 15px;
+  height: 1.5rem;
+  vertical-align: middle;
+}
+table.ui-note-header-table .tag + .tag {
+  margin-left: 0.2rem;
+}
+
+.noteview h1 {
+  font-size: 1.125rem; // 18 px
+  font-weight: 700;
+
+  background: #F5F5F5;
+  border: 1px solid #D8D8D8;
+  border-radius: 3px;
+
+  line-height: 1.25rem;
+
+  margin-top: 1.2rem;
+  margin-bottom: 0.8rem;
+  margin-left: -$noteview-box-margin;
+  margin-right: -$noteview-box-margin;
+  padding: .5em calc(1rem - 1px);   // left/right must equal negative margin subtracted by the border width
+
+  overflow: hidden;
+}
+.noteview h2 {
+  font-size: 1.125rem; // 18 px
+  font-weight: 600;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+.noteview h3 {
+  font-size: 1rem; // 16 px
+  font-weight: 700;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+.noteview h4 {
+  font-size: 0.875rem; // 14 px
+  font-weight: 700;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+.noteview h5 {
+  font-size: 0.875rem; // 14 px
+  font-weight: 700;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+.noteview h6 {
+  font-size: 0.875rem; // 14 px
+  font-weight: 700;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.noteview pre {
+  font-family: "Ubuntu mono, monospace";
+  padding: 0.5rem 0.7rem;
+  font-size: 0.75rem; // 12 px
+  margin: 0.4rem 0;
+}
+
+.noteview :not(pre) > code {
+  background-color: whitesmoke;
+  color: #ff3860;
+  font-size: 0.875em;
+  font-weight: normal;
+  padding: 0.15em 0.4em 0.15em;
+  border: 1px solid #e0e0e0;
+}
+
+.vertical-fill {
+  height: calc(100vh - #{$ui-navbar-height});
 }
 
 
