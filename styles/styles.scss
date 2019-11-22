@@ -223,6 +223,43 @@ $ui-width-col-right: 10px;
 }
 
 // -------------------------------------------------------------------------
+// Labels
+// -------------------------------------------------------------------------
+
+// Helper wrapper which makes sure that containing labels are line-breaked
+// (because we wrap the spans into extra divs) and appropriately spaced
+// vertically.
+.ui-label-column div + div {
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
+}
+
+.ui-label {
+  background-color: #363636;
+  color: whitesmoke;
+  cursor: pointer;
+
+  align-items: center;
+  border-radius: 4px;
+  display: inline-flex;
+  font-size: 0.75rem;
+  height: 2em;
+  justify-content: center;
+  line-height: 1.5;
+  padding-left: 0.75em;
+  padding-right: 0.75em;
+  white-space: nowrap;
+}
+
+.ui-label-count {
+  position: relative;
+  bottom: -0.25em;
+  margin-left: 0.3rem;
+  font-size: 0.5rem;
+  font-weight: bold;
+}
+
+// -------------------------------------------------------------------------
 // Float overlays
 // -------------------------------------------------------------------------
 
