@@ -4,7 +4,7 @@ import { Store, Note, Label, LabelCounts, modifiedNote } from "./store"
 import { getTitle } from "./web_utils"
 
 import { Search } from "./Search"
-import { LabelTree } from "./LabelTree"
+import { LabelTree, LabelRenderData, ClickAction, FilterState } from "./LabelTree"
 import { Editor } from "./Editor"
 import { NoteView } from "./NoteView"
 import { List } from "./List"
@@ -205,16 +205,72 @@ export function App() {
     })
   }
 
-  function onFilterLabel(name: Label, isIncluded: boolean) {
-
+  function onFilterLabel(name: Label, clickAction: ClickAction) {
+    //setState("filterInclude", (filterInclude: Label[]) => [...filterInclude, name])
+    if (clickAction == ClickAction.IncludeAdd) {
+      setState({filterInclude: [...state.filterInclude, name]})
+      setState({filterExclude: state.filterExclude.filter(x => x != name)})
+    } else if (clickAction == ClickAction.ExcludeAdd) {
+      setState({filterExclude: [...state.filterExclude, name]})
+      setState({filterInclude: state.filterInclude.filter(x => x != name)})
+    } else if (clickAction == ClickAction.IncludeRem) {
+      setState({filterInclude: state.filterInclude.filter(x => x != name)})
+    }  else if (clickAction == ClickAction.ExcludeRem) {
+      setState({filterExclude: state.filterExclude.filter(x => x != name)})
+    }
   }
 
   // --------------------------------------------------------------------------
-  // Derived data
+  // Derived data / memos
   // --------------------------------------------------------------------------
 
-  let selectedNotes = createMemo(() => {
-    return state.allNotes;
+  let selectedNotes = createMemo(() => {  // TODO: rename to filteredNotes?
+    let allNotes = state.allNotes;
+    let filterInclude = state.filterInclude;
+    let filterExclude = state.filterExclude;
+
+    let filteredNotes = allNotes.filter(note => {
+      let include = (filterInclude.length == 0 ? true : false);
+      let exclude = false;
+      for (let label of note.labels) {
+        for (let requiredLabel of filterInclude) {
+          if (label == requiredLabel) {
+            include = true;
+          }
+        }
+        for (let forbiddedLabel of filterExclude) {
+          if (label == forbiddedLabel) {
+            exclude = true;
+          }
+        }
+      }
+      return include && !exclude;
+    })
+    return filteredNotes;
+  })
+
+  let renderLabels = createMemo(() => {
+    let labelCounts = state.labelCounts;
+    let filterInclude = state.filterInclude;
+    let filterExclude = state.filterExclude;
+    console.log("filter include:", JSON.stringify(filterInclude));
+    console.log("filter exclude:", JSON.stringify(filterExclude));
+
+    let renderLabels = [] as LabelRenderData[];
+    for (let labelCount of labelCounts) {
+      let name = labelCount.name;
+      let filterState = FilterState.Neutral;
+      if (filterInclude.includes(name)) {
+        filterState = FilterState.Included;
+      } else if (filterExclude.includes(name)) {
+        filterState = FilterState.Excluded;
+      }
+      renderLabels.push({
+        labelCount: labelCount,
+        filterState: filterState,
+      })
+    }
+    return renderLabels;
   })
 
   return (
@@ -253,7 +309,7 @@ export function App() {
       </div>
       <div class="ui-main-container">
         <div class="column ui-column-left is-fullheight">
-          <LabelTree labels={(state.labelCounts)} clickLabel={onFilterLabel}/>
+          <LabelTree labels={(renderLabels())} clickLabel={onFilterLabel}/>
         </div>
         <div class="column ui-column-middle">
           <Switch>

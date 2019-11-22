@@ -47,3 +47,11 @@ export function forEach<V>(arr: Array<V>, f: (v: V) => void) {
   }
 }
 */
+
+export function optClass(cond: boolean, cls: string): string {
+  if (cond) {
+    return cls;
+  } else {
+    return "";
+  }
+}

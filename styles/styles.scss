@@ -49,6 +49,8 @@ $ui-navbar-height: 3.25rem;
 $ui-width-col-left: 220px;
 $ui-width-col-right: 10px;
 
+$ui-background-color: #e2ebf5;
+
 .ui-navbar {
   height: $ui-navbar-height;
   display: flex;
@@ -73,7 +75,7 @@ $ui-width-col-right: 10px;
   height: 2.3rem;
 
   color: #363636;
-  background-color: #e2ebf5;
+  background-color: $ui-background-color;
   border: 1px solid #888888;
   border-radius: 1.15rem;
 
@@ -257,6 +259,28 @@ $ui-width-col-right: 10px;
   margin-left: 0.3rem;
   font-size: 0.5rem;
   font-weight: bold;
+}
+
+.ui-label-filter-status-wrapper {
+  position: relative;
+}
+
+.ui-label-filter-status {
+  position: absolute;
+  bottom: 0;
+  right: 0.1rem;
+  width: 4px;
+  height: 1rem;
+  border-radius: 4px;
+
+  background-color: $ui-background-color;
+  transition: all 1s linear;
+}
+.ui-label-filter-status.ui-label-filter-status-included {
+  background-color: $green;
+}
+.ui-label-filter-status.ui-label-filter-status-excluded {
+  background-color: $red;
 }
 
 // -------------------------------------------------------------------------
