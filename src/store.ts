@@ -38,10 +38,12 @@ function deleteFolderRecursive(p: string) {
 // Note
 // -----------------------------------------------------------------------------
 
+export type Label = string;
+
 export interface Note {
   id: string,
   title: string,
-  labels: string[],
+  labels: Label[],
   markdown: string,
   timeCreated: Date,
   timeUpdated: Date,

@@ -1,6 +1,6 @@
-import { createState, createEffect, onCleanup } from 'solid-js';
+import { createState, createEffect, onCleanup, createMemo } from 'solid-js';
 
-import { Store, Note, LabelCounts, modifiedNote } from "./store"
+import { Store, Note, Label, LabelCounts, modifiedNote } from "./store"
 import { getTitle } from "./web_utils"
 
 import { Search } from "./Search"
@@ -42,10 +42,12 @@ export function App() {
     view: MODE_LIST,
     activeNote: undefined as Note | undefined,
 
-    selectedNotes: store.getNotes(),
     allNotes: store.getNotes(),
 
     labelCounts: store.getLabelCounts(),
+
+    filterInclude: [] as Label[],
+    filterExclude: [] as Label[],
 
     searchMatchingNotes: [] as Note[],
   })
@@ -98,7 +100,6 @@ export function App() {
       setState({
         activeNote: undefined,
         allNotes: store.getNotes(),
-        selectedNotes: store.getNotes(),
         view: MODE_LIST,
         labelCounts: store.getLabelCounts(),
       });
@@ -126,7 +127,6 @@ export function App() {
           setState({
             activeNote: newNote,
             allNotes: store.getNotes(),
-            selectedNotes: store.getNotes(),
             view: MODE_EDIT,
           });
         }
@@ -136,18 +136,20 @@ export function App() {
       setState({
         activeNote: newNote,
         allNotes: store.getNotes(),
-        selectedNotes: store.getNotes(),
         view: MODE_EDIT,
       });
     }
   }
+
+  // --------------------------------------------------------------------------
+  // Change notification callbacks from editor
+  // --------------------------------------------------------------------------
 
   function onChangeTitle(s: string) {
     let nModified = store.updateNoteTitle(state.activeNote!, s)
     setState({
       activeNote: nModified,
       allNotes: store.getNotes(),
-      selectedNotes: store.getNotes(),
     })
   }
 
@@ -158,7 +160,6 @@ export function App() {
     setState({
       activeNote: nModified,
       allNotes: store.getNotes(),
-      selectedNotes: store.getNotes(),
       labelCounts: store.getLabelCounts(),
     })
   }
@@ -168,7 +169,6 @@ export function App() {
     setState({
       activeNote: nModified,
       allNotes: store.getNotes(),
-      selectedNotes: store.getNotes(),
     })
   }
 
@@ -177,9 +177,12 @@ export function App() {
     setState({
       activeNote: nModified,
       allNotes: store.getNotes(),
-      selectedNotes: store.getNotes(),
     })
   }
+
+  // --------------------------------------------------------------------------
+  // Other callbacks
+  // --------------------------------------------------------------------------
 
   function onSearch(s: string) {
     if (s.length === 0) {
@@ -201,6 +204,18 @@ export function App() {
       searchMatchingNotes: [],
     })
   }
+
+  function onFilterLabel(name: Label, isIncluded: boolean) {
+
+  }
+
+  // --------------------------------------------------------------------------
+  // Derived data
+  // --------------------------------------------------------------------------
+
+  let selectedNotes = createMemo(() => {
+    return state.allNotes;
+  })
 
   return (
     <div>
@@ -238,14 +253,14 @@ export function App() {
       </div>
       <div class="ui-main-container">
         <div class="column ui-column-left is-fullheight">
-          <LabelTree labels={(state.labelCounts)}/>
+          <LabelTree labels={(state.labelCounts)} clickLabel={onFilterLabel}/>
         </div>
         <div class="column ui-column-middle">
           <Switch>
             <Match when={(state.view === MODE_LIST)}>
               <List
-                notes={(state.selectedNotes)}
-                onSelect={(index: number) => switchToNote(state.selectedNotes[index])}
+                notes={(selectedNotes())}
+                onSelect={(index: number) => switchToNote(selectedNotes()[index])}
               />
             </Match>
             <Match when={(state.view === MODE_NOTE)}>
