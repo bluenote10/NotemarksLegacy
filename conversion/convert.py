@@ -5,6 +5,16 @@ import yaml
 import pathlib
 
 
+LINK_TEMPLATE = """\
+[Desktop Entry]
+Encoding=UTF-8
+Name={name}
+Type=Link
+URL={url}
+Icon=text-html
+"""
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -29,6 +39,38 @@ def sanitize_title(title):
         .replace("\n", " ")
 
 
+def _handle_note(dst, title_sanitized, notes_file_content):
+    if len(notes_file_content) > 0:
+        file_dst = pathlib.Path(f"{dst}/notes/{title_sanitized}.md")
+        file_dst.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(file_dst, "w") as out_file:
+            out_file.write(notes_file_content)
+
+
+def _handle_meta(dst, title_sanitized, meta):
+    file_dst = pathlib.Path(f"{dst}/.notemarks/notes/{title_sanitized}.yaml")
+    file_dst.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(file_dst, "w") as out_file:
+        yaml.dump({
+            "labels": meta["labels"],
+            "timeCreated": meta["timeCreated"],
+            "timeUpdated": meta["timeUpdated"],
+        }, out_file)
+
+
+def _handle_link(dst, title, title_sanitized, meta):
+    link = meta.get("link")
+    if link is not None and link.strip() != "":
+
+        file_dst = pathlib.Path(f"{dst}/links/{title_sanitized}.desktop")
+        file_dst.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(file_dst, "w") as out_file:
+            out_file.write(LINK_TEMPLATE.format(url=link, name=title))
+
+
 def convert(src, dst):
     files = glob.glob(f"{src}/**/note.yaml")
 
@@ -43,28 +85,22 @@ def convert(src, dst):
         notes_file = f.replace(".yaml", ".md")
         notes_file_content = open(notes_file).read()
 
-        file_dst = pathlib.Path(f"{dst}/notes/{title_sanitized}.md")
-        file_dst.parent.mkdir(parents=True, exist_ok=True)
+        print(f"Processing: {title}")
 
-        print(f"{notes_file} => {file_dst}")
         try:
-            with open(file_dst, "w") as out_file:
-                out_file.write(notes_file_content)
+            _handle_note(dst, title_sanitized, notes_file_content)
         except OSError as e:
             print(e)
             continue
 
-        file_dst = pathlib.Path(f"{dst}/.notemarks/notes/{title_sanitized}.yaml")
-        file_dst.parent.mkdir(parents=True, exist_ok=True)
-
-        print(f"{notes_file} => {file_dst}")
         try:
-            with open(file_dst, "w") as out_file:
-                yaml.dump({
-                    "labels": meta["labels"],
-                    "timeCreated": meta["timeCreated"],
-                    "timeUpdated": meta["timeUpdated"],
-                }, out_file)
+            _handle_meta(dst, title_sanitized, meta)
+        except OSError as e:
+            print(e)
+            continue
+
+        try:
+            _handle_link(dst, title, title_sanitized, meta)
         except OSError as e:
             print(e)
             continue
