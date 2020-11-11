@@ -39,17 +39,35 @@ def sanitize_title(title):
         .replace("\n", " ")
 
 
-def _handle_note(dst, title_sanitized, notes_file_content):
+def _handle_note(dst, title_sanitized, meta, notes_file_content):
     if len(notes_file_content) > 0:
-        file_dst = pathlib.Path(f"{dst}/notes/{title_sanitized}.md")
+        rel_path = f"notes/{title_sanitized}.md"
+        file_dst = pathlib.Path(f"{dst}/{rel_path}")
         file_dst.parent.mkdir(parents=True, exist_ok=True)
 
         with open(file_dst, "w") as out_file:
             out_file.write(notes_file_content)
 
+        _handle_meta(dst, rel_path, meta)
 
-def _handle_meta(dst, title_sanitized, meta):
-    file_dst = pathlib.Path(f"{dst}/.notemarks/notes/{title_sanitized}.yaml")
+
+def _handle_link(dst, title_sanitized, meta):
+    link = meta.get("link")
+    title = meta["title"]
+    if link is not None and link.strip() != "":
+
+        rel_path = f"links/{title_sanitized}.desktop"
+        file_dst = pathlib.Path(f"{dst}/{rel_path}")
+        file_dst.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(file_dst, "w") as out_file:
+            out_file.write(LINK_TEMPLATE.format(url=link, name=title))
+
+        _handle_meta(dst, rel_path, meta)
+
+
+def _handle_meta(dst, rel_path, meta):
+    file_dst = pathlib.Path(f"{dst}/.notemarks/{rel_path}.yaml")
     file_dst.parent.mkdir(parents=True, exist_ok=True)
 
     with open(file_dst, "w") as out_file:
@@ -58,17 +76,6 @@ def _handle_meta(dst, title_sanitized, meta):
             "timeCreated": meta["timeCreated"],
             "timeUpdated": meta["timeUpdated"],
         }, out_file)
-
-
-def _handle_link(dst, title, title_sanitized, meta):
-    link = meta.get("link")
-    if link is not None and link.strip() != "":
-
-        file_dst = pathlib.Path(f"{dst}/links/{title_sanitized}.desktop")
-        file_dst.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(file_dst, "w") as out_file:
-            out_file.write(LINK_TEMPLATE.format(url=link, name=title))
 
 
 def convert(src, dst):
@@ -87,23 +94,12 @@ def convert(src, dst):
 
         print(f"Processing: {title}")
 
-        try:
-            _handle_note(dst, title_sanitized, notes_file_content)
-        except OSError as e:
-            print(e)
+        if len(title_sanitized) > 255 - 5:
+            print("Skipping because of too long title...")
             continue
 
-        try:
-            _handle_meta(dst, title_sanitized, meta)
-        except OSError as e:
-            print(e)
-            continue
-
-        try:
-            _handle_link(dst, title, title_sanitized, meta)
-        except OSError as e:
-            print(e)
-            continue
+        _handle_note(dst, title_sanitized, meta, notes_file_content)
+        _handle_link(dst, title_sanitized, meta)
 
         num_copied += 1
 
