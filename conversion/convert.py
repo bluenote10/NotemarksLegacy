@@ -1,5 +1,6 @@
 
 import argparse
+import datetime
 import glob
 import yaml
 import pathlib
@@ -66,6 +67,11 @@ def _handle_link(dst, title_sanitized, meta):
         _handle_meta(dst, rel_path, meta)
 
 
+def _transform_timestamp_to_date_string(timestamp):
+    date = datetime.datetime.fromtimestamp(timestamp)
+    return date.strftime("%Y-%m-%dT%H:%M:%S")
+
+
 def _handle_meta(dst, rel_path, meta):
     file_dst = pathlib.Path(f"{dst}/.notemarks/{rel_path}.yaml")
     file_dst.parent.mkdir(parents=True, exist_ok=True)
@@ -73,8 +79,8 @@ def _handle_meta(dst, rel_path, meta):
     with open(file_dst, "w") as out_file:
         yaml.dump({
             "labels": meta["labels"],
-            "timeCreated": meta["timeCreated"],
-            "timeUpdated": meta["timeUpdated"],
+            "timeCreated": _transform_timestamp_to_date_string(meta["timeCreated"]),
+            "timeUpdated": _transform_timestamp_to_date_string(meta["timeUpdated"]),
         }, out_file)
 
 
