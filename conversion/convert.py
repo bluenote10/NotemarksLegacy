@@ -33,9 +33,11 @@ def sanitize_title(title):
     https://stackoverflow.com/a/61448658/1804173
     https://stackoverflow.com/a/9847306/1804173
     """
-    pseudo_slash = "∕"
+    pseudo_slash = "⧸"      # http://www.fileformat.info/info/unicode/char/29F8/index.htm
+    pseudo_backslash = "⧹"  # https://www.fileformat.info/info/unicode/char/29f9/index.htm
     return title\
-        .replace(pseudo_slash, pseudo_slash+pseudo_slash)\
+        .replace(pseudo_backslash, pseudo_backslash+pseudo_backslash)\
+        .replace(pseudo_slash, pseudo_backslash+pseudo_slash)\
         .replace("/", pseudo_slash)\
         .replace("\n", " ")
 
