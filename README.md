@@ -2,7 +2,7 @@
 
 A markdown based note taking app.
 
-Same motivation as [Notable](https://github.com/notable/notable), different appraoch.
+**Update 2021**: The successor of this project is available [here](https://github.com/notemarks/notemarks).
 
 ## Installation
 
