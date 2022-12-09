@@ -9,7 +9,7 @@
     "watch-css": "npm run build-css && npm run build-css -- -w",
     "build": "webpack",
     "watch": "webpack --watch",
-    "start": "electron .",
+    "start": "electron . --no-sandbox",
     "check-types": "tsc"
   },
   "keywords": [
